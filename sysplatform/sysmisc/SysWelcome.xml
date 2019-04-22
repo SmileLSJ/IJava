@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.totapps.com/kingfisher/feather-3.0.dtd">
+
+<View showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsDayChart" readOnly="false" autoLoadPage="true"
+			pageSize="0" clearDataForLoadPage="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<!-- SQL定义 -->
+			<Data type="statement">
+				<![CDATA[
+				select 'Login Times' as CataType, DaySegment, count(1) as CNT 
+				from ( 
+					select	to_char(OperTime,'mm-dd') as DaySegment 
+					from Sys_Log_Master A
+					where (A.OperTime between trunc(sysdate-14) and sysdate) 
+					and to_char(A.OperTime,'YYYY') = to_char(sysdate,'YYYY')
+					and A.UserID = #UserID# 
+					) table1
+			 	group by DaySegment 
+			 	union all
+			 	select 'Operate Times' as CataType, DaySegment, count(1) as CNT 
+				from ( 
+					select	to_char(A.OperTime,'mm-dd') as DaySegment 
+					from Sys_Log_Master A, Sys_Log_Detail B
+					where (A.OperTime between trunc(sysdate-14) and sysdate) 
+					and to_char(A.OperTime,'YYYY') = to_char(sysdate,'YYYY')
+					and A.UserID = #UserID# and A.LogID = B.LogID 
+					) table1
+			 	group by DaySegment 
+			 	order by DaySegment
+				]]>
+			</Data>
+			<Fields>
+				<Field name="CataType" label="" dataType="string" />
+				<Field name="DaySegment" label="" dataType="string" />
+				<Field name="CNT" label="" dataType="long" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<!-- 公告树 -->
+		<Control id="bulletinTree" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					loadSysBulletin(dsSysBulletin, tree, node);
+				</Event>
+				<Event name="onClick">
+					callBulletinInfo(node.mesID, node.linkUrl);
+				</Event>
+			</Events>
+		</Control>
+
+		<!-- 
+		<Control id="dayChart" type="BarChart"
+			categoryField="DaySegment" dataField="CNT"
+			title="2周内访问次数统计" subTitle="按小时访问统计" threeD="false" background="#E1EAF1"/>
+			series="#32109D"
+		-->	
+		 
+		<Control id="dayChart" type="TimeSeriesChart" categoryField="CataType"
+			dataField="CNT" dateField="DaySegment" 
+			title="Two Week Operate Analyse" background="#E1EAF1" dateFormat="MM-dd"
+			datePeriod="day" />
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+			var _NetError = false;
+			
+			//系统信息提示数据窗口
+			var dsSysMessage = buildKingfisherElement("Dataset", null, "dsSysMessage", "Reference");
+			dsSysMessage.setPageSize(0);
+			dsSysMessage.addField("ID",4, false);
+			dsSysMessage.addField("Title",1, false);
+			dsSysMessage.addField("Note",1, false);
+			dsSysMessage.addField("LinkURL",1, false);
+			
+			//系统未读信息数据窗口
+			var dsSysBulletin = buildKingfisherElement("Dataset", null, "dsSysBulletin", "Reference");
+			dsSysBulletin.setPageSize(0);
+			dsSysBulletin.addField("ID",4, false);
+			dsSysBulletin.addField("Title",1, false);
+			dsSysBulletin.addField("Note",1, false);
+			dsSysBulletin.addField("LinkURL",1, false);
+
+			//1秒后开始执行系统提示
+			setTimeout("loadSystemTipInfo()", 1000);
+	
+			//检查网络状况
+			function checkNetStatus()
+			{
+				if (_NetError)
+				{
+					smoke.alert("网络已断开或操作超时！");
+					return false;
+				}
+				else
+					return true;
+			}
+
+			function showBulletInfo(count)
+			{
+				if (count > 0)
+				{
+					tbBulletinInfo.style.visibility = "visible";
+					BulletinInfo.innerText = "您有新信息";
+				}
+				else
+				{
+					tbBulletinInfo.style.visibility = "hidden";
+					BulletinInfo.innerText = "您的公告信息（暂无新信息）";
+				}
+			}
+			
+			//定时装载
+			function loadSystemTipInfo()
+			{
+				if (_NetError)
+				{
+					return false;
+				}
+				
+				if (dsSysMessage.getVisibleCount() <= 0)
+				{
+					dsSysMessage.setLoadDataAction("/retrieve.do?className=session.sys.SysManagerDAO&ferry=get&method=getSysMessageTip");	
+					_NetError = !dsSysMessage.flushData();
+					
+					if (!checkNetStatus())
+						return false;
+					
+					//此处加载数据5秒后显示
+					setTimeout("showSystemTipInfo()", 5000);
+				}
+				
+				//系统公告
+				//bulletinTree.clearAllNodes();
+				//5分钟刷新
+				setTimeout("loadSystemTipInfo()", 300000);
+				showBulletInfo(dsSysMessage.getVisibleCount());
+			}
+			
+			//--------------------------------------------
+			//装载公告树
+			//--------------------------------------------
+			function loadSysBulletin(dataset, tree, node)
+			{
+				if (_NetError)
+				{
+					return false;
+				}
+				
+				if (node.children().getLength()>0) return;
+				var MesGroup;
+				if (node.getLevel() == 0) 
+				  	MesGroup = '0';
+				else  
+				  	MesGroup = node.mesGroup;
+				
+				dataset.setLoadDataAction("/retrieve.do?className=session.sys.SysManagerDAO&ferry=get&method=getSysBulletinInfo");	
+				dataset.parameters().setValue("MesGroup", MesGroup, "string");
+				
+				_NetError = !dataset.flushData();
+			
+				if (!checkNetStatus())
+					return false;
+			
+				showBulletInfo(dataset.getVisibleCount());
+									
+			  	while (!dataset.isLast())
+			  	{
+			  		if (MesGroup == '0')
+			  		{
+			  			var label = dataset.getString("Title");
+				    	var newNode = tree.addNode(node, label);
+				    	newNode.setHasChild(true);
+				    	newNode.mesGroup = label;
+				    	newNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node4.gif");
+					    newNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node4.gif");
+					    newNode.mesID = 0;
+			  		}
+			  		else
+			  		{
+			  			var label = dataset.getString("Note");
+				     	var newNode = tree.addNode(node, label);
+				    	newNode.setHasChild(false);
+			  			newNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node2.gif");
+					    newNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node2.gif");
+					    newNode.linkUrl = dataset.getValue("LinkUrl");
+					    newNode.mesID = dataset.getValue("ID");
+			  		}
+			     	dataset.moveNext();
+			    }
+			}
+
+			
+
+			//定时显示提示
+			function showSystemTipInfo()
+			{
+				if (dsSysMessage.getVisibleCount() > 0)
+				{
+					parent.callSQLUpdate("update Sys_Message set IsHint = '1', HintDate = sysdate where ID = " + dsSysMessage.getValue("ID"));
+					var tipTitle = dsSysMessage.getValue("Title");
+					var linkUrl = dsSysMessage.getValue("LinkUrl");
+					
+					var tipNote = "<p align='center'><font color='#FF0000'><a href='#' onclick='callBulletinInfo(" +
+						dsSysMessage.getValue("ID") + "," + linkUrl + ");return false;'>" +
+						dsSysMessage.getValue("Note") +"</a></font></p>";
+			
+					var tipMT = new MessageTip(tipTitle,tipNote);
+					tipMT.show();
+					dsSysMessage.deleteRecord();
+					//10秒显示间隔
+					setTimeout("showSystemTipInfo()", 10000);
+				}
+			}
+
+			//更新提示信息，置标志为已读
+			function callBulletinInfo(mesID, linkUrl)
+			{
+				if (parseInt(mesID) == 0)
+					return false;
+				parent.callSQLUpdate("update Sys_Message set IsRead = '1' where ID = " + mesID);
+				eval(linkUrl);
+			}
+
+			function getUserLoginInfo(UserID)
+			{
+				var Result = parent.callSQLSelect("select PKG_System.F_GetUserLoginInfo(" + UserID + ") as LoginInfo from sys.dual");
+				if (Result)
+				{
+					UserLoginInfo.innerText = Result.outParameters().getValue("LoginInfo");
+				}
+			}
+		
+			function iniData()
+			{
+				var UserID = %{#session.CheckIn.UserID};
+				;
+				UserNameLabel.innerText="%{#session.CheckIn.userName}";
+				getUserLoginInfo(UserID);
+				showBulletInfo(0);
+				dsDayChart.parameters().setValue("UserID", UserID, "integer");
+			
+				dsDayChart.flushData();
+				dayChart.setDataset(dsDayChart);
+				
+				setTimeout("dayChart.refresh()",100);
+			}
+		]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				setTimeout("iniData()",100);
+			]]>
+		</Event>
+	</Events>
+</View>

@@ -1,0 +1,14 @@
+<html>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+
+	<table border="0" align="center" width="100%" cellspacing="0"
+		cellpadding="4" height="100%">
+		<tr>
+			<td width="230" height="100%">#fktree("id=TreeInfo")</td>
+		</tr>
+
+	</table>
+	</body>
+#end
+</html>

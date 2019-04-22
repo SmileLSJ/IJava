@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+	<!--
+		***************************************** 
+		系统机构信息管理 
+		乔武军设计 
+		2010.08.08
+		Width=400 Height=300 
+		*****************************************
+	-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true" tableName="Sys_Bran"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+			<![CDATA[
+				select A.BranID,A.BranCode,A.BranName,A.DSC,A.PBranID,A.BranLevel, A.BranKind, A.BranType, A.LinkMan, A.Tel, A.Fax, 
+					A.MTel, A.PostCode, A.Address, A.Bank, A.BankCode, A.TaxNo, A.LegalPSN, 
+					A.StoreType, A.Status, A.BranBMType, A.UpdateBy, A.UpdateDate, A.Path, A.Country, A.Province, A.City, A.WebSite,A.MCID  
+				from Sys_Bran A 
+				where A.BranID=#BranID#
+			]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="" dataType="long" key="true"/>
+				<Field name="BranCode" label="" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="BranName" label="" dataType="string">
+					<Validator type="Length" maxLength="40" />
+				</Field>
+				<Field name="DSC" label="" dataType="string">
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="PBranID" label="" dataType="long" />
+				<Field name="BranLevel" label="" dataType="long" />
+				<Field name="BranKind" label="" dataType="string" dropDown="ddBranKind">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="BranType" label="类型" dataType="string" dropDown="ddBranType">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="LinkMan" label="联系人" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="Tel" label="联系电话" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="Fax" label="联系传真" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="MTel" label="移动电话" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="PostCode" label="邮政编码" dataType="string">
+					<Validator type="Length" maxLength="6" />
+				</Field>
+				<Field name="Address" label="联系地址" dataType="string">
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="Bank" label="开户银行" dataType="string">
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="BankCode" label="银行账号" dataType="string">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="TaxNo" label="纳税编号" dataType="string">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="LegalPSN" label="法人" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				
+				<Field name="StoreType" label="门店类型" dataType="string"
+					dropDown="ddStoreType">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="Status" label="机构状态" dataType="string" defaultValue="2">
+				</Field>
+				<Field name="BranBMType" label="业态类型" dataType="string" dropDown="ddBranBMType">
+				</Field>
+				<Field name="UpdateBy" label="" dataType="string" valueOnEmpty="username"/>
+				<Field name="UpdateDate" label="" dataType="datetime" valueOnEmpty="now"/>
+				<Field name="Path" label="" dataType="string" />
+				<Field name="Country" label="Country" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="Province" label="Province" dataType="string"
+					dropDown="ddProvince">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="City" label="City" dataType="string" dropDown="ddCity">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="WebSite" label="WebSite" dataType="string">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="MCID" label="商户" dataType="int" valueOnEmpty="%{#session.CheckIn.MCID}"/>
+			</Fields>
+			<Events>
+				<Event name="afterChange">ChangeModifyed(dataset,field);</Event>
+			</Events>
+		</Dataset>
+			
+		<Dataset id="dsBranId" type="SimpleQuery"
+			sql="select nvl(max(BranID),0) + 1 as BranID from Sys_Bran" />
+		
+	</Datasets>
+	<Controls>
+		<Control id="tabset1" type="TabSet" width="100%" height="100%"
+			widthTabName="75" draggableItem="false">
+			<Tab name="tab1" label="基本资料" />
+			<Tab name="tab2" label="联系信息" />
+		</Control>
+		
+		<Control id="BranCode" type="TextEditor" width="100%" dataset="dsBran"
+			field="BranCode">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) BranName.focus();
+				</Event>
+			</Events>
+		</Control>
+		<Control id="BranName" type="TextEditor" width="100%" dataset="dsBran"
+			field="BranName" />
+		<Control id="DSC" type="TextEditor" width="100%" dataset="dsBran"
+			field="DSC" editorType="textarea" height="100" />
+
+		<Control id="BranType" type="TextEditor" width="100%" dataset="dsBran"
+			field="BranType" />
+		<Control id="LinkMan" type="TextEditor" width="100%" dataset="dsBran"
+			field="LinkMan" />
+		<Control id="Tel" type="TextEditor" width="100%" dataset="dsBran"
+			field="Tel" />
+		<Control id="Fax" type="TextEditor" width="100%" dataset="dsBran"
+			field="Fax" />
+		<Control id="MTel" type="TextEditor" width="100%" dataset="dsBran"
+			field="MTel" />
+		<Control id="PostCode" type="TextEditor" width="100%" dataset="dsBran"
+			field="PostCode" />
+		<Control id="Address" type="TextEditor" width="100%" dataset="dsBran"
+			field="Address" />
+		<Control id="Bank" type="TextEditor" width="100%" dataset="dsBran"
+			field="Bank" />
+		<Control id="BankCode" type="TextEditor" width="100%" dataset="dsBran"
+			field="BankCode" />
+		<Control id="TaxNo" type="TextEditor" width="100%" dataset="dsBran"
+			field="TaxNo" />
+		<Control id="LegalPSN" type="TextEditor" width="100%" dataset="dsBran"
+			field="LegalPSN" />
+		<Control id="StoreType" type="TextEditor" width="100%" dataset="dsBran"
+			field="StoreType" />
+		<Control id="WebSite" type="TextEditor" width="100%" dataset="dsBran"
+			field="WebSite" />
+		<Control id="Country" type="TextEditor" width="100%" dataset="dsBran"
+			field="Country" />
+		<Control id="Province" type="TextEditor" width="100%" dataset="dsBran"
+			field="Province" />
+		<Control id="City" type="TextEditor" width="100%" dataset="dsBran"
+			field="City" />
+		<Control id="BranKind" type="TextEditor" width="100%" dataset="dsBran"
+			field="BranKind" />
+		 
+		<Control id="BranBMType" type="TextEditor" width="100%" dataset="dsBran"
+			field="BranBMType" />
+		
+		<Control id="ddBranType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<!-- <DropDownItem label="1-总部" value="1" /> -->
+			<DropDownItem label="2-门店" value="2" />
+			<DropDownItem label="3-物流中心" value="3" />
+			<DropDownItem label="4-管理部门" value="4" />
+			<DropDownItem label="5-加工中心" value="5" />
+			<DropDownItem label="6-区域中心" value="5" />
+		</Control>
+		<Control id="ddBranBMType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-超市" value="1" />
+			<DropDownItem label="2-百货" value="2" />
+			<DropDownItem label="3-餐饮" value="3" />
+			<DropDownItem label="4-专卖店" value="4" />
+			<DropDownItem label="9-其它" value="9" />
+		</Control>
+		<Control id="ddBranKind" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-直营连锁" value="1" />
+			<DropDownItem label="2-特许加盟" value="2" />
+		</Control>
+
+		<Control id="ddStoreType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-标准店" value="1" />
+			<DropDownItem label="2-折扣店" value="2" />
+			<DropDownItem label="3-店中店" value="3" />
+			<DropDownItem label="4-旗舰店" value="4" />
+			<DropDownItem label="5-便利店" value="5" />
+			<DropDownItem label="6-平价店" value="6" />
+			<DropDownItem label="9-训练店" value="9" />
+		</Control>
+
+		<Control id="ddProvince" type="DatasetDropDown" dataset="dsProvince"
+			mapValue="true" fixed="true" height="100" cachable="true"
+			warmUpDelay="0" readFields="DicSCode" writeFields="Province"
+			visibleFields="DicValue" valueField="DicSCode" labelField="DicValue">
+		</Control>
+
+		<Control id="ddCity" type="DatasetDropDown" dataset="dsCity"
+			mapValue="true" fixed="true" height="100" cachable="true"
+			warmUpDelay="0" readFields="DicSCode" writeFields="City"
+			visibleFields="DicValue" valueField="DicSCode" labelField="DicValue">
+		</Control>
+
+		<Control id="btnSave" type="Button" value="保存">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭">
+			<Events>
+				<Event name="onClick">parent.andPageClose(window.frameElement.src);</Event>
+			</Events>
+		</Control>
+		
+		<Control id="cmdCheckLicense" type="RPCCommand" flushDataOnSuccess="false"
+			showLoadingTip="false" commandType="Script">
+			<ActionScript include="sysplatform.sysmisc.SysCheckLicense" />
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysbran.SysBranPub"/>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var branID = 0;
+				var pbranID = 0;
+				var branLevel = 1;
+				var lastProvince = "";
+				var pBranKind = 0;
+				
+				//初始化
+				function iniData()
+				{
+					if (!setPBranInfo())
+						btnSave.disiabled = true;
+					
+					if (actionCode == 'AC_EDIT')
+					{
+						branID = actionDataset.getValue('BranID');
+						editData();
+					}
+					else 
+					{
+						newData();
+					}
+				}
+				
+				//设置父机构信息
+				function setPBranInfo()
+				{
+					dsQuery_PBranID.parameters().setValue("BranID", actionDataset.getValue("BranID"), "int");
+					dsQuery_PBranID.flushData();
+					
+					if (actionCode == 'AC_NEW')
+					{
+						if ((actionDataset) && (actionDataset.getVisibleCount() > 0))
+						{
+							pbranID = dsQuery_PBranID.getValue("PBranID");
+						}
+						else
+						{
+							pbranID = 0;
+						}
+					}
+					else if (actionCode == 'AC_EDIT')
+					{
+						pbranID = dsQuery_PBranID.getValue("PBranID");
+					}
+					else
+						pbranID = actionDataset.getValue("BranID");
+					
+							
+					if (parseInt(pbranID) === 0)
+					{
+						lbl_PBranInfo.innerText = "(顶级节点)全部";
+						branLevel = 1;
+						pBranKind = 0;
+						
+					}
+					else
+					{	
+						dsQuery_BranInfo.parameters().setValue("BranID", pbranID, "int");
+						dsQuery_BranInfo.flushData();
+						if (dsQuery_BranInfo.getVisibleCount()>0)
+						{
+							lbl_PBranInfo.innerText = dsQuery_BranInfo.getValue("BranInfo");
+							branLevel = dsQuery_BranInfo.getValue("BranLevel");
+							pBranKind = parseInt(dsQuery_BranInfo.getValue("BranKind"),10);
+						}
+						else
+						{
+							smoke.alert("获取父机构信息失败！");
+							return false;
+						}
+					}
+					
+					return true;
+				}
+				
+				function ChangeModifyed(dataset,field) 
+				{
+					if (dataset.getVisibleCount() > 0) 
+					{
+						switch (field.getName()) {
+							case "BranType":
+								if ((dataset.getValue("BranType").length > 0) && (dataset.getValue("BranType")== '2'))
+								{		
+									StoreType.setReadOnly(false);
+									StoreType.disabled = false;
+								}
+								else
+								{
+									StoreType.setReadOnly(true);
+									StoreType.disabled = true;
+									dataset.setValue("StoreType", null);
+								}
+								dataset.refreshControls();
+								break;
+							case "Province":
+								if (dataset.getValue("Province").length > 0) 
+								{		
+									if (lastProvince !== dataset.getValue("Province"))
+									{
+										dataset.setValue("City", null);
+										dsCity.parameters().setValue("DicCode", dataset.getValue("Province"), "string");
+										dsCity.flushData();
+										lastProvince = dataset.getValue("Province");
+									}
+								}
+								else
+								{
+									lastProvince = "";
+									dataset.setValue("City", null);
+									dsCity.parameters().setValue("DicCode", "-1", "string");
+									dsCity.flushData();
+								}
+								dataset.refreshControls();
+								break;
+						}
+						return;
+					}
+				}
+				
+				//编辑
+				function editData()
+				{
+					dsBran.parameters().setValue("BranID", branID,"long");
+					dsBran.flushData();
+					dsCity.parameters().setValue("DicCode", dsBran.getValue("Province"), "string");
+					dsCity.flushData();
+					dsBran.refreshControls();
+					lastProvince = dsBran.getValue("Province");
+					//tabset1.activeTabByName("tab1");
+					BranCode.focus();
+					changeEnable();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsBran.clearData();
+					dsBran.parameters().setValue("BranID", 0,"long");
+					dsBran.appendRecord();
+					dsBran.setValue("PBranID", pbranID);
+					dsBran.setValue("BranLevel", branLevel);
+					if (pBranKind !== 0)
+						dsBran.setValue("BranKind", pBranKind);
+					
+			//		tabset1.activeTabByName("tab1");
+ 			  		BranCode.focus();
+ 			  		changeEnable();
+				}
+				
+				function changeEnable()
+				{
+					StoreType.setReadOnly(true);
+					StoreType.disabled = true;
+					
+					/*
+					BranKind.setReadOnly(true);
+					BranKind.disabled = true;
+					if (pBranKind == 0)
+					{
+						BranKind.setReadOnly(false);
+						BranKind.disabled = false;
+					}
+					*/
+					if (dsBran.getValue("BranType") == "2")
+					{
+						StoreType.setReadOnly(false);
+						StoreType.disabled = false;
+					}
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(BranCode.value.length == 0){
+						smoke.alert("请输入机构编码！", function(e){
+							//tabset1.activeTabByName("tab1");
+							BranCode.focus();
+						});
+						return false;
+					}
+					
+					if(BranName.value.length == 0){
+						smoke.alert("请输入机构名称！", function(e){
+						//	tabset1.activeTabByName("tab1");
+							BranName.focus();
+						});
+						return false;
+					}
+					
+					if(BranType.value.length == 0){
+						smoke.alert("请选择机构类型！", function(e){
+						//	tabset1.activeTabByName("tab1");
+							BranType.focus();
+						});
+						return false;
+					}
+					
+					if ((dsBran.getValue("BranType") == "2") && (StoreType.value.length == 0))
+					{
+						smoke.alert("请选择门店类型！", function(e){
+						//	tabset1.activeTabByName("tab1");
+							StoreType.focus();
+						});
+						return false;
+					}
+					
+					dsBranCount.flushData();
+					dsdBranCount.flushData();
+					if (dsBranCount.getValue("cnt") >= dsdBranCount.getValue("bdNum")) {
+						smoke.alert("门店数量已经用完，请重新申请门店数量！");
+						return false;
+					}
+					
+					return true;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					/*cmdCheckLicense.parameters().clear();
+					var CallSucceed = cmdCheckLicense.execute();
+					if(!(CallSucceed)){
+						return;
+					}*/
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+						
+					dsBranId.flushData();					
+					dsBran.setValue("BranID",dsBranId.getValue("BranID"),"long");
+					
+					if (actionCode !== 'AC_EDIT') {
+						dsBran.setValue("Path", dsQuery_PBranID.getValue("Path") + dsBranId.getValue("BranID") + '.');
+					}
+						
+						
+					if (dsBran.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							actionDataset.parameters().clear();
+							window.returnValue = true;
+							parent.refreshTable(window.frameElement.src);
+							if (actionCode == 'AC_EDIT')
+								parent.andPageClose(window.frameElement.src);
+							else
+								newData();
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					var ds;
+				    if (BranCode.value.length <= 0) return;
+				    if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("BranCode", BranCode.value, "string");
+				    	ds.parameters().setValue("BranID", dsBran.getValue('BranID'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("BranCode", BranCode.value, "string");
+				    }
+				    ds.flushData();	
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("机构编码已经存在，请修改！");
+						BranCode.focus();
+						return true;
+					}
+					return false;
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

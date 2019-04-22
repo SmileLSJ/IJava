@@ -1,0 +1,235 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>机构管理</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<style type="text/css">
+.spe1
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title1.gif")
+}
+
+.spe2
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title2.gif")
+}
+
+.spe3
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/userred.gif")
+}
+
+.spe4
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/share.gif")
+}
+
+</style>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+	<div class="form_module">
+			<div>
+				<p>
+					<span>基本信息</span>
+				</p>
+				<div>
+					<div class="l">父机构</div>
+					<div class="r">
+						<label id="lbl_PBranInfo" style="color:#0000CC;" />
+					</div>
+				</div>
+				<div>
+					<div class="l">
+						<font color="red">*</font>机构编码
+					</div>
+					<div class="r">
+						#fktexteditor("id=BranCode")
+					</div>
+				</div>
+				<div>
+					<div class="l">
+						<font color="red">*</font>机构名称
+					</div>
+					<div class="r">
+						#fktexteditor("id=BranName")
+					</div>
+				</div>
+				<div>
+					<div class="l">
+						<font color="red">*</font>机构类型
+					</div>
+					<div class="r">
+						#fktexteditor("id=BranType")
+					</div>
+				</div>
+				<div>
+					<div class="l">经营性质</div>
+					<div class="r">
+						#fktexteditor("id=BranKind")
+					</div>
+				</div>
+				<div>
+					<div class="l">业态类型</div>
+					<div class="r">
+						#fktexteditor("id=BranBMType")
+					</div>
+				</div>
+				<div>
+					<div class="l">门店类型</div>
+					<div class="r">
+						#fktexteditor("id=StoreType")
+					</div>
+				</div>
+			</div>
+			
+			<div>
+				<p>
+					<span>辅助信息</span>
+				</p>
+				<div>
+					<div class="l">国家</div>
+					<div class="r">
+						#fktexteditor("id=Country")
+					</div>
+				</div>
+				<div>
+					<div class="l">省份</div>
+					<div class="r">
+						#fktexteditor("id=Province")
+					</div>
+				</div>
+				<div>
+					<div class="l">城市</div>
+					<div class="r">
+						#fktexteditor("id=City")
+					</div>
+				</div>
+				<div>
+					<div class="l">联系人员</div>
+					<div class="r">
+						#fktexteditor("id=LinkMan")
+					</div>
+				</div>
+				<div>
+					<div class="l">移动电话</div>
+					<div class="r">
+						#fktexteditor("id=MTel")
+					</div>
+				</div>
+				<div>
+					<div class="l">联系电话</div>
+					<div class="r">
+						#fktexteditor("id=Tel")
+					</div>
+				</div>
+				<div>
+					<div class="l">网页地址</div>
+					<div class="r">
+						#fktexteditor("id=WebSite")
+					</div>
+				</div>
+			</div>
+			
+			<div>
+				<p>
+					<span>扩展属性</span>
+				</p>
+				<div>
+					<div class="l">邮政编码</div>
+					<div class="r">
+						#fktexteditor("id=PostCode")
+					</div>
+				</div>
+				<div>
+					<div class="l">联系传真</div>
+					<div class="r">
+						#fktexteditor("id=Fax")
+					</div>
+				</div>
+				<div>
+					<div class="l">联系地址</div>
+					<div class="r">
+						#fktexteditor("id=Address")
+					</div>
+				</div>
+			</div>
+			
+			<div>
+				<p>
+					<span>扩展信息</span>
+				</p>
+				<div>
+					<div class="l">开户银行</div>
+					<div class="r">
+						#fktexteditor("id=Bank")
+					</div>
+				</div>
+				<div>
+					<div class="l">银行账号</div>
+					<div class="r">
+						#fktexteditor("id=BankCode")
+					</div>
+				</div>
+				<div>
+					<div class="l">纳税编号</div>
+					<div class="r">
+						#fktexteditor("id=TaxNo")
+					</div>
+				</div>
+				<div>
+					<div class="l">法人代表</div>
+					<div class="r">
+						#fktexteditor("id=LegalPSN")
+					</div>
+				</div>
+				<div class="h100">
+					<div class="l">备注说明</div>
+					<div class="r">
+						#fktexteditor("id=DSC")
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form_button">
+			#fkbutton("id=btnClose")
+			#fkbutton("id=btnSave")
+		</div>
+	</body>
+#end
+
+</html>

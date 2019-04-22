@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统用户查询参数页 
+	乔武军设计      
+	2007.07.2  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsMain" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false">
+			<Data type="statement">
+				select A.BranID, A.BranCode, A.BranCode || '-' ||
+				A.BranName as Bran, A.Path, count(B.BranID) as SubCount
+				from Sys_Bran A left join Sys_Bran B on A.BranID =
+				B.PBranID where A.PBranID = #BranID# group by
+				A.BranID,A.BranCode, A.BranCode || '-' || A.BranName,
+				A.Path order by A.BranCode
+			</Data>
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="BranCode" label="机构编码" dataType="string" />
+				<Field name="Bran" label="机构名称" dataType="string" />
+				<Field name="Path" label="路径" dataType="string" />
+				<Field name="SubCount" label="子数量" dataType="long" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsSysType" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select ID,Name from Sys_Type 
+				where Display = '1'  
+				order by ID
+			</Data>
+			<Fields>
+				<Field name="ID" label="系统类型" dataType="long" />
+				<Field name="Name" label="系统类型" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="SysType" dataType="long"
+					dropDown="ddSysType" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddSysType" type="DatasetDropDown"
+			dataset="dsSysType" fixed="false" mapValue="true" readFields="ID"
+			showColumnHeader="false" visibleFields="Name" writeFields="SysType"
+			height="80" valueField="ID" labelField="Name" />
+
+		<Control id="SysType" type="TextEditor" dataset="dsObject"
+			field="SysType" width="97%" />
+		<Control id="UserCode" type="TextEditor" width="97%" />
+		<Control id="UserName" type="TextEditor" width="97%" />
+		<Control id="buttonSearch" type="Button" value="查询" 
+			width="75" decorate="%{applicationRoot}/exhibit/sysimgs/search.gif">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					var temp; 
+					if (TreeInfo.getCurrentNode) 
+					  	temp = TreeInfo.getCurrentNode().getTag(); 
+					if ((temp == undefined) || (temp == null)) 
+						temp = 0;
+					
+					parent.transfer({SysType:dsObject.getValue("SysType"),TreeBranID:temp,UserCode:UserCode.value,UserName:UserName.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+		<Control id="TreeInfo" type="Tree" width="100%">
+			<Events>
+				<Event name="onClick">buttonSearch.click();</Event>
+				<Event name="beforeExpandNode">
+					<![CDATA[
+					if (node.children().getLength()>0) return;
+					var dataset = dsMain;
+					var ParentBranID = 0;
+					var BMP = "%{applicationRoot}/exhibit/sysimgs/node1.gif";
+					if (node.getLevel() !== 0)
+					{
+						ParentBranID = node.CurBranID;
+						BMP = "%{applicationRoot}/exhibit/sysimgs/node2.gif";
+					}
+					
+					dsMain.parameters().setValue("BranID", ParentBranID,"long");
+					dsMain.flushData();
+				    
+				  	while (!dsMain.isLast())
+				  	{
+					     var label = dsMain.getString("Bran");
+					     var newNode = tree.addNode(node, label);
+					     newNode.setHasChild(dsMain.getValue("SubCount") > 0);
+					     newNode.CurBranID = dsMain.getValue("BranID");
+					     newNode.setTag(dsMain.getString("BranID"));
+					     
+					     newNode.setIcon(BMP);
+					     newNode.setExpandedIcon(BMP);
+					     dsMain.moveNext();
+					     newNode.setChecked(true);
+				    }
+				]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="onLoad">
+			<![CDATA[
+			
+			dsSysType.flushData();
+//			buttonSearch.setDecorate(__CONTEXT_PATH +"/exhibit/sysimgs/search.gif");
+			]]>
+		</Event>
+	</Events>
+</View>
+

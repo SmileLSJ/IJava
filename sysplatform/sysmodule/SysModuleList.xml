@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false"
+	dropDownBox="custom">
+	<Datasets>
+		<Dataset id="datasetDropDown" type="Custom"
+			insertOnEmpty="true">
+			<Fields>
+				<Field name="ModuleID" dataType="long" />
+				<Field name="ModuleCode" dataType="string" />
+				<Field name="ModuleName" dataType="string" />
+				<Field name="ActionID" label="序号" dataType="long" />
+				<Field name="ActionCode" label="编码" dataType="string" />
+				<Field name="ActionName" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false">
+			<Data type="statement">
+				select B.ModuleGroup 
+				from Sys_Module_Action A, Sys_Module B
+				<Dynamic prepend="where">
+					A.IsDiv='0' and A.ModuleID = B.ModuleID and
+					A.Valided='1' and A.NeedParam = '0' and A.SubAction = '0'					
+					group by B.ModuleGroup
+					order by B.ModuleGroup
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="ModuleGroup" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsModule" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false">
+			<Data type="statement">
+				select B.ModuleID, B.ModuleName from 
+				Sys_Module_Action A, Sys_Module B
+				<Dynamic prepend="where">
+					A.SubAction = '0'
+					<isNotEmpty property="ModuleGroup" joinSQL="true">
+						and B.ModuleGroup = '#ModuleGroup#'
+					</isNotEmpty>
+					and A.IsDiv='0' and A.ModuleID = B.ModuleID and
+					A.Valided='1' and A.NeedParam = '0' group by
+					B.ModuleID, B.ModuleName
+					order by B.ModuleName
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="序号" dataType="long" />
+				<Field name="ModuleName" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsAction" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false">
+			<Data type="statement">
+				select A.ActionID, A.ActionCode, A.ActionName, B.ModuleID, B.ModuleCode, B.ModuleName 
+				from Sys_Module_Action A, Sys_Module B
+				<Dynamic prepend="where">
+				    A.SubAction = '0'
+					<isNotEmpty property="ModuleID" joinSQL="true">
+						and A.ModuleID = #ModuleID#
+					</isNotEmpty>
+					and A.IsDiv='0' and A.ModuleID = B.ModuleID and
+					A.Valided='1' and A.NeedParam = '0' order by A.SNO
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="ActionID" label="序号" dataType="long" />
+				<Field name="ActionCode" label="编码" dataType="string" />
+				<Field name="ActionName" label="名称" dataType="string" />
+				<Field name="ModuleID" label="序号" dataType="long" />
+				<Field name="ModuleCode" label="编码" dataType="string" />
+				<Field name="ModuleName" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="TreeInfo" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					<![CDATA[
+					if (node.children().getLength()>0) return;
+					
+					if (node.getLevel() === 0)
+					{
+						var BMP = "%{applicationRoot}/exhibit/sysimgs/node3.gif";
+						
+						dsGroup.flushData();
+						while(!dsGroup.isLast())
+						{
+							var newNode = tree.addNode(node, dsGroup.getString("ModuleGroup"));
+							newNode.ModuleGroup = dsGroup.getString("ModuleGroup");
+							newNode.setIcon(BMP);
+				    	 	newNode.setExpandedIcon(BMP);
+				    	 	newNode.setHasChild(true);
+					     	dsGroup.moveNext();
+						}
+					}
+					else if (node.getLevel() === 1)
+					{
+						var ModuleGroup = node.ModuleGroup;
+
+						var BMP = "%{applicationRoot}/exhibit/sysimgs/node4.gif";
+						
+						dsModule.parameters().setValue("ModuleGroup", ModuleGroup, "string");
+						dsModule.flushData();
+						while(!dsModule.isLast())
+						{
+							var newNode = tree.addNode(node, dsModule.getString("ModuleName"));
+							newNode.ModuleID = dsModule.getString("ModuleID");
+							newNode.setIcon(BMP);
+				    	 	newNode.setExpandedIcon(BMP);
+				    	 	newNode.setHasChild(true);
+					     	dsModule.moveNext();
+						}
+					}
+					else if (node.getLevel() === 2)
+					{
+						var ModuleID = node.ModuleID;
+
+						var BMP = "%{applicationRoot}/exhibit/sysimgs/node2.gif";
+						dsAction.parameters().setValue("ModuleID", ModuleID, "long");
+						
+						dsAction.flushData();
+						while(!dsAction.isLast())
+						{
+							var newNode = tree.addNode(node, dsAction.getString("ActionName"));
+							newNode.ModuleName = dsAction.getString("ModuleName");
+							newNode.ModuleID = dsAction.getString("ModuleID");
+							newNode.ModuleCode = dsAction.getString("ModuleCode");
+							newNode.ActionName = dsAction.getString("ActionName");
+							newNode.ActionID = dsAction.getString("ActionID");
+							newNode.ActionCode = dsAction.getString("ActionCode");
+							newNode.setIcon(BMP);
+				    	 	newNode.setExpandedIcon(BMP);
+				    	 	newNode.setHasChild(false);
+					     	dsAction.moveNext();
+						}
+					}
+					
+					]]>
+				</Event>
+				<Event name="onClick">selectValue();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="onInit">
+			<![CDATA[
+				var paramNames="%{#parameters["paramName"]}".split(",");
+				var paramValues="%{#parameters["paramValue"]}".split(",");
+				if(paramNames.length==paramValues.length){
+					for(var i=0;i<paramNames.length;i++){
+					  dsGroup.parameters().setValue(paramNames[i].trim(), paramValues[i].trim());
+					  dsModule.parameters().setValue(paramNames[i].trim(), paramValues[i].trim());
+					}
+				}
+			]]>
+		</Event>
+		<Event name="functions">
+			<![CDATA[
+				//var g_SysType;
+				
+				function selectValue()
+				{
+					var temp; 
+					var node;
+					if (TreeInfo.getCurrentNode) 
+					{
+						node = TreeInfo.getCurrentNode();
+						if (node.getLevel() !== 3) return;
+						datasetDropDown.setValue("ModuleID", node.ModuleID);
+						datasetDropDown.setValue("ModuleCode", node.ModuleCode);
+						datasetDropDown.setValue("ModuleName", node.ModuleName);
+						datasetDropDown.setValue("ActionID", node.ActionID);
+						datasetDropDown.setValue("ActionCode", node.ActionCode);
+						datasetDropDown.setValue("ActionName", node.ActionName);
+						datasetDropDown.postRecord();
+						DropDown.closeFrame(datasetDropDown.getCurrent());
+					}
+				}
+			]]>
+		</Event>
+	</Events>
+</View>

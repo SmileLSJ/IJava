@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统配置信息查询
+	乔武军设计      
+	2008.04.25  
+	*****************************************
+-->
+<View showDialogOnLoadingData="false" context="SysConfigManager">
+	<Datasets>
+		<!-- 配置数据集 -->
+		<Dataset id="dsConfig" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysConfigManager">
+			<Data type="statement">
+				<![CDATA[
+				select CfgID, CfgGroup, CfgCode, CfgName, CfgValue, CfgSValue, CfgLabel, UpdateDate, UpdateBy
+				from Sys_Config
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					1=1 and MCID = %{#session.CheckIn.MCID}
+					<isNotEmpty prepend="and" property="CfgGroup"
+						open="%" close="%">
+						CfgGroup like #CfgGroup#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="CfgCode"
+						open="%" close="%">
+						CfgCode like #CfgCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="CfgName"
+						open="%" close="%">
+						CfgName like #CfgName#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<!-- 	isParameterPresent | isNotParameterPresent |
+					isEmpty | isNotEmpty | isNotNull | isNull | 
+					isNotEqual | isEqual | isGreaterThan | isGreaterEqual |
+					isLessThan | isLessEqual 
+				-->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						CfgGroup, CfgCode
+					</isNotParameterPresent>
+
+					<isNotNull prepend="," property="CfgGroup"
+						estimate="orderbys">
+						#CfgGroup#
+					</isNotNull>
+					<isNotNull prepend="," property="CfgCode"
+						estimate="orderbys">
+						#CfgCode#
+					</isNotNull>
+					<isNotNull prepend="," property="CfgName"
+						estimate="orderbys">
+						#CfgName#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="CfgID" label="序号" dataType="long" />
+				<Field name="CfgGroup" label="配置类型" dataType="string"
+					align="center" />
+				<Field name="CfgCode" label="配置编码" dataType="string" />
+				<Field name="CfgName" label="配置名称" dataType="string" />
+				<Field name="CfgValue" label="配置值" dataType="string"
+					align="center" />
+				<Field name="CfgSValue" label="次配置值" dataType="string"
+					align="center" />
+				<Field name="CfgLabel" label="说明" dataType="string" />
+				<Field name="UpdateDate" label="修改日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="UpdateBy" label="修改人员" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<!-- 表格 -->
+		<Control id="tbConfig" type="DataTable" dataset="dsConfig"
+			menu="menuSysDynamic" width="100%" readOnly="true" parityRow="3"
+			multiSelect="true" context="SysConfigManager">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="CfgGroup" field="CfgGroup" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="CfgCode" field="CfgCode" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="CfgName" field="CfgName" width="200"
+				headerClickable="true" dataOrder="true" />
+			<Column name="CfgValue" field="CfgValue" width="100" />
+			<Column name="CfgSValue" field="CfgSValue" width="100" />
+			<Column name="CfgLabel" field="CfgLabel" width="300" />
+			<Column name="UpdateDate" field="UpdateDate" width="80" align="center"/>
+			<Column name="UpdateBy" field="UpdateBy" width="80" align="center" />
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{
+					dsConfig.parameters().setValue("CfgGroup", objPar.CfgGroup,"string");
+					dsConfig.parameters().setValue("CfgCode", objPar.CfgCode,"string");
+					dsConfig.parameters().setValue("CfgName", objPar.CfgName,"string");
+					dsConfig.flushData();
+				}
+				
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					
+					var obj=new Object();
+					obj.Dataset=dsConfig;
+					obj.DBGrid=tbConfig;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsConfig.getContext(), obj);
+					
+					toolBar.Relating=relating;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				<!-- setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>配置信息查询</b> &nbsp;&nbsp;查看及维护系统配置相关信息</p>'); -->
+			]]>
+		</Event>
+	</Events>
+</View>
+

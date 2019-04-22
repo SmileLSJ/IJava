@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统收件信息查询参数页
+	乔武军设计      
+	2008.01.09  
+	*****************************************
+-->
+<View skin="default">
+	<Controls>
+		<Control id="DateDropObject" type="DateDropDown" />
+		<Control id="BDate" type="TextEditor" dropDown="DateDropObject"
+			width="47%" />
+		<Control id="EDate" type="TextEditor" dropDown="DateDropObject"
+			width="47%" />
+		<Control id="Title" type="TextEditor" width="98%" />
+		<Control id="Note" type="TextEditor" width="98%" />
+		<Control id="buttonSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+						parent.transfer({BDate:BDate.value,EDate:EDate.value,Title:Title.value,Note:Note.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions" />
+		<Event name="onLoad">
+			<![CDATA[
+				BDate.value=formatDate(new Date(), "yyyy-MM-01");
+			  	EDate.value=formatDate(new Date(), "yyyy-MM-dd");
+			]]>
+		</Event>
+	</Events>
+</View>
+

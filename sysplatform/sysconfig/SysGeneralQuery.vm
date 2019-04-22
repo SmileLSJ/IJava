@@ -1,0 +1,60 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>列表信息查询</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<script type="text/javascript" src="${applicationRoot}/exhibit/sysref/SysDynamicMenu.js"></script>
+</head>
+
+#fkview("config=${cfgFileName}")
+
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+<div class="searchModule">
+<div class="fr" style="display: inline-block">
+	<input name="" type="text" id="DicCode"
+		class="inputText mr5 search fl" style="width: 300px;"
+		placeholder="列表编码" title="列表编码" maxlength="100"
+		spellcheck="false"> <a href="javascript:;"
+		class="button fl mr5 search" onclick="reload()">搜索</a>
+	<div class="expertSearchArea fl">
+		<a href="javascript:;" class="button fr" id="btnadvance"
+			onclick="advance()">展开高级搜索</a>
+		<!-- 点击展开后增加lightBlueButton样式 -->
+		<div class="expertSearch">
+			<iframe id="queryPage" name="queryPage" src="sysplatform.do?fileName=/sysplatform/sysconfig/SysGeneralQueryParam.vm" frameborder="0" width="100%"
+				height="100%"></iframe>
+		</div>
+	</div>
+</div>
+<div class="fl" style="width: 50%">
+	#fktoolbar("id=toolbarSysDynamic")
+</div>
+</div>
+<div class="tables">
+	<table border="0" width="100%" id="table1" height="100%"
+		class="autoform">
+
+		<tr>
+		<td colspan="2" width="100%" height="50%">#fkdatatable("id=tableH")</td>
+	</tr>
+	<tr>
+		<td colspan="2" width="100%" height="50%">#fkdatatable("id=tableD")</td>
+	</tr>
+		<tr>
+			<td height="22" width="50%">#fkdatapilot("id=pilotD")</td>
+			 
+			<td height="22" width="50%" align="right">第&nbsp;<font
+				color="red"><label id="labelPageIndex"></label></font>&nbsp;页&nbsp;共&nbsp;<font
+				color="red"><label id="labelPageCount"></label></font>&nbsp;页，共&nbsp;<font
+				color="red"><label id="labelRecordCount"></label></font>&nbsp;条&nbsp;每页&nbsp;<font
+				color="red"><label id="labelPageSize"></label></font>&nbsp;条</td>
+			
+		</tr>
+	</table>
+	</div>
+	</body>
+#end
+
+</html>

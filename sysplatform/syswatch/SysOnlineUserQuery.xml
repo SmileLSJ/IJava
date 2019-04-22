@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统在线用户信息查询
+	乔武军设计      
+	2007.07.10  
+	*****************************************
+-->
+<View skin="default">
+	<Datasets>
+		<Dataset id="dsOnlineUser" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<!-- 系统默认60分钟超时，如果50分钟没有任何操作则将置疑警告 -->
+				<![CDATA[
+				select A.LogID, decode(sign(trunc((sysdate-C.LastOperTime)*24*60)-50), 1, '2', '1') as OnlineStatus, 
+				A.UserID, C.UserCode,C.UserName,A.OperTime, trunc((sysdate - C.LoginDate)*24*60) as OnlineTime,
+				A.OS,A.Browser,A.IP,A.IPSource,B.BranCode,B.BranName
+				from Sys_Log_Master A, Sys_Bran B, Sys_User C, (select max(LogID) as LogID, UserID 
+				                                           from Sys_Log_Master 
+				                                           where OperTime > sysdate-2 group by UserID) D
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<![CDATA[
+					C.IsOnline = '1' and trunc((sysdate-C.LastOperTime)*24*60) < 60 and
+					C.UserID = D.UserID and A.BranID = B.BranID and A.LogID = D.LogID
+					]]>
+					<isNotEmpty prepend="and" property="OnlineStatus">
+						decode(sign(trunc((sysdate-C.LastOperTime)*24*60)-50), 1, '2', '1') = #OnlineStatus#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						C.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranCode"
+						close="%">
+						B.BranCode like #BranCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranName"
+						open="%" close="%">
+						B.BranName like #BranName#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.OperTime desc
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="OnlineStatus"
+						estimate="orderbys">
+						#OnlineStatus#
+					</isNotNull>
+					<isNotNull prepend="," property="OnlineTime"
+						estimate="orderbys">
+						#OnlineTime#
+					</isNotNull>
+					<isNotNull prepend="," property="BranCode"
+						estimate="orderbys">
+						B.#BranCode#
+					</isNotNull>
+					<isNotNull prepend="," property="BranName"
+						estimate="orderbys">
+						B.#BranName#
+					</isNotNull>
+					<isNotNull prepend="," property="UserCode"
+						estimate="orderbys">
+						C.#UserCode#
+					</isNotNull>
+					<isNotNull prepend="," property="UserName"
+						estimate="orderbys">
+						C.#UserName#
+					</isNotNull>
+					<isNotNull prepend="," property="OperTime"
+						estimate="orderbys">
+						A.#OperTime#
+					</isNotNull>
+					<isNotNull prepend="," property="Browser"
+						estimate="orderbys">
+						A.#Browser#
+					</isNotNull>
+					<isNotNull prepend="," property="IP"
+						estimate="orderbys">
+						A.#IP#
+					</isNotNull>
+					<isNotNull prepend="," property="IPSource"
+						estimate="orderbys">
+						A.#IPSource#
+					</isNotNull>
+					<isNotNull prepend="," property="OS"
+						estimate="orderbys">
+						A.#OS#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="LogID" label="" dataType="string" />
+				<Field name="OnlineStatus" label="状态" dataType="string"
+					align="center" />
+				<Field name="UserID" label="ID" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="UserName" label="用户名称" dataType="string" />
+				<Field name="OperTime" label="登录时间" dataType="date"
+					align="center" format="yyyy-MM-dd HH:mm:ss" />
+				<Field name="OnlineTime" label="在线时间(分钟)" dataType="long" />	
+				<Field name="OS" label="操作系统" dataType="string" />
+				<Field name="Browser" label="浏览器" dataType="string" />
+				<Field name="IP" label="IP地址" dataType="string"
+					align="center" />
+				<Field name="IPSource" label="地区" dataType="string" />
+				<Field name="BranCode" label="机构编号" dataType="string"
+					align="center" />
+				<Field name="BranName" label="机构名称" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterMoveToPage">
+					dataset.setPageIndex(pageIndex);
+				</Event>
+				<Event name="afterFlushData">refreshLabels();</Event>
+			</Events>
+		</Dataset>
+	</Datasets>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Controls>
+		<Control id="pilotOnlineUser" type="DataPilot"
+			dataset="dsOnlineUser" buttonFirstPage="visible"
+			buttonLastPage="visible" buttonAppend="hidden" buttonDelete="hidden"
+			buttonCancel="hidden" buttonMovePrev="hidden" buttonMoveNext="hidden"
+			buttonPost="hidden" />
+		<Control id="tableOnlineUser" type="DataTable"
+			dataset="dsOnlineUser" width="100%" readOnly="true" parityRow="3"
+			menu="menuSysDynamic" context="">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="OnlineStatus" field="OnlineStatus" width="30"
+				headerClickable="true" dataOrder="true">
+				<Events>
+					<Event name="onRefresh">
+						<![CDATA[
+						changeImage(cell, record); return false;
+						]]>
+					</Event>
+				</Events>
+			</Column>
+			<Column name="UserCode" field="UserCode" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="UserName" field="UserName" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BranCode" field="BranCode" width="60"
+				headerClickable="true" dataOrder="true" />
+			<Column name="OperTime" field="OperTime" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="OnlineTime" field="OnlineTime" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="IP" field="IP" width="110"
+				headerClickable="true" dataOrder="true" />
+			<Column name="IPSource" field="IPSource" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="OS" field="OS" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Browser" field="Browser" width="200"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BranName" field="BranName" width="150"
+				headerClickable="true" dataOrder="true" />
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				//查询方法，用于接受参数以对象形式传来的查询参数
+				function strToDate(str,isLastTime)
+				{
+					var newDate;
+					var arys= new Array();
+					arys=str.split('-');
+					if (isLastTime == false)
+						newDate=new Date(arys[0],arys[1]-1,arys[2]); 
+					else
+					 	newDate=new Date(arys[0],arys[1]-1,arys[2],23,59,59); 
+					return newDate;
+				} 
+				
+				//查询方法，用于接受参数以对象形式传来的查询参数
+				function search(objPar)
+				{
+					var dataset=dsOnlineUser;
+					dataset.parameters().setValue("OnlineStatus", objPar.OnlineStatus, "string");
+				  	dataset.parameters().setValue("UserCode", objPar.UserCode,"string");
+					dataset.parameters().setValue("UserName", objPar.UserName,"string");
+					dataset.parameters().setValue("BranCode", objPar.BranCode,"string");
+					dataset.parameters().setValue("BranName", objPar.BranName,"string");
+					dataset.flushData();
+				}
+				
+				//修改Cell样式
+				function changeImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("OnlineStatus") == '1')
+						{
+							filename = 'status1.gif';
+							hint = "用户在线";
+						}
+						else
+						{
+							filename = 'status0.gif';
+							hint = "用户置疑(非正常关闭或长时间未操作，用户即将超时)";
+						}
+							
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+	  		    }		
+				
+				//刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsOnlineUser;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+				]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				refreshLabels();
+			]]>
+		</Event>
+	</Events>
+</View>
+

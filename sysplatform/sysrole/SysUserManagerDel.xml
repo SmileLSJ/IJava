@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!-- ***************************************** 系统用户信息删除 乔武军设计 2007.07.12 
+	Width=400 Height=300 ***************************************** -->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsList" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select UserID, UserCode, UserName as
+				DSC, '' as Result from Sys_User
+				<Dynamic prepend="where">
+					<![CDATA[
+					lower(UserCode) <> 'admin' 
+					]]>
+					<isNotEmpty prepend="and" property="UserID" joinSQL="true">
+						UserID in (#UserID#)
+					</isNotEmpty>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="序号" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="DSC" label="用户名称" dataType="string" />
+				<Field name="Result" label="结果" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsFind" type="SimpleQuery"
+			sql="select sum(CNT) as CNT from (select count(1) as CNT from Sys_Group_User where UserID = #UserID#)" />
+
+		<Dataset id="dsDelete" type="SimpleUpdate"
+			sql="delete from Sys_User where UserID = #UserID# and UserID not in (select UserID from Sys_Group_User where UserID = #UserID#);delete from Sys_User_Bran where UserID=#UserID#" />
+		<Dataset id="dsDeleteByMcid" type="SimpleUpdate"
+			sql="delete from Sys_User where mcid = %{#session.CheckIn.MCID} and UserID = #UserID# and UserID not in (select UserID from Sys_Group_User where UserID = #UserID#);delete from Sys_User_Bran where UserID=#UserID# and branid in (select branid from sys_bran where mcid= %{#session.CheckIn.MCID})" />
+	</Datasets>
+	<Controls>
+		<Control id="tbList" type="DataTable" dataset="dsList" width="100%"
+			readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="UserCode" field="UserCode" width="80" />
+			<Column name="DSC" field="DSC" width="150" />
+			<Column name="Result" field="Result" width="130" />
+		</Control>
+
+		<Control id="btnOK" type="Button" value="执行" width="75">
+			<Events>
+				<Event name="onClick">Exec();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var ActionCode = callObjectInfo.ActionCode;
+				var ActionName = callObjectInfo.ActionName;
+				
+				//执行
+				function Exec()
+				{
+					if (dsList.getVisibleCount()<=0)
+						return;
+					btnOK.setEnabled(false);
+					
+					var sql="";
+					var rd = dsList.getFirstRecord();
+					while(rd)
+					{
+						dsFind.parameters().setValue("UserID", rd.getValue("UserID"), "int");
+						dsFind.flushData();
+						if (parseInt(dsFind.getValue("CNT"),10)<=0)
+						{
+							//根据mcid判断商户类型
+							var mcid = %{#session.CheckIn.MCID};
+							if( mcid != '0'){
+								//普通商户
+								dsDeleteByMcid.parameters().setValue("UserID", rd.getValue("UserID"), "int");
+								if (dsDeleteByMcid.saveDB())
+								{
+									rd.setValue("Result","执行成功");
+									dsList.postRecord();
+									window.returnValue = true;
+									FloatSubWindowClose(true);
+								}
+								else
+								{
+									rd.setValue("Result","执行失败");
+									dsList.postRecord();
+								}
+							}else{
+								//超级管理员
+								dsDelete.parameters().setValue("UserID", rd.getValue("UserID"), "int");
+								if (dsDelete.saveDB())
+								{
+									rd.setValue("Result","执行成功");
+									dsList.postRecord();
+									window.returnValue = true;
+									FloatSubWindowClose(true);
+								}
+								else
+								{
+									rd.setValue("Result","执行失败");
+									dsList.postRecord();
+								}
+							}
+						}
+						else
+						{
+							rd.setValue("Result","此用户已经存在关联数据，拒绝删除！");
+							dsList.postRecord();
+						}
+						rd = rd.getNextRecord();
+					}
+				}
+				
+				//获取传递过来的多行数据
+				function getMultiParams()
+				{
+					result = "";
+					var records = callObjectInfo.Dataset.getSelectRecords();
+					//多条
+					if (records.size()>0)
+					{
+						var itr = records.iterator();
+						while(itr.hasNext())
+						{
+							var record=itr.next();
+							result += record.getValue("UserID")+",";
+						}
+						//删除最后的逗号
+						result = result.substr(0,result.length - 1);
+					}
+					//单条
+					else
+					{
+						result = callObjectInfo.Dataset.getValue("UserID");
+					}
+					
+					return result;
+				}
+				
+				//初始化数据
+				function LoadData()
+				{
+					var params = getMultiParams();
+					dsList.parameters().setValue("UserID", params);
+					dsList.flushData();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			LoadData();
+		</Event>
+	</Events>
+</View>
+

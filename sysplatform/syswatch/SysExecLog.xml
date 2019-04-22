@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false" context="ExecLog">
+	<Datasets>
+		<Dataset id="dsMain" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="true" context="ExecLog">
+			<Data type="statement">
+				<![CDATA[
+					SELECT PROCID,SEQID,LOGKD,LOGTP,LOGCD,
+						   LOGDSC,LOGLOC,LOGSTDT,LOGEDDT 
+					FROM SYS_EXECLOG
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					LOGSTDT BETWEEN #STDT# AND #EDDT#
+					<isNotEmpty property="LOGKD" joinSQL="true">
+						AND LOGKD = #LOGKD#
+					</isNotEmpty>
+					<isNotEmpty property="LOGTP" joinSQL="true">
+						AND LOGTP = #LOGTP#
+					</isNotEmpty>
+					<isNotEmpty property="LOGCD" joinSQL="true">
+						AND LOGCD LIKE
+						'%#LOGCD#%'
+					</isNotEmpty>
+				</Dynamic>
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						LOGSTDT desc, LOGEDDT desc
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="LOGKD" estimate="orderbys">
+						#LOGKD#
+					</isNotNull>
+					<isNotNull prepend="," property="LOGTP" estimate="orderbys">
+						#LOGTP#
+					</isNotNull>
+					<isNotNull prepend="," property="LOGCD" estimate="orderbys">
+						#LOGCD#
+					</isNotNull>
+					<isNotNull prepend="," property="LOGSTDT" estimate="orderbys">
+						#LOGSTDT#
+					</isNotNull>
+					<isNotNull prepend="," property="LOGEDDT" estimate="orderbys">
+						#LOGEDDT#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="PROCID" label="" dataType="string" />
+				<Field name="SEQID" label="序号" dataType="long" />
+				<Field name="LOGKD" label="日志分类" dataType="string" dropDown="ddLOGKD" />
+				<Field name="LOGTP" label="日志类型" dataType="string" dropDown="ddLOGTP" />
+				<Field name="LOGCD" label="日志名称" dataType="string" />
+				<Field name="LOGDSC" label="日志说明" dataType="string" />
+				<Field name="LOGLOC" label="执行结果" dataType="string" />
+				<Field name="LOGSTDT" label="开始时间" dataType="datetime" />
+				<Field name="LOGEDDT" label="结束时间" dataType="datetime" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">refreshLabels();</Event>
+				<Event name="afterScroll">refreshLabels();</Event>
+			</Events>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddLOGKD" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="全部" value="-1" />
+			<DropDownItem label="存储过程" value="1" />
+			<DropDownItem label="计划任务" value="2" />
+		</Control>
+
+		<Control id="ddLOGTP" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="全部" value="-1" />
+			<DropDownItem label="信息" value="1" />
+			<DropDownItem label="警告" value="2" />
+			<DropDownItem label="错误" value="3" />
+		</Control>
+
+		<Control id="tbMain" type="DataTable" dataset="dsMain" width="100%"
+			readOnly="true" parityRow="3" context="ExecLog" menu="menuSysDynamic"
+			multiSelect="false">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Flag" label="标志" width="30" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return showStatusImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="LOGKD" field="LOGKD" width="80" headerClickable="true"
+				dataOrder="true" align="center" />
+			<Column name="LOGTP" field="LOGTP" width="80" headerClickable="true"
+				dataOrder="true" align="center" />
+			<Column name="LOGCD" field="LOGCD" width="150"
+				headerClickable="true" dataOrder="true" align="left" />
+			<Column name="LOGSTDT" field="LOGSTDT" width="135" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="LOGEDDT" field="LOGEDDT" width="135" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="LOGDSC" field="LOGDSC" width="300" align="left" />
+			<Column name="LOGLOC" field="LOGLOC" width="150" align="left" />
+		</Control>
+
+		<Control id="dpPublic" type="DataPilot" buttonFirstPage="visible"
+			buttonLastPage="visible" buttonAppend="hidden" buttonDelete="hidden"
+			buttonCancel="hidden" buttonMovePrev="hidden" buttonMoveNext="hidden"
+			buttonPost="hidden" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{		 
+				   	var dataset = dsMain;				 
+					dataset.parameters().clear();
+					
+		 			if (parseInt(objPar.LOGKD) > 0)
+		 				dataset.parameters().setValue("LOGKD", objPar.LOGKD, "string");
+					
+		 			if (parseInt(objPar.LOGTP) > 0)	
+		 				dataset.parameters().setValue("LOGTP", objPar.LOGTP, "string");
+		 				
+		 			if (objPar.LOGCD.length > 0)	
+		 				dataset.parameters().setValue("LOGCD", objPar.LOGCD, "string");
+		 				
+		 			dataset.parameters().setValue("STDT", strToDate(objPar.STDT,false), "datetime");
+					dataset.parameters().setValue("EDDT", strToDate(objPar.EDDT,true), "datetime");
+		 			
+				  	dataset.flushData();  	  
+				}
+				
+				function strToDate(str,isLastTime) {
+					var newDate;
+					var arys= new Array();
+					arys=str.split('-');
+					if (isLastTime == false)
+						newDate=new Date(arys[0],arys[1]-1,arys[2]); 
+					else
+					 	newDate=new Date(arys[0],arys[1]-1,arys[2],23,59,59); 
+					return newDate;
+				} 
+				
+				function showStatusImage(cell, record) 
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null) {
+						if (record.getValue("LOGTP") == "1") {
+							filename = 'statusex4.png';
+							hint = "信息";
+						} else if (record.getValue("LOGTP") == "2") {
+							filename = 'statusex1.png';
+							hint = "警告";
+						} else if (record.getValue("LOGTP") == "3") {
+							filename = 'statusex2.png';
+							hint = "错误";
+						} 
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+				 }
+  
+	  		    function initToolbar(toolBar){
+					var relating=new HashList();
+					var obj=new Object();
+					obj.Dataset=dsMain;
+					obj.DBGrid=tbMain;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsMain.getContext(), obj);
+					toolBar.Relating=relating;
+				}
+				
+				 //刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsMain;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft" align="left">&nbsp;&nbsp;系统调度日志查询');
+				dpPublic.setDataset(dsMain);	
+				refreshLabels();		
+			]]>
+		</Event>
+	</Events>
+</View>
+

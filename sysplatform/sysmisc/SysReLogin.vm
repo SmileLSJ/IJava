@@ -1,0 +1,97 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>切换用户</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+	<table border="0" width="100%" id="table1" height="100%"
+		class="autoform">
+		<tr>
+			<td height="22">
+			<table border="0" width="100%" height="100%" class="titleHint">
+				<tr>
+					<td>
+					<p class="titleHintLeft"><b>切换用户</b> &nbsp;&nbsp;切换登录用户</p>
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+
+		<tr>
+			<td height="100%">
+			<table border="0" height="100%" class="autoform"
+				style="border:1px #83B6DC solid">
+				<tr>
+					<td height="2" width="70"></td>
+					<td width="40"></td>
+					<td></td>
+					<td width="0" />
+				</tr>
+				<tr>
+					<td rowspan="6" align="center"><img src="${applicationRoot}/exhibit/sysimgs/relogin.gif" width="49"
+						height="50" border="0"></td>
+					<td height="13" align="right"></td>
+					<td></td>
+					<td />
+				</tr>
+				<tr>
+					<td height="5" align="right"></td>
+					<td></td>
+					<td />
+				</tr>
+				<tr style="display: none">
+					<td height="27" align="right">商户号</td>
+					<td>#fktexteditor("id=MCCode")</td>
+					<td />
+				</tr>
+				<tr>
+					<td height="27" align="right">用户名</td>
+					<td>#fktexteditor("id=UserCode")</td>
+					<td />
+				</tr>
+				<tr>
+					<td height="27" align="right">机   构</td>
+					<td>#fktexteditor("id=BranCode")</td>
+					<td />
+				</tr>
+				<tr>
+					<td height="27" align="right">密码</td>
+					<td>#fktexteditor("id=PassWord")</td>
+					<td />
+				</tr>
+				<tr>
+					<td height="4" align="right"></td>
+					<td></td>
+					<td />
+				</tr>
+
+				<tr height="100%">
+					<td />
+				</tr>
+			</table>
+		</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+		<tr>
+			<td height="25" align="right">
+			#fkbutton("id=btnOK") &nbsp; #fkbutton("id=btnClose")</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+	</table>
+
+	</body>
+#end
+
+</html>

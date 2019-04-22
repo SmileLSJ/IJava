@@ -1,0 +1,65 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>参数选择</title>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+<!--
+	<table border="0" width="100%" class="autoform" cellspacing="0"
+		cellpadding="0" height="100%">
+		<tr>
+			<td height="100%"></td>
+		</tr>
+		
+		<tr>
+			<td>
+			<fieldset class="autoform_groupbevel" style="width:100%;height:20;">
+			<legend class="autoform_grouptitle">机构条件</legend>
+			<table width="100%" height="100%" style="TABLE-LAYOUT:fixed">
+				<tr>
+					<td>
+					机构编码<br>
+					#fktexteditor("id=FBCode")<br>
+					机构名称<br>
+					#fktexteditor("id=FBName")
+					</td>
+				</tr>
+			</table>
+			</fieldset>
+			</td>
+		</tr>
+		<tr>
+			<td height="25">
+			<table width="100%" cellspacing="0" cellpadding="3" height="100%"
+				style="TABLE-LAYOUT:fixed">
+				<tr>
+					<td align="right">#fkbutton("id=buttonSearch")</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+-->
+	<div class="searchCondition">
+		<div class="module">
+			<h2>机构条件:</h2>
+			<div>
+				<p>机构编码</p>
+				<div>#fktexteditor("id=FBCode")</div>
+			</div>
+			<div>
+				<p>机构名称</p>
+				<div>#fktexteditor("id=FBName")</div>
+			</div>
+		</div>
+	</div>
+	<div class="searchButton">
+		<div class="refresh" onclick="window.location.reload();">刷新</div><div class="search" onclick="paramSearch();">查询</div>
+	</div>
+
+	</body>
+#end
+
+</html>

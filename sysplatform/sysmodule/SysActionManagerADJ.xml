@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsList" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select BMP, ModuleID, ActionID, ActionCode,	ActionName 
+				from Sys_Module_Action
+				<Dynamic prepend="where">
+					1=1
+					<isNotEmpty prepend="and" property="ModuleID"
+						joinSQL="true">
+						ModuleID = #ModuleID#
+					</isNotEmpty>
+				</Dynamic>
+				order by SNO
+			</Data>
+			<Fields>
+				<Field name="BMP" label="图释" dataType="string" />
+				<Field name="ModuleID" label="模块序号" dataType="long" />
+				<Field name="ActionID" label="动作序号" dataType="long" />
+				<Field name="ActionCode" label="动作编码" dataType="string" />
+				<Field name="ActionName" label="动作名称" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterScroll">
+					btnUp.setEnabled(!checkFirst());
+				    btnDown.setEnabled(!checkLast());
+				</Event>
+			</Events>
+		</Dataset>
+		<Dataset id="dsUpdate" type="SimpleUpdate"
+			sql="update Sys_Module_Action set SNO= #SNO# 
+			    where ActionID = #ActionID# and ModuleID = #ModuleID#"/>;
+	</Datasets>
+	<Controls>
+		<Control id="tbList" type="DataTable" dataset="dsList"
+			width="100%" readOnly="true" parityRow="3">
+			
+			<Column name="BMP" field="BMP" width="35" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="ActionCode" field="ActionCode" width="100" />
+			<Column name="ActionName" field="ActionName" width="180" />
+		</Control>
+		
+		<Control id="btnUp" type="Button" value="" width="20"
+			toolTip="向上移动" decorate="%{applicationRoot}/exhibit/sysimgs/up.gif">
+			<Events>
+				<Event name="onClick">moveUp();</Event>
+			</Events>
+		</Control>
+		<Control id="btnDown" type="Button" value="" width="20"
+			toolTip="向下移动" decorate="%{applicationRoot}/exhibit/sysimgs/down.gif">
+			<Events>
+				<Event name="onClick">moveDown();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnOK" type="Button" value="保存" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif">
+			<Events>
+				<Event name="onClick">Exec();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var paramsModuleID = "";
+				
+				function Exec()
+				{
+					if (dsList.getVisibleCount()<=0)
+						return;
+					btnOK.setEnabled(false);
+					
+					var sql="";
+					var rd = dsList.getFirstRecord();
+					var i = 1;
+					while(rd)
+					{
+						dsUpdate.parameters().setValue("ModuleID", rd.getValue("ModuleID"), "int");
+						dsUpdate.parameters().setValue("ActionID", rd.getValue("ActionID"), "int");
+						dsUpdate.parameters().setValue("SNO", i, "int");
+						dsUpdate.saveDB();
+						i++;	
+						rd = rd.getNextRecord();					
+					}		
+										
+					smoke.alert("保存成功！", function(e){
+						window.returnValue = true;
+						FloatSubWindowClose();
+					});
+				}
+				
+				function changeImage(cell, record)
+				{ 
+					var filename = "";
+					if (record!=null)
+					{
+						filename = record.getValue("BMP");
+						if ((filename) && (filename.length > 0)) 
+						{
+							filename = __CONTEXT_PATH + '/' + filename;
+							cell.innerHTML = '<img src="'+filename+'" width="16" height="16" border="0">';						
+						}
+						else
+							cell.innerHTML = "";
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    function moveUp()
+	  		    {
+	  		    	if (dsList.getVisibleCount() <= 1)
+	  		    		return;
+	  		    	var isLast = checkLast();
+	  		    	var moduleID = dsList.getValue("ModuleID");
+	  		    	var actionID = dsList.getValue("ActionID");
+	  		    	var actionCode = dsList.getValue("ActionCode");
+	  		    	var actionName = dsList.getValue("ActionName");
+	  		    	var bmp = dsList.getValue("BMP");
+	  		    	
+	  		    	dsList.deleteRecord();
+	  		    	if (!isLast)
+	  		    	{
+	  		    		dsList.movePrev();
+	  		    	}
+	  		    	dsList.insertRecord("before");
+	  		    	dsList.setValue("ModuleID", moduleID);
+	  		    	dsList.setValue("ActionID", actionID);
+	  		    	dsList.setValue("ActionCode", actionCode);
+	  		    	dsList.setValue("ActionName", actionName);
+	  		    	dsList.setValue("BMP", bmp);
+	  		    	dsList.postRecord();
+	  		    	
+	  		    	btnOK.setEnabled(true);
+	  		    }
+	  		    
+	  		    function moveDown()
+	  		    {
+	  		    	if (dsList.getVisibleCount() <= 1)
+	  		    		return;
+	  		    	
+	  		    	var moduleID = dsList.getValue("ModuleID");
+	  		    	var actionID = dsList.getValue("ActionID");
+	  		    	var actionCode = dsList.getValue("ActionCode");
+	  		    	var actionName = dsList.getValue("ActionName");
+	  		    	var bmp = dsList.getValue("BMP");
+	  		    	
+	  		    	dsList.deleteRecord();
+	  		    	dsList.insertRecord("after");
+	  		    	dsList.setValue("ModuleID", moduleID);
+	  		    	dsList.setValue("ActionID", actionID);
+	  		    	dsList.setValue("ActionCode", actionCode);
+	  		    	dsList.setValue("ActionName", actionName);
+	  		    	dsList.setValue("BMP", bmp);
+	  		    	dsList.postRecord();
+	  		    	
+	  		    	btnOK.setEnabled(true);
+	  		    }
+	  		    
+	  		    function checkFirst()
+	  		    {
+	  		    	if (dsList.getVisibleCount() <= 1)
+	  		    		return true;
+	  		    	var rd = dsList.getFirstRecord();
+	  		    	if ((rd) && (rd.getValue("ActionID") == dsList.getValue("ActionID")))
+	  		    		return true;
+	  		    	else
+	  		    		return false;
+	  		    }
+	  		    
+	  		    function checkLast()
+	  		    {
+	  		    	if (dsList.getVisibleCount() <= 1)
+	  		    		return true;
+	  		    	var rd = dsList.getFirstRecord();
+	  		    	var ActionID;
+	  		    	while (rd)
+	  		    	{
+	  		    		ActionID = rd.getValue("ActionID");
+	  		    		rd = rd.getNextRecord();	
+	  		    		if ((!rd) && (ActionID == dsList.getValue("ActionID")))
+	  		    			return true;
+	  		    	}
+					return false;	  		    	
+	  		    }
+	  		    
+				//初始化数据
+				function LoadData()
+				{
+					btnOK.disabled = true;
+					dsList.parameters().setValue("ModuleID", callObjectInfo.Dataset.getValue("ModuleID"));
+					
+					dsList.flushData();
+					dsList.moveFirst();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			LoadData(); 
+		</Event>
+	</Events>
+</View>
+

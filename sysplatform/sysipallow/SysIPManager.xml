@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统IP信息管理
+	乔武军设计      
+	2008.07.12  
+	Width=400 Height=300
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsMain" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select SNO, BranID as ID, IP, DSC, AllowType from Sys_Bran_IPAllow
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="SNO"
+						joinSQL="true">
+						SNO = #SNO#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ID"
+						joinSQL="true">
+						BranID = #ID#
+					</isNotEmpty>
+					<isEmpty prepend="and" property="IsBran"
+						joinSQL="true">
+						1=0
+					</isEmpty>
+				</Dynamic>
+				union all
+				select SNO,  GroupID as ID, IP, DSC, AllowType from Sys_Group_IPAllow
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="SNO"
+						joinSQL="true">
+						SNO = #SNO#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ID"
+						joinSQL="true">
+						GroupID = #ID#
+					</isNotEmpty>
+					<isEmpty prepend="and" property="IsGroup"
+						joinSQL="true">
+						1=0
+					</isEmpty>
+				</Dynamic>
+				union all
+				select SNO,  UserID as ID, IP, DSC, AllowType from Sys_User_IPAllow
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="SNO"
+						joinSQL="true">
+						SNO = #SNO#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ID"
+						joinSQL="true">
+						UserID = #ID#
+					</isNotEmpty>
+					<isEmpty prepend="and" property="IsUser"
+						joinSQL="true">
+						1=0
+					</isEmpty>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="SNO" label="序号" dataType="long" />
+				<Field name="ID" label="ID" dataType="long" />
+				<Field name="IP" label="IP地址" dataType="string" />
+				<Field name="DSC" label="备注" dataType="string" />
+				<Field name="AllowType" label="类型" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	
+	<Controls>
+		<Control id="edt_IP" type="TextEditor" width="145" dataset="dsMain" field="IP"></Control>
+		<Control id="edt_DSC" type="TextEditor" width="250"
+			editorType="textarea" height="60" dataset="dsMain" field="DSC"/>
+		<Control id="cb_AllowType" type="CheckBox" width="50" dataset="dsMain" field="AllowType"/>
+
+		<Control id="btnSave" type="Button" value="保存" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				var mainObject = callObjectInfo.MainObject;
+				var mid = 0;
+				var mtype = 0;
+				
+				checkParamExist();
+				
+				//检查参数是否存在
+				function checkParamExist()
+				{
+					var foundParentData = false;
+					if (actionDataset.getMasterLink() && actionDataset.getMasterLink().getMasterDataset())
+					{
+						var masterDataset = actionDataset.getMasterLink().getMasterDataset();
+						
+						if (masterDataset.getVisibleCount()>0)
+						{
+							if (masterDataset.getField("UserID") || masterDataset.getField("GroupID") || masterDataset.getField("BranID"))
+							{
+								foundParentData = true;
+							}
+						}
+					}
+					
+					if (!foundParentData)
+					{
+						//smoke.alert('无法获取IP地址限制对应的项目！');
+						FloatSubWindowClose();
+						return;
+					}	
+				}
+				
+				//初始化
+				function iniData()
+				{
+					edt_IP.maxLength = 15;
+					edt_DSC.maxLength = 200;
+					var masterDataset = actionDataset.getMasterLink().getMasterDataset();
+					if (masterDataset.getField("UserID"))
+					{
+						mid = masterDataset.getValue("UserID");
+						mtype = 3;
+						lbl_Status.innerText = '『人员IP控制' + actionName +'』';
+					}
+					else if (masterDataset.getField("GroupID"))
+					{
+						mid = masterDataset.getValue("GroupID");
+						mtype = 2;
+						lbl_Status.innerText = '『角色IP控制' + actionName +'』';
+					} 
+					else if (masterDataset.getField("BranID"))
+					{
+						mid = masterDataset.getValue("BranID");
+						mtype = 1;
+						lbl_Status.innerText = '『机构IP控制' + actionName +'』';
+					} 
+					
+					if (actionCode == 'AC_NEW')
+					{
+						//btnSave.value = '增加';
+						newData();
+					}
+					else
+					{
+						editData();
+					}
+				}
+				
+				//编辑
+				function editData()
+				{
+					if (mtype == 1)
+						dsMain.parameters().setValue("IsBran", "1")
+					else if (mtype == 2)
+						dsMain.parameters().setValue("IsGroup", "1")
+					else
+						dsMain.parameters().setValue("IsUser", "1")
+					dsMain.parameters().setValue("ID", mid);
+					dsMain.parameters().setValue("SNO", actionDataset.getValue("SNO"));
+					dsMain.flushData();
+					edt_IP.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsMain.clearData();
+					dsMain.appendRecord();
+					dsMain.setValue("AllowType", '0');
+					dsMain.setValue("SNO", 0);
+ 			  		edt_IP.focus();
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(edt_IP.value.length == 0){
+						smoke.alert("请输入IP地址！");
+						edt_IP.focus();
+						return false;
+					}
+					
+					var re = /\*/g;
+					if (!isValidIP(edt_IP.value.replace(re,"1")))
+					{
+						smoke.alert("IP地址不合法！");
+						edt_IP.focus();
+						return false;
+					}
+					return true;
+				}
+				
+				function isValidIP(strIP) { 
+					var re=/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/g ;
+					if(re.test(strIP)) 
+					{ 
+						if( RegExp.$1 <256 && RegExp.$2<256 && RegExp.$3<256 && RegExp.$4<256) return true; 
+					} 
+					return false; 
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					
+					var SQL = preSQL();
+					
+					if (mainObject.callSQLUpdate(SQL))
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							if (actionCode == 'AC_NEW')
+								newData();
+							else
+								FloatSubWindowClose(true);
+						});
+					}
+				}
+					
+				//准备SQL			
+				function preSQL()
+				{
+					var Sql;
+					var v_I;
+					var v_IP = (dsMain.getValue("IP")) ? dsMain.getValue("IP") : '';
+					var v_DSC = (dsMain.getValue("DSC")) ? dsMain.getValue("DSC") : '';
+					var v_AllowType = (dsMain.getValue("AllowType")) ? dsMain.getValue("AllowType") : '0';
+					
+					if (actionCode == 'AC_NEW')
+					{
+						if (mtype == 1)
+							Sql = "insert into Sys_Bran_IPAllow(SNO, BranID, IP, DSC, AllowType) " +
+								"select nvl(max(SNO),0)+1," + mid + ",'" + v_IP + "','" + v_DSC + "','" + v_AllowType +
+								"' from Sys_Bran_IPAllow where BranID = " + mid;
+						else if (mtype == 2)
+							Sql = "insert into Sys_Group_IPAllow(SNO, GroupID, IP, DSC, AllowType) " +
+								"select nvl(max(SNO),0)+1," + mid + ",'" + v_IP + "','" + v_DSC + "','" + v_AllowType +
+								"' from Sys_Group_IPAllow where GroupID = " + mid;
+						else
+							Sql = "insert into Sys_User_IPAllow(SNO, UserID, IP, DSC, AllowType) " +
+								"select nvl(max(SNO),0)+1," + mid + ",'" + v_IP + "','" + v_DSC + "','" + v_AllowType +
+								"' from Sys_User_IPAllow where UserID = " + mid;
+					}
+					else
+					{
+						if (mtype == 1)
+							Sql = "update Sys_Bran_IPAllow set IP = '" + v_IP +
+								"', DSC = '" + v_DSC +
+								"', AllowType = '" + v_AllowType +
+								"' where SNO = " + dsMain.getValue("SNO") + 
+								" and BranID = " + mid;
+						else if (mtype == 2)
+							Sql = "update Sys_Group_IPAllow set IP = '" + v_IP +
+								"', DSC = '" + v_DSC +
+								"', AllowType = '" + v_AllowType +
+								"' where SNO = " + dsMain.getValue("SNO") + 
+								" and GroupID = " + mid;
+						else
+							Sql = "update Sys_User_IPAllow set IP = '" + v_IP +
+								"', DSC = '" + v_DSC +
+								"', AllowType = '" + v_AllowType +
+								"' where SNO = " + dsMain.getValue("SNO") + 
+								" and UserID = " + mid;
+					}
+					return Sql;
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">
+			iniData();
+		</Event>
+	</Events>
+</View>
+

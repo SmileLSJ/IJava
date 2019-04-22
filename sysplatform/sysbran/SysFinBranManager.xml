@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsFB" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_FB">
+			<Data type="statement">
+			<![CDATA[
+				select A.FBID,A.FBCode,A.FBName,A.DSC,A.PFBID,A.FBLevel, A.LinkMan, A.Tel, A.Fax, 
+					A.MTel, A.PostCode, A.Address, A.Bank, A.BankCode, A.TaxNo, A.LegalPSN, 
+					A.UpdateBy, A.UpdateDate, A.Path, A.Country, A.Province, A.City, A.WebSite  
+				from Sys_FB A 
+				where A.FBID=#FBID#
+			]]>
+			</Data>
+			<Fields>
+				<Field name="FBID" label="" dataType="long" key="true" valueOnEmpty="max"/>
+				<Field name="FBCode" label="" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="FBName" label="" dataType="string">
+					<Validator type="Length" maxLength="40" />
+				</Field>
+				<Field name="DSC" label="" dataType="string">
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="PFBID" label="" dataType="long" defaultValue="0"/>
+				<Field name="FBLevel" label="" dataType="long" defaultValue="1"/>
+				<Field name="LinkMan" label="联系人" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="Tel" label="联系电话" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="Fax" label="联系传真" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="MTel" label="移动电话" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="PostCode" label="邮政编码" dataType="string">
+					<Validator type="Length" maxLength="6" />
+				</Field>
+				<Field name="Address" label="联系地址" dataType="string">
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="Bank" label="开户银行" dataType="string">
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="BankCode" label="银行账号" dataType="string">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="TaxNo" label="纳税编号" dataType="string">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="LegalPSN" label="法人" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				
+				<Field name="UpdateBy" label="" dataType="string" valueOnEmpty="username"/>
+				<Field name="UpdateDate" label="" dataType="datetime" valueOnEmpty="now"/>
+				<Field name="Path" label="" dataType="string" />
+				<Field name="Country" label="Country" dataType="string">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="Province" label="Province" dataType="string"
+					dropDown="ddProvince">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="City" label="City" dataType="string" dropDown="ddCity">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="WebSite" label="WebSite" dataType="string">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+
+			</Fields>
+			<Events>
+				<Event name="afterChange">ChangeModifyed(dataset,field);</Event>
+			</Events>
+		</Dataset>
+		
+		<Dataset id="dsProvince" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="true" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select a.DicSCode, a.DicSCode || '-' || a.DicValue as DicValue, a.DicDSC 
+				from Sys_Dic_Detail a, Sys_Dic_Master b
+				where a.DicID = b.DicID and b.DicCode = 'BasProvince'
+				order by DicSCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="DicSCode" label="编码" dataType="string" />
+				<Field name="DicValue" label="名称" dataType="string" />
+				<Field name="DicDSC" label="说明" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsCity" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select a.DicSCode, a.DicSCode || '-' || a.DicValue as DicValue, a.DicDSC 
+				from Sys_Dic_Detail a, Sys_Dic_Master b
+				]]>
+				<Dynamic prepend="where">
+					a.DicID = b.DicID and b.DicCode = 'BasCity'
+					<isNotEmpty prepend="and" property="DicCode" close="%">
+						a.DicSCode like #DicCode#
+					</isNotEmpty>
+				</Dynamic>
+				order by DicSCode
+			</Data>
+			<Fields>
+				<Field name="DicSCode" label="编码" dataType="string" />
+				<Field name="DicValue" label="名称" dataType="string" />
+				<Field name="DicDSC" label="说明" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		
+	</Datasets>
+	<Controls>
+		<Control id="tabset1" type="TabSet" width="100%" height="100%"
+			widthTabName="75" draggableItem="false">
+			<Tab name="tab1" label="基本资料" />
+			<Tab name="tab2" label="联系信息" />
+		</Control>
+		
+		<Control id="FBCode" type="TextEditor" width="100%" dataset="dsFB"
+			field="FBCode">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) FBName.focus();
+				</Event>
+			</Events>
+		</Control>
+		<Control id="FBName" type="TextEditor" width="100%" dataset="dsFB"
+			field="FBName" />
+		<Control id="DSC" type="TextEditor" width="100%" dataset="dsFB"
+			field="DSC" editorType="textarea" height="70" />
+		<Control id="LinkMan" type="TextEditor" width="100%" dataset="dsFB"
+			field="LinkMan" />
+		<Control id="Tel" type="TextEditor" width="100%" dataset="dsFB"
+			field="Tel" />
+		<Control id="Fax" type="TextEditor" width="100%" dataset="dsFB"
+			field="Fax" />
+		<Control id="MTel" type="TextEditor" width="100%" dataset="dsFB"
+			field="MTel" />
+		<Control id="PostCode" type="TextEditor" width="100%" dataset="dsFB"
+			field="PostCode" />
+		<Control id="Address" type="TextEditor" width="100%" dataset="dsFB"
+			field="Address" />
+		<Control id="Bank" type="TextEditor" width="100%" dataset="dsFB"
+			field="Bank" />
+		<Control id="BankCode" type="TextEditor" width="100%" dataset="dsFB"
+			field="BankCode" />
+		<Control id="TaxNo" type="TextEditor" width="100%" dataset="dsFB"
+			field="TaxNo" />
+		<Control id="LegalPSN" type="TextEditor" width="100%" dataset="dsFB"
+			field="LegalPSN" />
+		<Control id="StoreType" type="TextEditor" width="100%" dataset="dsFB"
+			field="StoreType" />
+		<Control id="WebSite" type="TextEditor" width="100%" dataset="dsFB"
+			field="WebSite" />
+		<Control id="Country" type="TextEditor" width="100%" dataset="dsFB"
+			field="Country" />
+		<Control id="Province" type="TextEditor" width="100%" dataset="dsFB"
+			field="Province" />
+		<Control id="City" type="TextEditor" width="100%" dataset="dsFB"
+			field="City" />
+		
+		<Control id="ddProvince" type="DatasetDropDown" dataset="dsProvince"
+			mapValue="true" fixed="true" height="100" cachable="true"
+			warmUpDelay="0" readFields="DicSCode" writeFields="Province"
+			visibleFields="DicValue" valueField="DicSCode" labelField="DicValue">
+		</Control>
+
+		<Control id="ddCity" type="DatasetDropDown" dataset="dsCity"
+			mapValue="true" fixed="true" height="100" cachable="true"
+			warmUpDelay="0" readFields="DicSCode" writeFields="City"
+			visibleFields="DicValue" valueField="DicSCode" labelField="DicValue">
+		</Control>
+
+		<Control id="btnSave" type="Button" value="保存">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭">
+			<Events>
+				<Event name="onClick">parent.andPageClose(window.frameElement.src);</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysbran.SysFinBranPub"/>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var lastProvince = "";
+				
+				//初始化
+				function iniData()
+				{
+//					lbl_Status.innerText = '『' + actionName +'』';
+					
+					if (actionCode == 'AC_EDIT')
+					{
+						editData();
+					}
+					else 
+					{
+						newData();
+					}
+				}
+			
+				function ChangeModifyed(dataset,field) 
+				{
+					if (dataset.getVisibleCount() > 0) 
+					{
+						switch (field.getName()) {
+							case "Province":
+								if (dataset.getValue("Province").length > 0) 
+								{		
+									if (lastProvince !== dataset.getValue("Province"))
+									{
+										dataset.setValue("City", null);
+										dsCity.parameters().setValue("DicCode", dataset.getValue("Province"), "string");
+										dsCity.flushData();
+										lastProvince = dataset.getValue("Province");
+									}
+								}
+								else
+								{
+									lastProvince = "";
+									dataset.setValue("City", null);
+									dsCity.parameters().setValue("DicCode", "-1", "string");
+									dsCity.flushData();
+								}
+								dataset.refreshControls();
+								break;
+						}
+						return;
+					}
+				}
+				
+				//编辑
+				function editData()
+				{
+					dsFB.parameters().setValue("FBID", actionDataset.getValue("FBID"), "long");
+					dsFB.flushData();
+					dsCity.parameters().setValue("DicCode", dsFB.getValue("Province"), "string");
+					dsCity.flushData();
+					dsFB.refreshControls();
+					lastProvince = dsFB.getValue("Province");
+					//tabset1.activeTabByName("tab1");
+					FBCode.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsFB.clearData();
+					dsFB.parameters().setValue("FBID", 0,"long");
+					dsFB.appendRecord();
+					
+					//tabset1.activeTabByName("tab1");
+ 			  		FBCode.focus();
+ 			  	}
+				
+				//检查数据
+				function checkData()
+				{
+					if(FBCode.value.length == 0){
+						smoke.alert("请输入机构编码！", function(e){
+					//		tabset1.activeTabByName("tab1");
+							FBCode.focus();
+						});
+						return false;
+					}
+					
+					if(FBName.value.length == 0){
+						smoke.alert("请输入机构名称！", function(e){
+							//tabset1.activeTabByName("tab1");
+							FBName.focus();
+						});
+						return false;
+					}
+					
+					return true;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+						
+					if (dsFB.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							if (actionCode == 'AC_EDIT')
+								parent.andPageClose(window.frameElement.src);
+							else
+								newData();
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("FBCode", FBCode.value, "string");
+				    	ds.parameters().setValue("FBID", dsFB.getValue('FBID'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("FBCode", FBCode.value, "string");
+				    }
+				    ds.flushData();	
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("编码已经存在，请修改！", function(e){
+							FBCode.focus();
+			    		});
+						return true;
+					}
+					return false;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View showDialogOnLoadingData="false">
+	
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				imgError.src=__CONTEXT_PATH+"/exhibit/sysimgs/Page404.jpg";
+			]]>
+		</Event>
+	</Events>
+</View>
+

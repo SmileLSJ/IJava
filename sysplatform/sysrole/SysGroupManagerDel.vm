@@ -1,0 +1,29 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>角色删除</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+		<div class="subwindowCondition">
+			<table border="0" width="100%" height="100%" class="autoform">
+				<tr align=center>
+					<td width="100%" height="100%">#fkdatatable("id=tbList")</td>
+				</tr>
+			</table>
+		</div>
+		<div class="subwindowButton">
+			<div class="btnOK">
+				#fkbutton("id=btnOK")
+			</div>
+			<div class="btnClose">
+				#fkbutton("id=btnClose")
+			</div>
+		</div>
+	</body>
+#end
+
+</html>

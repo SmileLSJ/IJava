@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Controls>
+		<Control id="cmdExec" type="RPCCommand" showLoadingTip="false"
+			action="/retrieve.do?className=session.init.InitManagerDAO&amp;ferry=set&amp;method=InitDB">
+		</Control>
+
+		<Control id="BranCode" type="TextEditor" width="180" />
+		<Control id="BranName" type="TextEditor" width="180">
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="74">
+			<Events>
+				<Event name="onClick">
+					this.opener = null; this.close();
+				</Event>
+			</Events>
+		</Control>
+		<Control id="btnExec" type="Button" value="执行" width="74"
+			decorate="%{applicationRoot}/exhibit/sysimgs/exec.gif">
+			<Events>
+				<Event name="onClick">return Exec();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function CheckForm()
+				{
+					if(BranCode.value.length == 0){
+						smoke.alert("请输入机构编码！");
+						BranCode.focus();
+						return false;
+					}
+					
+					if(BranName.value.length == 0){
+						smoke.alert("请输入机构名称！");
+						BranName.focus();
+						return false;
+					}
+										
+				   	return true;
+				}
+              
+                function Exec()
+                {
+                	smoke.alert("This function has disabled!");
+                	return false;
+                	
+                	if (!CheckForm())
+                	  return true;
+					cmdExec.parameters().setValue("BranName", BranName.value);
+					cmdExec.parameters().setValue("BranCode", BranCode.value);
+					BranCode.disabled = true;
+					BranName.disabled = true;
+					btnExec.disabled = true;
+					btnClose.disabled = true;
+					
+					//Succeed
+					var CallSucceed = cmdExec.execute();	
+					if (CallSucceed)
+					{
+						var Succeed = cmdExec.outParameters().getValue("Succeed");
+						if (Succeed == "1")
+						{
+							smoke.alert("系统初始化完毕！");
+							btnClose.disabled = false;
+							return true;
+						}
+						else
+						{
+							smoke.alert(cmdExec.outParameters().getValue("ErrMes"));
+							BranCode.disabled = false;
+							BranName.disabled = false;
+							btnExec.disabled = false;
+							btnClose.disabled = false;
+							return false;
+						}
+					}
+					else
+						return false;
+				}
+				
+				]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				window.status ='系统初始化';
+				BranCode.focus();
+			]]>
+		</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,48 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>参数选择</title>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+	<div class="searchCondition">
+		<div class="module">
+			<h2>用户选项:</h2>
+			<div>
+				<p>用户状态</p>
+				<div>#fktexteditor("id=UserStatus")</div>
+			</div>
+			<div>
+				<p>用户编码</p>
+				<div>#fktexteditor("id=UserCode")</div>
+			</div>
+			<div>
+				<p>用户名称</p>
+				<div>#fktexteditor("id=UserName")</div>
+			</div>
+			<div>
+				<p>用户工号</p>
+				<div>#fktexteditor("id=UserNo")</div>
+			</div>
+			<div>
+				<p>身份证</p>
+				<div>#fktexteditor("id=IDNo")</div>
+			</div>
+			<div>
+				<p>角色名称</p>
+				<div>#fktexteditor("id=RoleName")</div>
+			</div>
+			<div>
+				<div>#fkcheckbox("id=DisplaySysUser")只显示系统用户</div>
+			</div>
+		</div>
+	</div>
+	<div class="searchButton">
+		<div class="refresh" onclick="window.location.reload();">刷新</div><div class="search" onclick="paramSearch();">查询</div>
+	</div>
+	</body>
+#end
+
+</html>

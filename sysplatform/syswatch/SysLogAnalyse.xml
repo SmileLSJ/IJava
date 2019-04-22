@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default">
+	<Datasets>
+		<Dataset id="dsTimeChart" readOnly="false" autoLoadPage="true"
+			pageSize="0" clearDataForLoadPage="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="true">
+			<!-- SQL定义 -->
+			<Data type="statement">
+				select TimeSegment, count(1) as CNT from ( select
+				to_char(D.OperTime,'HH24') || ':00' || '~' || to_char(D.OperTime,'HH24') || ':59' as TimeSegment from
+				Sys_Log_Master A, Sys_Bran B, Sys_User C, Sys_Log_Detail D
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<isEmpty property="BDate">
+						1=0
+					</isEmpty>
+					<isNotEmpty property="BDate">
+						(A.OperTime between #BDate# and #EDate#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						C.UserCode like #UserCode#
+					</isNotEmpty>
+					and A.UserID = C.UserID and A.BranID = B.BranID and A.LogID = D.LogID
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						C.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranCode"
+						close="%">
+						B.BranCode like #BranCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranName"
+						open="%" close="%">
+						B.BranName like #BranName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ModuleName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ModuleName like #ModuleName#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ActionName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ActionName like #ActionName#)
+					</isNotEmpty>
+				</Dynamic>
+				) table1 group by TimeSegment order by TimeSegment
+			</Data>
+			<Fields>
+				<Field name="TimeSegment" label="时段" dataType="string" />
+				<Field name="CNT" label="访问次数" dataType="long" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsWeekChart" readOnly="false" autoLoadPage="true"
+			pageSize="0" clearDataForLoadPage="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<!-- SQL定义 -->
+			<Data type="statement">
+				select WeekSegment, count(1) as CNT 
+				from ( 
+					select	'周' || to_char(decode(to_number(to_char(D.OperTime,'d'))-1, 0, 7, to_number(to_char(D.OperTime,'d'))-1)) as WeekSegment 
+					from Sys_Log_Master A, Sys_Bran B, Sys_User C, Sys_Log_Detail D
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<isEmpty property="BDate">
+						1=0
+					</isEmpty>
+					<isNotEmpty property="BDate">
+						(A.OperTime between #BDate# and #EDate#)
+					</isNotEmpty>
+					 and A.UserID = C.UserID and A.BranID = B.BranID and A.LogID = D.LogID
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						C.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						C.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranCode"
+						close="%">
+						B.BranCode like #BranCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranName"
+						open="%" close="%">
+						B.BranName like #BranName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ModuleName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ModuleName like #ModuleName#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ActionName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ActionName like #ActionName#)
+					</isNotEmpty>
+				</Dynamic>
+				) table1 group by WeekSegment order by WeekSegment
+			</Data>
+			<Fields>
+				<Field name="WeekSegment" label="周次" dataType="string" />
+				<Field name="CNT" label="访问次数" dataType="long" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsDayChart" readOnly="false" autoLoadPage="true"
+			pageSize="0" clearDataForLoadPage="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<!-- SQL定义 -->
+			<Data type="statement">
+				select T1.DaySegment, T1.LoginCNT, T2.OperCNT
+				from (
+					select DaySegment, count(1) as LoginCNT 
+					from ( 
+						select	to_char(A.OperTime,'mm-dd') as DaySegment 
+						from Sys_Log_Master A, Sys_Bran B, Sys_User C
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<isEmpty property="BDate">
+						1=0
+					</isEmpty>
+					<isNotEmpty property="BDate">
+						(A.OperTime between #BDate# and #EDate#)
+					</isNotEmpty>
+					and A.UserID = C.UserID and A.BranID = B.BranID
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						C.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						C.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranCode"
+						close="%">
+						B.BranCode like #BranCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranName"
+						open="%" close="%">
+						B.BranName like #BranName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ModuleName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ModuleName like #ModuleName#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ActionName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ActionName like #ActionName#)
+					</isNotEmpty>
+				</Dynamic>
+						) table1 
+					group by DaySegment
+					) T1, 
+					(
+					select DaySegment, count(1) as OperCNT 
+					from ( 
+						select	to_char(A.OperTime,'mm-dd') as DaySegment 
+						from Sys_Log_Master A, Sys_Log_Detail D, Sys_Bran B, Sys_User C
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					
+					<isEmpty property="BDate">
+						1=0
+					</isEmpty>
+					<isNotEmpty property="BDate">
+						(A.OperTime between #BDate# and #EDate#)
+					</isNotEmpty>
+					and A.LogID = D.LogID and A.UserID = C.UserID and A.BranID = B.BranID
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						C.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						C.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranCode"
+						close="%">
+						B.BranCode like #BranCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="BranName"
+						open="%" close="%">
+						B.BranName like #BranName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ModuleName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ModuleName like #ModuleName#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ActionName"
+						open="%" close="%">
+						A.LogID in (select LogID from Sys_Log_Detail where
+						ActionName like #ActionName#)
+					</isNotEmpty>
+				</Dynamic>
+						) table1 
+					group by DaySegment
+					) T2
+				where T1.DaySegment = T2.DaySegment
+				order by T1.DaySegment
+			</Data>
+			<Fields>
+				<Field name="DaySegment" label="日期" dataType="string" />
+				<Field name="LoginCNT" label="登录次数" dataType="long" />
+				<Field name="OperCNT" label="操作次数" dataType="long" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+			var C1_W = 0;
+			var C1_H = 0;
+			var C2_W = 0;
+			var C2_H = 0;
+			var C3_W = 0;
+			var C3_H = 0;
+			
+			document.write("<script type='text/javascript' src='" + __CONTEXT_PATH + "/exhibit/sysref/SysChart.js'></sc"+"ript>");
+				
+			function strToDate(str,isLastTime)
+			{
+				var newDate;
+				var arys= new Array();
+				arys = str.split('-');
+				if (isLastTime == false)
+					newDate=new Date(arys[0],arys[1]-1,arys[2]); 
+				else
+				 	newDate=new Date(arys[0],arys[1]-1,arys[2],23,59,59); 
+				return newDate;
+			} 
+			
+			//查询方法，用于接受参数以对象形式传来的查询参数
+			function search(objPar)
+			{
+		  		var dataset = dsTimeChart;
+		  		
+				dataset.parameters().setValue("BDate", strToDate(objPar.BDate,false),"datetime");
+				dataset.parameters().setValue("EDate", strToDate(objPar.EDate,true),"datetime");
+			  	dataset.parameters().setValue("UserCode", objPar.UserCode,"string");
+				dataset.parameters().setValue("UserName", objPar.UserName,"string");
+				dataset.parameters().setValue("BranCode", objPar.BranCode,"string");
+				dataset.parameters().setValue("BranName", objPar.BranName,"string");
+				dataset.parameters().setValue("ActionName", objPar.ActionName,"string");
+				dataset.parameters().setValue("ModuleName", objPar.ModuleName,"string");
+				dataset.flushData();
+				new bar2DChart(C1, C1_W, C1_H, "时段访问图", dsTimeChart, "TimeSegment", "CNT");
+				
+				dataset = dsWeekChart;
+				dataset.parameters().setValue("BDate", strToDate(objPar.BDate,false),"datetime");
+				dataset.parameters().setValue("EDate", strToDate(objPar.EDate,true),"datetime");
+			  	dataset.parameters().setValue("UserCode", objPar.UserCode,"string");
+				dataset.parameters().setValue("UserName", objPar.UserName,"string");
+				dataset.parameters().setValue("BranCode", objPar.BranCode,"string");
+				dataset.parameters().setValue("BranName", objPar.BranName,"string");
+				dataset.parameters().setValue("ActionName", objPar.ActionName,"string");
+				dataset.parameters().setValue("ModuleName", objPar.ModuleName,"string");
+				dataset.flushData();
+				new pie2DChart(C2, C2_W, C2_H, "周访问占比图", dsWeekChart, "WeekSegment", "CNT");
+				
+				dataset = dsDayChart;
+				dataset.parameters().setValue("BDate", strToDate(objPar.BDate,false),"datetime");
+				dataset.parameters().setValue("EDate", strToDate(objPar.EDate,true),"datetime");
+			  	dataset.parameters().setValue("UserCode", objPar.UserCode,"string");
+				dataset.parameters().setValue("UserName", objPar.UserName,"string");
+				dataset.parameters().setValue("BranCode", objPar.BranCode,"string");
+				dataset.parameters().setValue("BranName", objPar.BranName,"string");
+				dataset.parameters().setValue("ActionName", objPar.ActionName,"string");
+				dataset.parameters().setValue("ModuleName", objPar.ModuleName,"string");
+				dataset.flushData();
+				//new msLineChart(C3, C3_W, C3_H, "访问次数图", dsDayChart, "DaySegment", ["LoginCNT","OperCNT"]);
+				new msCombiDY2DChart(C3, C3_W, C3_H, "用户访问图", dsDayChart, "DaySegment", ["OperCNT","LoginCNT"]);
+			}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				var objPar = new Object();
+				objPar.BDate = formatDate(new Date(), "yyyy-MM-01");
+			  	objPar.EDate = formatDate(new Date(), "yyyy-MM-dd");
+			  	objPar.UserCode = "";
+			  	objPar.UserName = "";
+			  	objPar.BranCode = "";
+			  	objPar.BranName = "";
+			  	objPar.ActionName = "";
+			  	objPar.ModuleName = "";
+			  	C1_W = C1.clientWidth-5;
+			  	C1_H = C1.clientHeight-5;
+			  	C2_W = C2.clientWidth-5;
+			  	C2_H = C2.clientHeight-5;
+			  	C3_W = C3.clientWidth-5;
+			  	C3_H = C3.clientHeight-5;
+			  	
+			  	search(objPar);
+			]]>
+		</Event>
+	</Events>
+</View>
+

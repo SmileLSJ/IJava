@@ -1,0 +1,59 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>发件箱</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<script type="text/javascript" src="${applicationRoot}/exhibit/sysref/SysDynamicMenu.js"></script>
+<script type="text/javascript" src="${applicationRoot}/exhibit/sysinfo/tqeditor/TQEditor.js"></script>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+
+	<table border="0" width="100%" id="table1" height="100%"
+		class="autoform">
+		<tr>
+			<td height="22" colspan="2">
+			<table border="0" width="100%" height="100%" class="titleHint">
+				<tr>
+					<td>
+					<p class="titleHintLeft"><b>已发送公告</b> &nbsp;&nbsp;查看已发送的公告相关信息</p>
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td height="100%" colspan="2">
+			<table border="0" width="100%" height="100%" class="titleHint">
+				<tr>
+					<td width="100%" rowspan="2">#fkdatatable("id=tbInfo")</td>
+					<td width="350" height="100%">#fkdatatable("id=tbUser")</td>
+				</tr>
+				<tr>
+					<td width="350"><textarea name="Note" id="Note" style="width:350px;height:200px;"></textarea></td>
+					<script type="text/javascript">
+						    var _tqEditor = new tqEditor('Note',{toolbar:[],hideToolBar:true,resize:false,readonly:true});
+					</script>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td height="22" width="50%">#fkdatapilot("id=pilotInfo")</td>
+			<td height="22" width="50%" align="right">第&nbsp;<font
+				color="red"><label id="labelPageIndex"></label></font>&nbsp;页&nbsp;共&nbsp;<font
+				color="red"><label id="labelPageCount"></label></font>&nbsp;页，共&nbsp;<font
+				color="red"><label id="labelRecordCount"></label></font>&nbsp;条&nbsp;每页&nbsp;<font
+				color="red"><label id="labelPageSize"></label></font>&nbsp;条</td>
+		</tr>
+	</table>
+
+	</body>
+#end
+
+</html>

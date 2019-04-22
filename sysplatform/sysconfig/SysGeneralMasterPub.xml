@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View>
+	<Datasets>
+		<Dataset id="dsQuery_CodeDupEdit" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Dic_Master where DicID &lt;&gt; #DicID# and DicCode=#DicCode#" />
+		<Dataset id="dsQuery_CodeDupNew" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Dic_Master where DicCode=#DicCode#" />
+
+		<Dataset id="dsFind" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Dic_Master where DicID = #DicID#" />
+
+		<Dataset id="dsDelete" type="SimpleUpdate"
+			sql="delete from Sys_Dic_Master where DicID = #DicID#;delete from Sys_Dic_Detail where DicID=#DicID#" />
+	</Datasets>
+</View>

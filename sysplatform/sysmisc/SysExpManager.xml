@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统导出管理
+	乔武军设计      
+	2007.07.22  
+	Width=350 Height=250
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="datasetParam" type="Custom" insertOnEmpty="true">
+			<Fields>
+				<Field name="FileName" label="" dataType="string"
+					defaultValue="" >
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="DataScope" label="" dataType="boolean"
+					defaultValue="false" dropDown="ddDataScope" />
+				<Field name="DataColScope" label="" dataType="boolean"
+					defaultValue="true" dropDown="ddDataColScope" />
+				<Field name="OpenType" label="" dataType="string"
+					defaultValue="download" dropDown="ddOpenType" readOnly="true"/>
+				<Field name="FileType" label="" dataType="string"
+					defaultValue="csv" dropDown="ddFileType" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddDataScope" type="ListDropDown" mapValue="true"
+			fixed="true" width="150">
+			<DropDownItem value="false" label="全部数据 " />
+			<DropDownItem value="true" label="当前页" />
+		</Control>
+		<Control id="ddDataColScope" type="ListDropDown" mapValue="true"
+			fixed="true" width="150">
+			<DropDownItem value="true" label="可视列&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;" />
+			<DropDownItem value="false" label="全部列" />
+		</Control>
+		<Control id="ddFileType" type="ListDropDown" mapValue="true"
+			fixed="true" width="150">
+			<DropDownItem value="csv" label="Excel格式" />
+			<DropDownItem value="txt" label="文本格式(Tab分割)" />
+		</Control>
+		<Control id="ddOpenType" type="ListDropDown" mapValue="true"
+			fixed="true" width="150">
+			<DropDownItem value="download" label="下载保存" />
+			<DropDownItem value="output" label="直接打开&amp;nbsp;" />
+		</Control>
+
+		<Control id="cmdExport" type="ExportCommand" />
+
+		<Control id="FileName" type="TextEditor" width="240"
+			dataset="datasetParam" field="FileName" />
+		<Control id="FileType" type="Radio" width="240"
+			dataset="datasetParam" field="FileType" />
+		<Control id="OpenType" type="Radio" width="240"
+			dataset="datasetParam" field="OpenType" />
+		<Control id="DataScope" type="Radio" width="240"
+			dataset="datasetParam" field="DataScope" />
+		<Control id="DataColScope" type="Radio" width="240"
+			dataset="datasetParam" field="DataColScope" />
+
+		<Control id="btnOK" type="Button" value="执行" width="75">
+			<Events>
+				<Event name="onClick">Exec();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var ActionCode = callObjectInfo.ActionCode;
+				var ActionName = callObjectInfo.ActionName;
+				var ActionDataset = callObjectInfo.Dataset;
+				var ActionDBGrid = callObjectInfo.DBGrid;
+				
+				//检查数据
+				function checkData()
+				{
+					if ((!ActionDataset) || (ActionDataset.getVisibleCount() <= 0))
+					{
+						smoke.alert("没有可导出的数据，不能执行！");
+						return false;
+					}
+					else if(FileName.value.length == 0)
+					{
+						smoke.alert("文件名称不能为空！");
+						FileName.focus();
+						return false;
+					}
+					else
+						return true;
+						
+				}
+				
+				//执行
+				function Exec()
+				{
+					if (!(checkData()))
+						return;
+					btnOK.setEnabled(false);
+					cmdExport.setDataset(ActionDataset);
+					if (datasetParam.getValue("DataColScope"))
+						cmdExport.setTemplate(ActionDBGrid);
+					
+					if (datasetParam.getValue("FileType") == 'csv')
+						cmdExport.setFileName(datasetParam.getValue("FileName") + ".xls");
+					else
+						cmdExport.setFileName(datasetParam.getValue("FileName") + ".txt");
+						
+					cmdExport.setExportMode(datasetParam.getValue("OpenType"));
+					cmdExport.setExportType(datasetParam.getValue("FileType"));
+					cmdExport.setOnlyCurrentPage(datasetParam.getValue("DataScope"));
+					cmdExport.execute();
+				
+					FloatSubWindowClose();
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				//修改导出文件名(模块名_年月日) by 楚洪武
+				var _FileName = '导出';
+				var now = new Date();
+					_FileName =_FileName+
+							'_'+now.getFullYear()+(now.getMonth() < 9?('0'+(now.getMonth()+1)):(now.getMonth()+1))+
+								(now.getDate() < 10?('0'+now.getDate()):now.getDate());
+				
+				/*
+				if(callObjectInfo.MainObject.parent.tsSysModule.getCurrentTab()._title){
+					var now = new Date();
+					_FileName = callObjectInfo.MainObject.parent.tsSysModule.getCurrentTab()._title+
+							'_'+now.getFullYear()+(now.getMonth() < 9?('0'+(now.getMonth()+1)):(now.getMonth()+1))+
+								(now.getDate() < 10?('0'+now.getDate()):now.getDate());
+				}*/
+				//datasetParam.setValue("FileName", ActionDBGrid.getId());
+				datasetParam.setValue("FileName", _FileName);
+			  	FileName.focus();
+			]]>
+		</Event>
+	</Events>
+</View>
+

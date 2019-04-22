@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统用户查询
+	乔武军设计      
+	2007.07.2  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false"
+	context="SysUserManager">
+	<Datasets>
+		<!-- 用户数据集 -->
+		<Dataset id="dsUser" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="true"
+			context="SysUserManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.USERID,A.USERCODE,A.USERNAME,A.DSC,A.PASSWORD,A.GENDER,
+					A.BIRTHDATE,A.NATION,A.NATIVEPLACE,A.EDUCATION,A.USERNO,A.PARTY,
+					A.WEDLOCK,A.GRADUATE,A.LOVE,A.IDNO,A.TEL,A.MTEL,A.WTEL,A.EMAIL,
+					A.ADDRESS,A.POSTNO,A.INDATE,A.HEADSHIP,A.VALIDED,A.LASTDATE,A.LASTAREA,
+					A.BDATE,A.EDATE, A.IsSysUser, '(' || C.BranCode || ')' || C.BranName  as BranInfo,
+					A.Role, A.Registered, A.HomeAddress, A.Title, A.ServingDate, A.PermanentDate, A.LossDate, A.TransferDate,
+					A.RetireDate, substr(A.Insurance, 1, 1) as Insurance1, 
+					substr(A.Insurance, 2, 1) as Insurance2, substr(A.Insurance, 3, 1) as Insurance3,
+					substr(A.Insurance, 4, 1) as Insurance4, substr(A.Insurance, 5, 1) as Insurance5,
+					substr(A.Insurance, 6, 1) as Insurance6, substr(A.Insurance, 7, 1) as Insurance7,
+					substr(A.InsuranceDate, 1, 10) as InsuranceDate1,
+					substr(A.InsuranceDate, 11, 10) as InsuranceDate2,
+					substr(A.InsuranceDate, 21, 10) as InsuranceDate3,
+					substr(A.InsuranceDate, 31, 10) as InsuranceDate4,
+					substr(A.InsuranceDate, 41, 10) as InsuranceDate5,
+					substr(A.InsuranceDate, 51, 10) as InsuranceDate6,
+					substr(A.InsuranceDate, 61, 10) as InsuranceDate7,
+					case when A.BIRTHDATE is null then null else trunc((sysdate - A.BIRTHDATE)/365) end as Age 
+				from Sys_User A, Sys_Bran C
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					 A.BranID = C.BranID and A.MCID = %{#session.CheckIn.MCID}
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						A.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="IsSysUser">
+						A.IsSysUser = '1'
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserNo"
+						close="%">
+						A.UserNo like #UserNo#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="IDNo"
+						open="%" close="%">
+						A.IDNo like #IDNo#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="RoleName"
+						open="%"  close="%">
+						A.Role like #RoleName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						A.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserStatus">
+						A.Valided = #UserStatus#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.BranID, A.UserCode
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="UserCode"
+						estimate="orderbys">
+						A.#UserCode#
+					</isNotNull>
+					<isNotNull prepend="," property="UserName"
+						estimate="orderbys">
+						A.#UserName#
+					</isNotNull>
+					<isNotNull prepend="," property="Gender"
+						estimate="orderbys">
+						A.#Gender#
+					</isNotNull>
+					<isNotNull prepend="," property="Tel"
+						estimate="orderbys">
+						A.#Tel#
+					</isNotNull>
+					<isNotNull prepend="," property="DSC"
+						estimate="orderbys">
+						A.#DSC#
+					</isNotNull>
+					<isNotNull prepend="," property="Valided"
+						estimate="orderbys">
+						A.#Valided#
+					</isNotNull>
+					
+					<isNotNull prepend="," property="BranInfo"
+						estimate="orderbys">
+						#BranInfo#
+					</isNotNull>
+					<isNotNull prepend="," property="BDate"
+						estimate="orderbys">
+						#BDate#
+					</isNotNull>
+					<isNotNull prepend="," property="EDate"
+						estimate="orderbys">
+						#EDate#
+					</isNotNull>
+					<isNotNull prepend="," property="IsSysUser"
+						estimate="orderbys">
+						#IsSysUser#
+					</isNotNull>
+					
+					<isNotNull prepend="," property="BirthDate" estimate="orderbys">
+						A.#BirthDate#
+					</isNotNull>
+					<isNotNull prepend="," property="Age" estimate="orderbys">
+						#Age#
+					</isNotNull>
+					<isNotNull prepend="," property="Role" estimate="orderbys">
+						A.#Role#
+					</isNotNull>
+					<isNotNull prepend="," property="Registered" estimate="orderbys">
+						A.#Registered#
+					</isNotNull>
+					<isNotNull prepend="," property="HomeAddress" estimate="orderbys">
+						A.#HomeAddress#
+					</isNotNull>
+					<isNotNull prepend="," property="Title" estimate="orderbys">
+						A.#Title#
+					</isNotNull>
+					<isNotNull prepend="," property="ServingDate" estimate="orderbys">
+						A.#ServingDate#
+					</isNotNull>
+					<isNotNull prepend="," property="PermanentDate" estimate="orderbys">
+						A.#PermanentDate#
+					</isNotNull>
+					<isNotNull prepend="," property="LossDate" estimate="orderbys">
+						A.#LossDate#
+					</isNotNull>
+					<isNotNull prepend="," property="TransferDate" estimate="orderbys">
+						A.#TransferDate#
+					</isNotNull>
+					<isNotNull prepend="," property="RetireDate" estimate="orderbys">
+						A.#RetireDate#
+					</isNotNull>
+					<isNotNull prepend="," property="IDNO" estimate="orderbys">
+						A.#IDNO#
+					</isNotNull>
+					<isNotNull prepend="," property="UserNO" estimate="orderbys">
+						A.#UserNO#
+					</isNotNull>
+					<isNotNull prepend="," property="Address" estimate="orderbys">
+						A.#Address#
+					</isNotNull>
+					<isNotNull prepend="," property="HeadShip" estimate="orderbys">
+						A.#HeadShip#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="用户序号" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="UserName" label="用户名称" dataType="string" />
+				<Field name="DSC" label="说明" dataType="string" />
+				<Field name="Password" label="说明" dataType="string" />
+				<Field name="Gender" label="性别" dataType="string"
+					dropDown="ddGender" align="center" />
+				<Field name="BirthDate" label="出生日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="Nation" label="民族" dataType="string"
+					align="center" />
+				<Field name="NativePlace" label="籍贯" dataType="string" />
+				<Field name="Education" label="文化程度" dataType="string" />
+				<Field name="UserNO" label="工号" dataType="string" />
+				<Field name="Party" label="社团党派" dataType="string" />
+				<Field name="Wedlock" label="婚姻" dataType="string"
+					align="center" dropDown="ddWedlock" />
+				<Field name="Graduate" label="毕业学校" dataType="string" />
+				<Field name="Love" label="个人喜好" dataType="string" />
+				<Field name="IDNO" label="身份证号" dataType="string"
+					align="center" />
+
+				<Field name="Tel" label="联系电话" dataType="string" />
+				<Field name="MTel" label="移动电话" dataType="string" />
+				<Field name="WTel" label="工作电话" dataType="string" />
+				<Field name="EMail" label="电子邮件" dataType="string" />
+				<Field name="Address" label="联系地址" dataType="string" />
+
+				<Field name="PostNo" label="邮政编码" dataType="string" />
+				<Field name="InDate" label="录用日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="HeadShip" label="工作岗位" dataType="string" />
+				<Field name="Valided" label="状态" dataType="string"
+					align="center" />
+				<Field name="LastDate" label="登录时间" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="LastArea" label="登录位置" dataType="string" />
+				<Field name="BDate" label="启用日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="EDate" label="终止日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="IsSysUser" label="系统用户" dataType="boolean"
+					align="center" />
+				<Field name="BranInfo" label="所属机构" dataType="string" />
+				<Field name="Role" label="角色" dataType="string"/>
+				<Field name="Registered" label="户口地址" dataType="string"/>
+				<Field name="HomeAddress" label="家庭地址" dataType="string"/>
+				<Field name="Title" label="职称" dataType="string"/>
+				<Field name="ServingDate" label="任职日期" dataType="date"/>
+				<Field name="PermanentDate" label="转正日期" dataType="date"/>
+				<Field name="LossDate" label="离职日期" dataType="date"/>
+				<Field name="TransferDate" label="转岗日期" dataType="date"/>
+				<Field name="RetireDate" label="退休日期" dataType="date"/>
+				<Field name="Insurance1" label="缴纳" dataType="boolean"/>
+				<Field name="Insurance2" label="缴纳" dataType="boolean"/>
+				<Field name="Insurance3" label="缴纳" dataType="boolean"/>
+				<Field name="Insurance4" label="缴纳" dataType="boolean"/>
+				<Field name="Insurance5" label="缴纳" dataType="boolean"/>
+				<Field name="Insurance6" label="缴纳" dataType="boolean"/>
+				<Field name="Insurance7" label="缴纳" dataType="boolean"/>
+				<Field name="InsuranceDate1" label="日期" dataType="string"/>
+				<Field name="InsuranceDate2" label="日期" dataType="string"/>
+				<Field name="InsuranceDate3" label="日期" dataType="string"/>
+				<Field name="InsuranceDate4" label="日期" dataType="string"/>
+				<Field name="InsuranceDate5" label="日期" dataType="string"/>
+				<Field name="InsuranceDate6" label="日期" dataType="string"/>
+				<Field name="InsuranceDate7" label="日期" dataType="string"/>
+				<Field name="Age" label="年龄" dataType="long"/>
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">
+					searchDT();refreshLabels();
+				</Event>
+				<Event name="afterScroll">
+					refreshLabels(); searchDT();
+				</Event>
+			</Events>
+		</Dataset>
+
+		<!-- 组数据集 -->
+		<Dataset id="dsGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysGroupManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.GroupID,A.GroupCode,A.GroupName,A.DSC,A.Valided
+				from Sys_Group A, Sys_Group_User B
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					A.GroupID = B.GroupID and B.UserID = #UserID#
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<isNotParameterPresent estimate="orderbys">
+						A.GroupCode
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="GroupCode"
+						estimate="orderbys">
+						A.#GroupCode#
+					</isNotNull>
+					<isNotNull prepend="," property="GroupName"
+						estimate="orderbys">
+						A.#GroupName#
+					</isNotNull>
+					<isNotNull prepend="," property="DSC"
+						estimate="orderbys">
+						A.#DSC#
+					</isNotNull>
+					<isNotNull prepend="," property="Valided"
+						estimate="orderbys">
+						A.#Valided#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="GroupID" label="序号" dataType="long" />
+				<Field name="GroupCode" label="角色编码" dataType="string" />
+				<Field name="GroupName" label="角色名称" dataType="string" />
+				<Field name="DSC" label="说明" dataType="string" />
+				<Field name="Valided" label="状态" dataType="string"
+					align="center" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select a.BranID, a.BranCode, a.BranName
+				from Sys_Bran a inner join Sys_User_Bran b on a.BranID = b.BranID and b.UserID = #UserID#
+				order by a.BranCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="ID" dataType="long" readOnly="true"/>
+				<Field name="BranCode" label="编码" dataType="string" readOnly="true"/>
+				<Field name="BranName" label="机构名称" dataType="string" readOnly="true"/>
+			</Fields>
+		</Dataset>
+		
+	</Datasets>
+	<Controls>
+		<Control id="ddGender" type="ListDropDown" mapValue="true"
+			autoDropDown="true" fixed="true">
+			<DropDownItem label="男" value="1" />
+			<DropDownItem label="女" value="0" />
+		</Control>
+
+		<Control id="ddWedlock" type="ListDropDown" mapValue="true"
+			autoDropDown="true" fixed="true">
+			<DropDownItem label="" value="0" />
+			<DropDownItem label="已婚" value="1" />
+		</Control>
+
+		<!-- 用户表格 -->
+		<Control id="tbUser" type="DataTable" dataset="dsUser"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysUserManager" multiSelect="false">
+			<Column name="RNO" label="序号" pattern="position" width="30"
+				align="center" />
+			<Column name="Valided" field="Valided" width="30"
+				headerClickable="true" dataOrder="true">
+				<Events>
+					<Event name="onRefresh">
+						return changeUserImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="UserCode" field="UserCode" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="UserName" field="UserName" width="130"
+				headerClickable="true" dataOrder="true" />
+			<Column name="IsSysUser" field="IsSysUser" width="60"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Gender" field="Gender" width="30" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="UserNO" field="UserNO" width="50" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BDate" field="BDate" width="80" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="EDate" field="EDate" width="80" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BranInfo" field="BranInfo" width="200"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Tel" field="Tel" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Column name="MTel" field="MTel" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Column name="WTel" field="WTel" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Column name="EMail" field="EMail" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Address" field="Address" width="200"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Wedlock" field="Wedlock" width="30" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Nation" field="Nation" width="30" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="IDNO" field="IDNO" width="140" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="HeadShip" field="HeadShip" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BirthDate" field="BirthDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Age" field="Age" width="50" headerClickable="true" dataOrder="true"/>
+			<Column name="Role" field="Role" width="80" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Registered" field="Registered" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="HomeAddress" field="HomeAddress" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Title" field="Title" width="80" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="InDate" field="InDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="ServingDate" field="ServingDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="PermanentDate" field="PermanentDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="TransferDate" field="TransferDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="LossDate" field="LossDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="RetireDate" field="RetireDate" width="90" align="center"
+				headerClickable="true" dataOrder="true" />
+			
+			<ColumnGroup name="g1" label="养老保险">
+				<Column name="Insurance1" field="Insurance1" width="40" align="center"/>
+				<Column name="InsuranceDate1" field="InsuranceDate1" width="90" align="center"/>
+			</ColumnGroup>
+			<ColumnGroup name="g2" label="医疗保险">
+				<Column name="Insurance2" field="Insurance2" width="40" align="center"/>
+				<Column name="InsuranceDate2" field="InsuranceDate2" width="90" align="center"/>
+			</ColumnGroup>
+			<ColumnGroup name="g3" label="生育保险">
+				<Column name="Insurance3" field="Insurance3" width="40" align="center"/>
+				<Column name="InsuranceDate3" field="InsuranceDate3" width="90" align="center"/>
+			</ColumnGroup>
+			<ColumnGroup name="g4" label="失业保险">
+				<Column name="Insurance4" field="Insurance4" width="40" align="center"/>
+				<Column name="InsuranceDate4" field="InsuranceDate4" width="90" align="center"/>
+			</ColumnGroup>
+			<ColumnGroup name="g5" label="工伤保险">
+				<Column name="Insurance5" field="Insurance5" width="40" align="center"/>
+				<Column name="InsuranceDate5" field="InsuranceDate5" width="90" align="center"/>
+			</ColumnGroup>
+			<ColumnGroup name="g6" label="住房公积金">
+				<Column name="Insurance6" field="Insurance6" width="40" align="center"/>
+				<Column name="InsuranceDate6" field="InsuranceDate6" width="90" align="center"/>
+			</ColumnGroup>
+			<ColumnGroup name="g7" label="其它保险">
+				<Column name="Insurance7" field="Insurance7" width="40" align="center"/>
+				<Column name="InsuranceDate7" field="InsuranceDate7" width="90" align="center"/>
+			</ColumnGroup>
+			
+			<Column name="LastDate" field="LastDate" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="LastArea" field="LastArea" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DSC" field="DSC" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Events>
+				<Event name="onDblClick">
+					<![CDATA[
+						
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+		<!-- 组表格 -->
+		<Control id="tbGroup" type="DataTable" dataset="dsGroup"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysGroupManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="30"
+				align="center" />
+			<Column name="Valided" field="Valided" width="30"
+				headerClickable="true" dataOrder="true">
+				<Events>
+					<Event name="onRefresh">
+						return changeGroupImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="GroupCode" field="GroupCode" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="GroupName" field="GroupName" width="200"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DSC" field="DSC" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Events>
+				<Event name="onDblClick">
+					<![CDATA[
+						
+					]]>
+				</Event>
+			</Events>
+		</Control>
+		
+		<Control id="tbBran" type="DataTable" dataset="dsBran"
+			menu="menuSysDynamic" width="100%" readOnly="true" parityRow="3"
+			multiSelect="false" context="SysBranManager">
+			<Column name="RNO" label="序号" pattern="position" width="30"
+				align="center"/>
+			<Column name="BranCode" field="BranCode" width="120"/>
+			<Column name="BranName" field="BranName" width="200"/>
+		</Control>
+
+		<Control id="spPanel1" type="SplitPanel" orientation="vertical"
+			position="60%" showButtons="fasle" />
+
+		<Control id="pilotUser" type="DataPilot" dataset="dsUser"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{
+					dsUser.parameters().clear();
+					   
+					if (objPar.DisplaySysUser == "1")
+					   dsUser.parameters().setValue("IsSysUser", '1', "string");
+					   
+					if (objPar.UserStatus != -1)
+						dsUser.parameters().setValue("UserStatus", objPar.UserStatus,"string");
+					dsUser.parameters().setValue("UserCode", objPar.UserCode,"string");
+					dsUser.parameters().setValue("UserNo", objPar.UserNo,"string");
+					dsUser.parameters().setValue("UserName", objPar.UserName,"string");
+					dsUser.parameters().setValue("RoleName", objPar.RoleName,"string");
+					dsUser.parameters().setValue("IDNo", objPar.IDNo,"string");
+					dsUser.flushData();
+				}
+				
+				function searchDT()
+				{
+					var curUserID;
+				 	if (dsUser.getVisibleCount()>0)
+				 	{
+				 		curUserID = dsUser.getValue("UserID");
+				 		dsGroup.parameters().setValue("UserID", curUserID, "long");
+				 		dsGroup.flushData();
+				 		dsBran.parameters().setValue("UserID", curUserID, "long");
+				 		dsBran.flushData();
+				 	}
+				 	else
+				 	{
+				 		dsGroup.clearData();
+				 		dsBran.clearData();
+				 	}
+				}
+				
+				//修改Cell样式
+				function changeUserImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'usernormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'userabort.gif';
+							hint = "此用户已经被停用";
+						}
+						
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //修改Cell样式
+				function changeGroupImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'groupabort.gif';
+							hint = "此组已经被停用";
+						}
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsUser;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+				
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					
+					var obj=new Object();
+					obj.Dataset=dsUser;
+					obj.DBGrid=tbUser;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsUser.getContext(), obj);
+					
+					//var obj=new Object();
+					//obj.Dataset=dsGroup;
+					//obj.DBGrid=tbGroup;
+					//relating.put(dsGroup.getContext(), obj);
+					
+					//var obj=new Object();
+					//obj.Dataset=dsBran;
+					//obj.DBGrid=tbBran;
+					//relating.put(dsBran.getContext(), obj);
+					
+					toolBar.Relating=relating;
+				}
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>用户查询</b> &nbsp;&nbsp;查看及维护系统用户相关信息');
+				refreshLabels();
+				dsGroup.parameters().setValue("UserID", -1, "long");
+				dsUser.parameters().setValue("TreeBranBran", "none", "string");
+			]]>
+		</Event>
+	</Events>
+</View>
+

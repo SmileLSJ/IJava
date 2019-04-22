@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsMerchant" pageSize="0" autoLoadPage="true"
+			readOnly="false" wrappedType="Sql" type="Wrapper" loadOnPageOpen="false"
+			showLoadingTip="false" tableName="sys_merchant">
+			<Data type="statement">
+				<![CDATA[
+				  	select a.mcid, a.regid, a.mccode, a.mcname, d.username as linkman, a.tel, a.province, a.city, a.address,
+						 a.customer, a.customertel, a.bcode, c.dicvalue as bname, d.email, a.ver, a.isadd
+						 from sys_merchant a left join sys_register b on a.regid = b.registerid
+						 left join (
+						 	 select sd.dicscode,sd.dicvalue from sys_dic_master sm left join sys_dic_detail sd on sm.dicid = sd.dicid 
+						 	 where sm.diccode = 'SysBranch'
+						 ) c on a.bcode = c.dicscode
+						 left join sys_user d on d.mcid = a.mcid
+					where a.mcid = %{#session.CheckIn.MCID} and d.userid = %{#session.CheckIn.UserID}
+				]]>
+			</Data>
+			<Fields>
+				<Field name="MCID" label="" dataType="long" key="true"/>
+				<Field name="RegID" label="" dataType="string"/>
+				<Field name="MCCode" label="商户编码" dataType="string" readOnly="true"/>
+				<Field name="MCName" label="商户名称" dataType="string"/>
+				<Field name="LinkMan" label="联系人" dataType="string"/>
+				<Field name="TEL" label="联系电话" dataType="string"/>
+				<Field name="PROVINCE" label="省份" dataType="string" dropDown="ddProvinceList"/>
+				<Field name="CITY" label="城市" dataType="string"/>
+				<Field name="ADDRESS" label="详细地址" dataType="string"/>
+				<Field name="CUSTOMER" label="客户经理" dataType="string"/>
+				<Field name="CUSTOMERTEL" label="客户经理电话" dataType="string"/>
+				<Field name="BCODE" label="机构编码" dataType="string"/>
+				<Field name="BNAME" label="所属分支机构" dataType="string" dropDown="ddBranchList" noProcess="true"/>
+				<Field name="EMAIL" label="电子邮箱" dataType="string"/>
+				<Field name="VER" label="版本号" dataType="string"/>
+				<Field name="ISADD" label="是否补录" dataType="string"/>
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsQueryVer" type="SimpleQuery" sql="select TO_CHAR(SYSTIMESTAMP,'YYYYMMDDHH24MISSFF6') as VER from dual" />
+		<Dataset id="updateReg" type="SimpleUpdate" sql="update sys_register set email=#EMAIL# where registerid = #REGISTERID#"/> 
+		<Dataset id="updateBran" type="SimpleUpdate" sql="update sys_bran set branname = #BRANNAME#,bcode = #BCODE# where mcid = %{#session.CheckIn.MCID} and branid = %{#session.CheckIn.BranID}"/> 
+		<Dataset id="updateUser" type="SimpleUpdate" sql="update sys_user set username = #USERNAME#,bcode = #BCODE#,email=#EMAIL#,ver = #VER# where mcid = %{#session.CheckIn.MCID} and userid = %{#session.CheckIn.UserID}"/> 
+		
+	</Datasets>
+	<Controls>
+	<Control id="ddProvinceList" type="DynamicDropDown" cachable="false"
+			width="210" height="250" fixed="true" readFields="DICVALUE"
+			 writeFields="PROVINCE"
+			visibleFields="DICVALUE" filterParameter="DICVALUE">
+			<Dataset id="dsProvince" wrappedType="Sql" type="DropDown" async="false"
+				pageSize="100" autoLoadPage="false" showLoadingTip="false">
+				<Data type="statement">
+					 select b.dicscode,b.dicvalue from sys_dic_master a left join sys_dic_detail b on a.dicid = b.dicid 
+					 <Dynamic prepend="where">
+							a.diccode = 'BasProvince'
+						<isNotEmpty prepend="and" property="DICVALUE" open="%" close="%">
+							b.dicvalue like #DICVALUE#
+						</isNotEmpty>
+					</Dynamic>
+					order by b.dicscode
+				</Data>
+				<Fields>
+					<Field name="DICSCODE" label="编码" dataType="string" />
+					<Field name="DICVALUE" label="省份" dataType="string" />
+				</Fields>
+			</Dataset>
+		</Control>
+		<Control id="ddBranchList" type="DynamicDropDown" cachable="false"
+			width="300" height="250" fixed="false" readFields="DICSCODE,DICVALUE"
+			 writeFields="BCODE,BNAME"
+			visibleFields="DICVALUE" filterParameter="DICVALUE">
+			<Dataset id="dsBranch" wrappedType="Sql" type="DropDown" async="false"
+				pageSize="100" autoLoadPage="false" showLoadingTip="false">
+				<Data type="statement">
+				 select b.dicscode,b.dicvalue from sys_dic_master a left join sys_dic_detail b on a.dicid = b.dicid 
+					 <Dynamic prepend="where">
+							a.diccode = 'SysBranch'
+						<isNotEmpty prepend="and" property="DICVALUE" open="%" close="%">
+							b.dicvalue like #DICVALUE#
+						</isNotEmpty>
+					</Dynamic>
+					order by b.dicscode
+				</Data>
+				<Fields>
+					<Field name="DICSCODE" label="编码" dataType="string" />
+					<Field name="DICVALUE" label="分支机构" dataType="string"/>
+				</Fields>
+			</Dataset>
+		</Control>
+		<Control id="edtMCCode" type="TextEditor" width="120"
+			dataset="dsMerchant" field="MCCode" />
+		<Control id="edtMCName" type="TextEditor" width="313"
+			dataset="dsMerchant" field="MCName" />
+		<Control id="edtEmail" type="TextEditor" width="313"
+			dataset="dsMerchant" field="EMAIL" />
+		<Control id="edtProvince" type="TextEditor" width="120"
+			dataset="dsMerchant" field="PROVINCE" />
+		<Control id="edtCity" type="TextEditor" width="120"
+			dataset="dsMerchant" field="CITY" />
+		<Control id="edtAddress" type="TextEditor" width="313" 
+			dataset="dsMerchant" field="ADDRESS"  />
+		<Control id="edtLinkMan" type="TextEditor" width="120"
+			dataset="dsMerchant" field="LinkMan" />
+		<Control id="edtTel" type="TextEditor" width="120"
+			dataset="dsMerchant" field="TEL" />
+		<Control id="edtCustomer" type="TextEditor" width="120"
+			dataset="dsMerchant" field="CUSTOMER" />
+		<Control id="edtCustomerTel" type="TextEditor" width="120"
+			dataset="dsMerchant" field="CUSTOMERTEL" />
+		<Control id="edtBranch" type="TextEditor" width="313"
+			dataset="dsMerchant" field="BNAME" />
+
+		<Control id="btnOK" type="Button" value="保存" width="75">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+			if (parent._ExchangeParams){
+		        	var cellObjectInfo = parent._ExchangeParams
+		        }else{
+		        	var cellObjectInfo = window.dialogArguments;
+		        }
+				
+				var actionCode = cellObjectInfo.ActionCode;
+				var actionName = cellObjectInfo.ActionName;
+				var actionDataset =cellObjectInfo.Dataset;
+				var _CFGValue;
+				var _CFGSValue;
+				
+				document.write("<script type='text/javascript' src='" + __CONTEXT_PATH + "/exhibit/sysref/SysOperator.js'></sc"+"ript>");
+				
+				//初始化数据
+                 function iniData() {
+				   
+				    
+				    dsMerchant.flushData();
+				    edtMCCode.setEnabled(false);
+				}
+				
+				//编辑
+				function editData()
+				{
+				    dsMerchant.flushData();
+				    edtMCCode.setEnabled(false);
+					
+				}
+				
+				//检查数据
+				function checkData(){
+					var szReg =/^(\w-*\.*)+@(\w-?)+(\.\w{2,})+$/;
+					
+					if(edtMCName.value==""){
+						alert("商户名称不允许为空!");
+						edtMCName.focus();	
+						return false;					
+					}else if(edtProvince.value==""){
+						alert("省份信息不允许为空!");
+						edtProvince.focus();	
+						return false;
+					}else if(edtCity.value=""){
+						alert("地市信息不允许为空!");
+						edtCity.focus();	
+						return false;
+					}else if(edtAddress.value==""){
+						alert("详细地址不允许为空!");
+						edtAddress.focus();	
+						return false;
+					}else if(edtLinkMan.value==""){
+						alert("联系人不允许为空!");
+						edtLinkMan.focus();	
+						return false;
+					}else if(edtTel.value==""){
+						alert("联系电话不允许为空!");
+						edtTel.focus();	
+						return false;
+					}else if(edtEmail.value==""){
+						alert("邮箱地址不允许为空!");
+						edtEmail.focus();	
+						return false;
+					}else if(!szReg.test(edtEmail.value)){
+						alert("邮箱地址格式不正确!");
+						edtEmail.focus();	
+						return false;
+					}else if(edtBranch.value==""){
+						alert("分支信息不允许为空!");
+						edtBranch.focus();	
+						return false;
+					}
+					return true;
+				}
+				
+				//保存数据
+				function saveData() {
+					
+					if(!checkData()) return;
+
+					dsQueryVer.flushData();
+				    dsMerchant.setValue("VER", dsQueryVer.getValue("VER"), "string");
+				    dsMerchant.setValue("ISADD", "1", "string");//点击保存，就添加1
+				    
+					updateReg.parameters().setValue("BCODE", dsMerchant.getValue("BCODE"), "string");
+					updateReg.parameters().setValue("EMAIL", dsMerchant.getValue("EMAIL"), "string");
+					updateReg.parameters().setValue("REGISTERID", dsMerchant.getValue("RegID"), "string");
+					
+					updateBran.parameters().setValue("BRANNAME", dsMerchant.getValue("MCNAME"), "string");//机构名称
+					updateBran.parameters().setValue("BCODE", dsMerchant.getValue("BCODE"), "string");
+					
+					updateUser.parameters().setValue("VER", dsQueryVer.getValue("VER"), "string");
+					updateUser.parameters().setValue("BCODE", dsMerchant.getValue("BCODE"), "string");
+					updateUser.parameters().setValue("EMAIL", dsMerchant.getValue("EMAIL"), "string");
+					updateUser.parameters().setValue("USERNAME", dsMerchant.getValue("LinkMan"), "string");//用户名称
+				
+				    if (dsMerchant.saveDB('updateReg,updateBran,updateUser')) {
+				        alert("数据保存成功！");
+				        editData();
+				        SENDMAIL(dsMerchant.getValue("BCODE"));
+				        window.returnValue = true;
+						FloatSubWindowClose(true);
+				    }
+				}
+				
+				function SENDMAIL(BCODE)  {
+					//发送邮件必须使用字符串，不能使用json格式字符串(若要使用，得先进行编码--解析编码，但我没成功)
+					document.getElementById('bcode').value =  BCODE;
+					frmSend.submit();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>

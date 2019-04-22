@@ -1,0 +1,40 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>数据导出</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+
+</head>
+
+#fkview("config=${cfgFileName}")
+<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+<div class="subwindowCondition" style="padding: 0;">
+	<div class="module">
+		<div>
+			<span>文件名称</span>
+			<div>#fktexteditor("id=FileName")</div>
+		</div>
+		<div>
+			<span>文件类型</span>
+			<div>#fkradio("id=FileType")</div>
+		</div>
+		<div>
+			<span>行范围</span>
+			<div>#fkradio("id=DataScope")</div>
+		</div>
+		<div>
+			<span>列范围</span>
+			<div>#fkradio("id=DataColScope")</div>
+		</div>
+	</div>
+</div>
+<div class="subwindowButton">
+	<div class="btnOK">#fkbutton("id=btnOK")</div>
+	<div class="btnClose">#fkbutton("id=btnClose")</div>
+</div>
+	</body>
+#end
+
+</html>

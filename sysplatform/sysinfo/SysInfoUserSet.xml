@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	公告人员选择
+	乔武军设计      
+	
+	2007.12.12  
+	Width=500 Height=450
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsUser" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select '0' as Checked, A.UserID, A.UserCode, A.UserName, C.BranCode, C.BranName
+				from Sys_User A, Sys_Bran C
+				<Dynamic prepend="where">
+					A.BranID = C.BranID and A.IsSysuser = '1' and A.Valided = '1' and A.MCID = %{#session.CheckIn.MCID}
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						A.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						A.UserName like #UserName#
+					</isNotEmpty>
+				</Dynamic>
+				order by A.UserCode
+			</Data>
+			<Fields>
+				<Field name="select" label="" dataType="boolean"
+					align="center" />
+				<Field name="UserID" label="" dataType="long" />
+				<Field name="UserCode" label="人员编码" dataType="string" />
+				<Field name="UserName" label="人员名称" dataType="string" />
+				<Field name="BranCode" label="机构编码" dataType="string" />
+				<Field name="BranName" label="机构名称" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="tbUser" type="DataTable" dataset="dsUser"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="select" field="select" width="30" />
+			<Column name="UserCode" field="UserCode" width="100" />
+			<Column name="UserName" field="UserName" width="150" />
+			<Column name="BranCode" field="BranCode" width="60" align="center" />
+			<Column name="BranName" field="BranName" width="80" />
+		</Control>
+
+		<Control id="UserCode" type="TextEditor" width="100" />
+		<Control id="UserName" type="TextEditor" width="100" />
+
+		<Control id="buttonSearch" type="Button" value="查询" width="60"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif">
+			<Events>
+				<Event name="onClick">filterUser();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnOK" type="Button" value="确定" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+
+		<Control id="pilotUser" type="DataPilot" dataset="dsUser"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				//初始化
+				function iniData()
+				{
+					dsUser.flushData();
+				}
+				
+				function checkData()
+				{
+					var isFound = false;
+					var	record = dsUser.getFirstRecord();
+					while (record)
+					{
+						if (record.getValue("select"))
+						{
+							isFound = true;
+							break;
+						}
+						record = record.getNextRecord();
+					}
+					if (!isFound)
+					{
+						smoke.alert("请选择用户！");
+						return false;
+					}
+					else
+						return true;
+				}
+				
+				function saveData()
+				{
+					var ret = "";
+					if (!checkData())
+						return;
+					
+					var	record = dsUser.getFirstRecord();
+					while (record)
+					{
+						if (record.getValue("select"))
+						{
+							ret += record.getValue("UserID") + ",";
+						}
+						record = record.getNextRecord();
+					}
+					window.returnValue = ret;
+					FloatSubWindowClose();
+				}
+				
+				function filterUser()
+				{
+					dsUser.parameters().setValue("UserCode", UserCode.value,"string");
+					dsUser.parameters().setValue("UserName", UserName.value,"string");
+					dsUser.flushData();
+				}
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsList" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select BranID, '(' || BranCode || ') ' ||
+				BranName as DSC, '' as Result
+				from Sys_Bran
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="BranID" joinSQL="true">
+						BranID in (#BranID#)
+					</isNotEmpty>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="DSC" label="内容" dataType="string" />
+				<Field name="Result" label="结果" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="tbList" type="DataTable" dataset="dsList" width="100%"
+			readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="DSC" field="DSC" width="200" />
+			<Column name="Result" field="Result" width="130" />
+		</Control>
+
+		<Control id="btnOK" type="Button" value="执行" width="75">
+			<Events>
+				<Event name="onClick">Exec();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysbran.SysBranPub" loadDatasets="dsBran_Delete,dsQuery_BranUser"/>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var ActionCode = callObjectInfo.ActionCode;
+				var ActionName = callObjectInfo.ActionName;
+			
+				//执行
+				function Exec()
+				{
+					if (dsList.getVisibleCount()<=0)
+						return;
+					btnOK.setEnabled(false);
+					
+					var sql="";
+					var rd = dsList.getFirstRecord();
+					while(rd)
+					{
+						dsQuery_BranUser.parameters().setValue("BranID", rd.getValue("BranID"), "int");
+						dsQuery_BranUser.flushData();
+						if (dsQuery_BranUser.getValue("CNT") <= 0){
+							dsBran_Delete.parameters().setValue("BranID", rd.getValue("BranID"), "int");
+							if (dsBran_Delete.saveDB()){
+								rd.setValue("Result","执行成功");
+								dsList.postRecord();
+								callObjectInfo.Dataset.parameters().clear();
+								window.returnValue = true;
+								FloatSubWindowClose(true);
+							}
+							else
+							{
+								rd.setValue("Result","执行失败");
+								dsList.postRecord();
+							}
+						}
+						else
+						{
+							rd.setValue("Result","此机构已经存在关联数据，拒绝删除！");
+							dsList.postRecord();
+						}
+						rd = rd.getNextRecord();
+					}
+				}
+				
+				//获取传递过来的多行数据
+				function getMultiParams()
+				{
+					result = "";
+					var records = callObjectInfo.Dataset.getSelectRecords();
+					//多条
+					if (records.size()>0)
+					{
+						var itr = records.iterator();
+						while(itr.hasNext())
+						{
+							var record=itr.next();
+							result += record.getValue("BranID")+",";
+						}
+						//删除最后的逗号
+						result = result.substr(0,result.length - 1);
+					}
+					//单条
+					else
+					{
+						result = callObjectInfo.Dataset.getValue("BranID");
+					}
+					
+					return result;
+				}
+				
+				//初始化数据
+				function LoadData()
+				{
+					var params = getMultiParams();
+					dsList.parameters().setValue("BranID", params);
+					dsList.flushData();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			LoadData();
+		</Event>
+	</Events>
+</View>
+

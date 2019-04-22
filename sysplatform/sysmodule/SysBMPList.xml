@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false" dropDownBox="custom">
+	<Datasets>
+		<Dataset id="dsBMP" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" type="Reference">
+			<Fields>
+				<Field name="C1" label="C1" dataType="string" />
+				<Field name="C2" label="C2" dataType="string" />
+				<Field name="C3" label="C3" dataType="string" />
+				<Field name="C4" label="C4" dataType="string" />
+				<Field name="C5" label="C5" dataType="string" />
+				<Field name="C6" label="C6" dataType="string" />
+				<Field name="C7" label="C7" dataType="string" />
+				<Field name="C8" label="C8" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="tbBMP" type="DataTable" dataset="dsBMP" width="100%"
+			readOnly="true" parityRow="2" showHeader="false">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="C1" field="C1" width="35" align="center" />
+			<Column name="C2" field="C2" width="35" align="center">
+				<Events>
+					<Event name="onRefresh">
+						//return changeModuleImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="C3" field="C3" width="35" align="center" />
+			<Column name="C4" field="C4" width="35" align="center" />
+			<Column name="C5" field="C5" width="35" align="center" />
+			<Column name="C6" field="C6" width="35" align="center" />
+			<Column name="C7" field="C7" width="35" align="center" />
+			<Column name="C8" field="C8" width="35" align="center" />
+
+			<Events>
+				<Event name="onDblClick">
+					<![CDATA[
+						
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+	</Controls>
+	<Events>
+		<Event name="onInit">
+			<![CDATA[
+				
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				dsBMP.setLoadDataAction("/retrieve.do?className=session.sys.SysManagerDAO&ferry=get&method=getSysImageInfo");	
+				dsBMP.flushData();
+			]]>
+		</Event>
+		<Event name="functions">
+			<![CDATA[
+				
+			]]>
+		</Event>
+	</Events>
+</View>

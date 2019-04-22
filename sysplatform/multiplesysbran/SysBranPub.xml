@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View>
+	<Datasets>
+		<Dataset id="dsQuery_PBranID" type="SimpleQuery"
+			sql="select PBranID, Path from Sys_Bran where BranID=#BranID#" />
+		<Dataset id="dsQuery_BranInfo" type="SimpleQuery"
+			sql="select '(' || BranCode || ')' || BranName as BranInfo, BranLevel + 1 as BranLevel, nvl(BranKind,'0') as BranKind from Sys_Bran where BranID=#BranID# and mcid=%{#session.CheckIn.MCID} " />
+
+		<Dataset id="dsQuery_CodeDupEdit" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Bran where BranID &lt;&gt; #BranID# and BranCode=#BranCode# and mcid=%{#session.CheckIn.MCID} "/>
+		<Dataset id="dsQuery_CodeDupNew" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Bran where BranCode=#BranCode# and mcid=%{#session.CheckIn.MCID} " />
+
+		<Dataset id="dsQuery_BranUser" type="SimpleQuery"
+			sql="select sum(CNT) as CNT from (select count(1) as CNT from Sys_User where BranID = #BranID# union all select count(1) as CNT from Sys_Bran where PBranID = #BranID#) a" />
+
+		<Dataset id="dsBran_Delete" type="SimpleUpdate"
+			sql="delete from Sys_Bran where BranID = #BranID# and not exists(select 1 from Sys_User where BranID = #BranID#) and not exists(select 1 from Sys_User_Bran where BranID=#BranID#) and mcid=%{#session.CheckIn.MCID} " />
+
+		<Dataset id="ds_Bran_Fb_Delete" type="SimpleUpdate"
+			sql="delete from sys_fb_bran where BranID = #BranID# and not exists(select 1 from Sys_User where BranID = #BranID#) and not exists(select 1 from Sys_User_Bran where BranID=#BranID#) "/>
+
+		<Dataset id="ds_Bran_Plu_Query" type="SimpleQuery"
+			sql="select count(1) as CNT from bas_plubran where sta != '1' and branid = #BranID# and mcid=%{#session.CheckIn.MCID} "/>
+		
+		<Dataset id="ds_Bran_Plu_Delete" type="SimpleUpdate"
+			sql="delete from bas_pluBran where BranID = #BranID# and mcid = %{#session.CheckIn.MCID}"/>
+
+		<Dataset id="dsBranCount" type="SimpleQuery"
+			sql="select count(1) cnt from sys_bran where mcid=%{#session.CheckIn.MCID} and branType = '2'" />
+			
+		<Dataset id="dsdBranCount" type="SimpleQuery"
+			sql="select bdNum from sys_merchant where mcid=%{#session.CheckIn.MCID}" />
+			
+		<Dataset id="dsProvince" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="true" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select a.DicSCode, a.DicSCode || '-' || a.DicValue as DicValue, a.DicDSC 
+				from Sys_Dic_Detail a, Sys_Dic_Master b
+				where a.DicID = b.DicID and b.DicCode = 'BasProvince'
+				order by DicSCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="DicSCode" label="编码" dataType="string" />
+				<Field name="DicValue" label="名称" dataType="string" />
+				<Field name="DicDSC" label="说明" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsCity" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select a.DicSCode, a.DicSCode || '-' || a.DicValue as DicValue, a.DicDSC 
+				from Sys_Dic_Detail a, Sys_Dic_Master b
+				]]>
+				<Dynamic prepend="where">
+					a.DicID = b.DicID and b.DicCode = 'BasCity'
+					<isNotEmpty prepend="and" property="DicCode" close="%">
+						a.DicSCode like #DicCode#
+					</isNotEmpty>
+				</Dynamic>
+				order by DicSCode
+			</Data>
+			<Fields>
+				<Field name="DicSCode" label="编码" dataType="string" />
+				<Field name="DicValue" label="名称" dataType="string" />
+				<Field name="DicDSC" label="说明" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+</View>

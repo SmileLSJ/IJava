@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 用户数据集 -->
+		<Dataset id="dsUser" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_User">
+			<Data type="statement">
+				<![CDATA[
+				select A.UserID,A.UserCode,A.UserName,A.DSC, A.BranID, A.Gender,A.BirthDate,A.Nation, A.Password,
+					A.NativePlace,A.Education,A.UserNo,A.Party,A.Wedlock,A.Graduate,A.Love,A.IDNO,A.Tel, A.Locked,
+					A.MTel,A.WTel,A.EMail,A.Address,A.PostNO,A.InDate,A.Headship,A.Valided,A.BDate,A.EDate, B.BranCode,
+					A.IsSysUser, A.LoginCount, A.LoginDate, A.LoginArea, A.LastOperTime, A.UpdateBy, A.UpdateDate,
+					A.Role, A.Resume, A.Registered, A.HomeAddress, A.Title, A.ServingDate, A.PermanentDate, A.LossDate, A.TransferDate,
+					A.RetireDate, A.Insurance, A.InsuranceDate, substr(A.Insurance, 1, 1) as Insurance1, 
+					substr(A.Insurance, 2, 1) as Insurance2, substr(A.Insurance, 3, 1) as Insurance3,
+					substr(A.Insurance, 4, 1) as Insurance4, substr(A.Insurance, 5, 1) as Insurance5,
+					substr(A.Insurance, 6, 1) as Insurance6, substr(A.Insurance, 7, 1) as Insurance7,
+					substr(A.InsuranceDate, 1, 10) as InsuranceDate1,
+					substr(A.InsuranceDate, 11, 10) as InsuranceDate2,
+					substr(A.InsuranceDate, 21, 10) as InsuranceDate3,
+					substr(A.InsuranceDate, 31, 10) as InsuranceDate4,
+					substr(A.InsuranceDate, 41, 10) as InsuranceDate5,
+					substr(A.InsuranceDate, 51, 10) as InsuranceDate6,
+					substr(A.InsuranceDate, 61, 10) as InsuranceDate7,A.mcid,A.uitp 
+				from Sys_User A, Sys_Bran B
+				where A.UserID = #UserID# and A.BranID = B.BranID  and B.MCID = %{#session.CheckIn.MCID}
+				]]>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="用户序号" dataType="long" key="true" valueOnEmpty="max"/>
+				<Field name="UserCode" label="编码" dataType="string" />
+				<Field name="UserName" label="名称" dataType="string" />
+				<Field name="DSC" label="说明" dataType="string" />
+				<Field name="BranID" label="默认机构" dataType="long" />
+				<Field name="Gender" label="性别" dataType="string"
+					dropDown="ddGender" defaultValue="0" />
+				<Field name="BirthDate" label="出生日期" dataType="date" />
+				<Field name="Nation" label="民  族" dataType="string" />
+				<Field name="Password" label="密码" dataType="string" />
+				<Field name="NativePlace" label="籍  贯"	dataType="string" />
+				<Field name="Education" label="文化程度" dataType="string" dropDown="ddEdu"/>
+				<Field name="UserNO" label="工  号" dataType="string" />
+				<Field name="Party" label="社团党派" dataType="string" />
+				<Field name="Wedlock" label="婚  姻" dataType="string"
+					dropDown="ddWedlock" defaultValue="0" />
+				<Field name="Graduate" label="毕业学校" dataType="string" />
+				<Field name="Love" label="个人喜好" dataType="string" />
+				<Field name="IDNO" label="身份证号" dataType="string" />
+				<Field name="Tel" label="联系电话" dataType="string" />
+				<Field name="Locked" label="" dataType="string" defaultValue="0"/>
+				<Field name="MTel" label="移动电话" dataType="string" />
+				<Field name="WTel" label="工作电话" dataType="string" />
+				<Field name="EMail" label="电子邮件" dataType="string" />
+				<Field name="Address" label="联系地址" dataType="string" />
+				<Field name="PostNo" label="邮政编码" dataType="string" />
+				<Field name="InDate" label="录用日期" dataType="date" />
+				<Field name="Headship" label="工作岗位" dataType="string" />
+				<Field name="Valided" label="是否有效" dataType="string" defaultValue="1" />
+				<Field name="BDate" label="启用日期" dataType="date" />
+				<Field name="EDate" label="终止日期" dataType="date" />
+				<Field name="BranCode" label="机构编码" dataType="string" dropDown="ddBranList" noProcess="true"/>
+				<Field name="IsSysUser" label="" dataType="boolean" defaultValue="0"/>
+				<Field name="LoginCount" label="" dataType="long" noProcess="true"/>
+				<Field name="LoginDate" label="" dataType="date" noProcess="true"/>
+				<Field name="LoginArea" label="" dataType="string" noProcess="true"/>
+				<Field name="LastOperTime" label="" dataType="date" format="yyyy-MM-dd HH:mm:ss" noProcess="true"/>
+				<Field name="UpdateBy" label="" dataType="string" valueOnEmpty="username"/>
+				<Field name="UpdateDate" label="" dataType="datetime" valueOnEmpty="now"/>
+				<Field name="Role" label="角色" dataType="string" dropDown="ddRole"/>
+				<Field name="Resume" label="简历" dataType="string"/>
+				<Field name="Registered" label="户口地址" dataType="string"/>
+				<Field name="HomeAddress" label="家庭地址" dataType="string"/>
+				<Field name="Title" label="职称" dataType="string"/>
+				<Field name="ServingDate" label="任职日期" dataType="date"/>
+				<Field name="PermanentDate" label="转正日期" dataType="date"/>
+				<Field name="LossDate" label="离职日期" dataType="date"/>
+				<Field name="TransferDate" label="转岗日期" dataType="date"/>
+				<Field name="RetireDate" label="退休日期" dataType="date"/>
+				<Field name="Insurance" label="社会保险" dataType="string"/>
+				<Field name="InsuranceDate" label="缴纳日期" dataType="string"/>
+				<Field name="Insurance1" label="" dataType="string" noProcess="true"/>
+				<Field name="Insurance2" label="" dataType="string" noProcess="true"/>
+				<Field name="Insurance3" label="" dataType="string" noProcess="true"/>
+				<Field name="Insurance4" label="" dataType="string" noProcess="true"/>
+				<Field name="Insurance5" label="" dataType="string" noProcess="true"/>
+				<Field name="Insurance6" label="" dataType="string" noProcess="true"/>
+				<Field name="Insurance7" label="" dataType="string" noProcess="true"/>
+				<Field name="InsuranceDate1" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="InsuranceDate2" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="InsuranceDate3" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="InsuranceDate4" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="InsuranceDate5" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="InsuranceDate6" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="InsuranceDate7" label="" dataType="string" dropDown="DateDropObject" noProcess="true"/>
+				<Field name="MCID" label="" dataType="int" valueOnEmpty="%{#session.CheckIn.MCID}"/>
+				<Field name="UITP" label="" dataType="long"/>
+			</Fields>
+			<Events>
+				<Event name="afterChange">
+					ChangeModifyed(dataset,field);
+				</Event>
+			</Events>
+		</Dataset>
+
+		<!-- 下拉机构数据集 
+		<Dataset id="dsDynamicBranInfo" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="true" showLoadingTip="false">
+			<Data type="statement">
+					with tt as 
+					(
+					select BranID, BranCode, BranName
+					from Sys_Bran
+					where BranID = (select BranID from Sys_User where UserID = %{#session.CheckIn.UserID})
+					union all
+					select b.BranID, b.BranCode, b.BranName
+					from TT a inner join Sys_Bran b
+					  on a.BranID = b.PBranID
+					) 
+					select * from TT
+					order by BranCode
+			</Data>
+			<Fields>
+				<Field name="BranID" label="" dataType="long" />
+				<Field name="BranCode" label="BranCode"
+					dataType="string" />
+				<Field name="BranName" label="BranName"
+					dataType="string" />
+			</Fields>
+		</Dataset>
+		-->
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_User_Bran">
+			<Data type="statement">
+				<![CDATA[
+				select '1' as s,
+				   #UserID# as UserID, a.BranID, a.BranInfo, a.BranCode, a.BranName,
+				   b.UpdateBy, b.UpdateDate
+				from (
+					select BranID, RPAD( ' ', 4*(LEVEL-1), ' ' ) || BranCode as BranInfo, BranCode, BranName
+					from Sys_Bran where MCID = %{#session.CheckIn.MCID}
+					start with BranID = #BranID#
+					connect by prior BranID = PBranID
+					) a left join Sys_User_Bran b on a.BranID = b.BranID and b.UserID = #UserID#
+				]]>
+			</Data>
+			<Fields>
+				<Field name="select" label="" dataType="boolean" />
+				<Field name="UserID" label="UserID" dataType="long" readOnly="true" key="true"/>
+				<Field name="BranID" label="BranID" dataType="long" readOnly="true" key="true"/>
+				<Field name="BranInfo" label="机构编码" dataType="string" readOnly="true" noProcess="true"/>
+				<Field name="BranCode" label="编码" dataType="string" readOnly="true" noProcess="true"/>
+				<Field name="BranName" label="机构名称" dataType="string" readOnly="true" noProcess="true"/>
+				<Field name="UpdateBy" label="" dataType="string" valueOnEmpty="username"/>
+				<Field name="UpdateDate" label="" dataType="datetime" valueOnEmpty="now"/>
+			</Fields>
+			<Events>
+				<Event name="afterScroll">
+					/*
+					var record = dataset.getCurrent();
+				    if (record != null) {
+				        dataset.setReadOnly(dataset.getValue("BranID") == dsUser.getValue("BranID"));
+				    }
+				    */
+				</Event>
+			</Events>
+		</Dataset>
+		
+		<Dataset id="dsRole" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="true" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select Role from Sys_User group by Role order by Role
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Role" label="角色" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsFindBranID" type="SimpleQuery"
+			sql="select A.BranID from Sys_Bran A where A.BranCode=#BranCode# and mcid=%{#session.CheckIn.MCID}" />
+		<Dataset id="dsQuery_CodeDupEdit" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_User where UserID &lt;&gt; #UserID# and UserCode=#UserCode# and mcid=%{#session.CheckIn.MCID}" />
+		<Dataset id="dsQuery_CodeDupNew" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_User where UserCode=#UserCode# and mcid=%{#session.CheckIn.MCID}" />
+		<Dataset id="dsQuery_IDDupEdit" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_User where UserID &lt;&gt; #UserID# and IDNO=#IDNO# and mcid=%{#session.CheckIn.MCID}" />
+		<Dataset id="dsQuery_IDDupNew" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_User where IDNO=#IDNO# and mcid=%{#session.CheckIn.MCID}" />
+	</Datasets>
+	<Controls>
+		<Control id="tabset1" type="TabSet" width="100%" height="100%"
+			widthTabName="75" draggableItem="false">
+			<Tab name="tab1" label="基本资料" />
+			<Tab name="tab2" label="其它信息" />
+			<Tab name="tab3" label="机构信息" />
+		</Control>
+		<Control id="DateDropObject" type="DateDropDown" />
+		<Control id="ddGender" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="男" value="1" />
+			<DropDownItem label="女" value="0" />
+		</Control>
+		<Control id="ddRole" type="DatasetDropDown" dataset="dsRole"
+			mapValue="false" fixed="false" height="60" cachable="true"
+			warmUpDelay="0" readFields="Role" writeFields="Role"
+			visibleFields="Role" valueField="Role" labelField="Role">
+		</Control>
+		<Control id="ddBranList" type="CustomDropDown" path="sysplatform.do?fileName=/sysplatform/sysrole/SysBranTree.vm"
+			fixed="true" height="300" width="300" cachable="true" warmUpDelay="0"
+			readFields="BranID,BranCode" writeFields="BranID,BranCode"
+			labelField="BranCode">
+			<Events>
+				<Event name="afterSelect">
+					<![CDATA[
+						dsBran.parameters().setValue("UserID", dsUser.getValue("UserID"), "long");
+						dsBran.parameters().setValue("BranID", dsUser.getValue("BranID"), "long");
+						dsBran.flushData();
+						
+						return true;
+					]]>
+				</Event>
+			</Events>
+		</Control>
+		
+		<!--  
+		<Control id="ddBranInfo" type="DatasetDropDown"
+			dataset="dsDynamicBranInfo" fixed="false" mapValue="true"
+			readFields="BranCode" showColumnHeader="false"
+			visibleFields="BranCode,BranName" writeFields="BranCode"
+			labelField="BranCode" height="120" width="155" valueField="BranCode" />
+		-->
+		
+		<Control id="ddWedlock" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="未婚" value="0" />
+			<DropDownItem label="已婚" value="1" />
+		</Control>
+		
+		<Control id="ddEdu" type="ListDropDown" mapValue="false"
+			fixed="false">
+			<DropDownItem label="小学" value="小学" />
+			<DropDownItem label="初中" value="初中" />
+			<DropDownItem label="高中" value="高中" />
+			<DropDownItem label="中专" value="中专" />
+			<DropDownItem label="大专" value="大专" />
+			<DropDownItem label="本科" value="本科" />
+			<DropDownItem label="硕士" value="硕士" />
+			<DropDownItem label="博士" value="博士" />
+			<DropDownItem label="博士后" value="博士后" />
+		</Control>
+
+		<Control id="UserCode" type="TextEditor" width="100%"
+			dataset="dsUser" field="UserCode">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) UserName.focus();
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="UserName" type="TextEditor" width="100%"
+			dataset="dsUser" field="UserName" />
+		<Control id="Gender" type="TextEditor" width="100%"
+			dataset="dsUser" field="Gender" />
+
+		<Control id="BranCode" type="TextEditor" width="100%"
+			dataset="dsUser" field="BranCode" />
+
+		<Control id="Valided" type="CheckBox" width="100%"
+			dataset="dsUser" field="Valided" />
+
+		<Control id="Nation" type="TextEditor" width="100%"
+			dataset="dsUser" field="Nation" />
+		<Control id="Wedlock" type="TextEditor" width="100%"
+			dataset="dsUser" field="Wedlock" />
+		<Control id="Tel" type="TextEditor" width="100%" dataset="dsUser"
+			field="Tel" />
+		<Control id="MTel" type="TextEditor" width="100%"
+			dataset="dsUser" field="MTel" />
+		<Control id="WTel" type="TextEditor" width="100%"
+			dataset="dsUser" field="WTel" />
+		<Control id="IDNO" type="TextEditor" width="100%"
+			dataset="dsUser" field="IDNO" />
+		<Control id="UserNO" type="TextEditor" width="100%"
+			dataset="dsUser" field="UserNO" />
+		<Control id="Party" type="TextEditor" width="100%"
+			dataset="dsUser" field="Party" />
+
+		<Control id="BirthDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="BirthDate" />
+
+		<Control id="NativePlace" type="TextEditor" width="100%"
+			dataset="dsUser" field="NativePlace" />
+		<Control id="EMail" type="TextEditor" width="100%"
+			dataset="dsUser" field="EMail" />
+
+		<Control id="Address" type="TextEditor" width="100%"
+			dataset="dsUser" field="Address" />
+		<Control id="HomeAddress" type="TextEditor" width="100%"
+			dataset="dsUser" field="HomeAddress" />
+		
+		<Control id="Role" type="TextEditor" width="100%"
+			dataset="dsUser" field="Role" />
+		<Control id="Registered" type="TextEditor" width="100%"
+			dataset="dsUser" field="Registered" />
+		<Control id="Title" type="TextEditor" width="100%"
+			dataset="dsUser" field="Title" />
+		<Control id="ServingDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="ServingDate" />
+		<Control id="PermanentDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="PermanentDate" />
+		<Control id="LossDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="LossDate" />
+		<Control id="TransferDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="TransferDate" />
+		<Control id="RetireDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="RetireDate" />
+		
+		<Control id="PostNo" type="TextEditor" width="100%"
+			dataset="dsUser" field="PostNo" />
+		<Control id="InDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="InDate" />
+
+		<Control id="Headship" type="TextEditor" width="100%"
+			dataset="dsUser" field="Headship" />
+
+		<Control id="Education" type="TextEditor" width="100%"
+			dataset="dsUser" field="Education" />
+
+		<Control id="Graduate" type="TextEditor" width="100%"
+			dataset="dsUser" field="Graduate" />
+		<Control id="DSC" type="TextEditor" width="100%" dataset="dsUser" field="DSC" />
+		<Control id="Love" type="TextEditor" width="100%" dataset="dsUser"  field="Love" />
+		<Control id="Resume" type="TextEditor" width="100%" height="100"
+			dataset="dsUser" editorType="textarea" field="Love" />
+			
+		<Control id="BDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="BDate" />
+
+		<Control id="EDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="EDate" />
+
+		<Control id="LoginCount" type="TextEditor" width="100%" dataset="dsUser"
+			field="LoginCount" />
+		<Control id="LoginDate" type="TextEditor" width="100%"
+			dataset="dsUser" field="LoginDate" />
+		<Control id="LoginArea" type="TextEditor" width="100%"
+			dataset="dsUser" field="LoginArea" />
+		<Control id="IsSysUser" type="CheckBox" width="100%" dataset="dsUser"
+			field="IsSysUser" />
+			
+		<Control id="InsuranceDate1" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate1" />
+		<Control id="Insurance1" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance1" />
+		<Control id="InsuranceDate2" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate2" />
+		<Control id="Insurance2" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance2" />
+		<Control id="InsuranceDate3" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate3" />
+		<Control id="Insurance3" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance3" />
+		<Control id="InsuranceDate4" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate4" />
+		<Control id="Insurance4" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance4" />
+		<Control id="InsuranceDate5" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate5" />
+		<Control id="Insurance5" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance5" />
+		<Control id="InsuranceDate6" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate6" />
+		<Control id="Insurance6" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance6" />
+		<Control id="InsuranceDate7" type="TextEditor" width="100%"
+			dataset="dsUser" field="InsuranceDate7" />
+		<Control id="Insurance7" type="CheckBox" width="20" dataset="dsUser"
+			field="Insurance7" />
+			
+		<Control id="btnSave" type="Button" value="保存">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		
+		<Control id="btnClose" type="Button" value="关闭">
+			<Events>
+				<Event name="onClick">parent.andPageClose(window.frameElement.src);</Event>
+			</Events>
+		</Control>
+		
+		<Control id="cmdMD5" type="RPCCommand" showLoadingTip="false"
+			action="/retrieve.do?className=session.sys.SysManagerDAO&amp;ferry=set&amp;method=getMD5Str">
+		</Control>
+		
+		<Control id="cmdCheckLicense" type="RPCCommand" flushDataOnSuccess="false"
+			showLoadingTip="false" commandType="Script">
+			<ActionScript include="sysplatform.sysmisc.SysCheckLicense" />
+		</Control>
+		
+		<Control id="tbBran" type="DataTable" dataset="dsBran" width="100%" readOnly="false" parityRow="3"
+			multiSelect="false">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" readOnly="true"/>
+			<Column name="select" field="select" width="30"	align="center" />
+			<Column name="BranInfo" field="BranInfo" width="150" readOnly="true"/>
+			<Column name="BranName" field="BranName" width="180" readOnly="true"/>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var userID = 0;
+				var g_CurUserID = 0;
+				var g_CurBranCode = '';
+				
+				//初始化
+				function iniData()
+				{
+					
+					LoginDate.setEnabled(false);
+					LoginCount.setEnabled(false);;
+					LoginArea.setEnabled(false);
+					Role.setEnabled(false);
+					
+					if (actionCode == 'AC_NEW')
+					{
+						newData();
+					}
+					else
+					{
+						userID = actionDataset.getValue('UserID');
+						editData();
+					}
+				}
+				
+				//编辑
+				function editData()
+				{
+					dsUser.parameters().setValue("UserID", userID, "long");
+					dsUser.flushData();
+					dsBran.parameters().setValue("UserID", userID, "long");
+					dsBran.parameters().setValue("BranID", dsUser.getValue("BranID"), "long");
+					dsBran.flushData();
+					
+					dsUser.setValue("UpdateBy", '%{#session.CheckIn.UserName}');
+					dsUser.setValue("UpdateDate", new Date());
+					
+					tabset1.activeTabByName("tab1");
+					
+					if (UserCode.value.toString().toLowerCase() == 'admin')
+					{
+						UserCode.setReadOnly(true);
+						UserCode.disabled = true;
+						UserName.focus();
+					}
+					else
+						UserCode.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsUser.clearData();
+					dsUser.parameters().setValue("UserID", 0,"long");
+					dsUser.appendRecord();
+					
+					var lastdate = new Date().add(Date.YEAR, 10);	
+					
+					dsUser.setValue("BranCode", g_CurBranCode);
+					dsUser.setValue("BranID", %{#session.CheckIn.BranID});
+					dsUser.setValue("BDate", new Date());
+					dsUser.setValue("EDate", lastdate);
+					dsUser.setValue("UpdateBy", '%{#session.CheckIn.UserName}');
+					dsUser.setValue("UpdateDate", new Date());
+					dsUser.setValue("IsSysUser", '1');
+					
+					dsBran.parameters().setValue("UserID", dsUser.getValue("UserID"), "long");
+					dsBran.parameters().setValue("BranID", dsUser.getValue("BranID"), "long");
+					dsBran.flushData();
+						
+					tabset1.activeTabByName("tab1");
+ 			  		UserCode.focus();
+				}
+				
+				//如果数据修改后
+				function ChangeModifyed(dataset, field) {
+					switch (field.getName()){
+						case 'Insurance1':
+							if (dsUser.getValue('Insurance1')!=='1') dsUser.setValue('InsuranceDate1', null);
+							break;
+						case 'Insurance2':
+							if (dsUser.getValue('Insurance2')!=='1') dsUser.setValue('InsuranceDate2', null);
+							break;
+						case 'Insurance3':
+							if (dsUser.getValue('Insurance3')!=='1') dsUser.setValue('InsuranceDate3', null);
+							break;
+						case 'Insurance4':
+							if (dsUser.getValue('Insurance4')!=='1') dsUser.setValue('InsuranceDate4', null);
+							break;
+						case 'Insurance5':
+							if (dsUser.getValue('Insurance5')!=='1') dsUser.setValue('InsuranceDate5', null);
+							break;
+						case 'Insurance6':
+							if (dsUser.getValue('Insurance6')!=='1') dsUser.setValue('InsuranceDate6', null);
+							break;
+						case 'Insurance7':
+							if (dsUser.getValue('Insurance7')!=='1') dsUser.setValue('InsuranceDate7', null);
+							break;
+					}
+				}
+				
+				function getMD5(SourceStr)
+                {
+                	var MD5Str = "";
+					//Succeed
+					cmdMD5.parameters().setValue("SourceStr", SourceStr);
+					var CallSucceed = cmdMD5.execute();	
+					if (CallSucceed)
+					{
+						var Succeed = cmdMD5.outParameters().getValue("Succeed");
+						if (Succeed == "1")
+						{
+							MD5Str = cmdMD5.outParameters().getValue("MD5Str");
+							return MD5Str;
+						}
+						else
+						{
+							smoke.alert("密码加密失败！");
+							return false;
+						}
+					}
+					else
+					{
+						smoke.alert("密码加密失败！");
+						return false;
+					}
+				}
+				
+				//获取BranID
+				function getBranID(branCode)
+				{
+					dsFindBranID.parameters().setValue("BranCode", branCode, "string");
+					dsFindBranID.flushData();
+					if (dsFindBranID.getVisibleCount()>0)
+					{
+						dsUser.setValue("BranID",dsFindBranID.getValue("BranID"));
+						return 1;
+					}
+					else
+						return 0;
+				}
+				
+				function checkObjNull(obj, errMes)
+				{
+					if(obj.value.length == 0){
+						smoke.alert(errMes, function(e){
+							tabset1.activeTabByName("tab1");
+							obj.focus();
+						});
+						return false;
+					}
+					else
+						return true;
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if (!checkObjNull(UserCode, "请输入用户编码！"))
+						return false;
+						
+					if (!checkObjNull(UserName, "请输入用户名称！"))
+						return false;
+						
+					if (!checkObjNull(BranCode, "请输入所属机构！"))
+						return false;
+					
+					if(getBranID(BranCode.value) <= 0)
+					{
+						smoke.alert("所属机构不正确！");
+						BranCode.focus();
+						return false;
+					}
+						
+					return true;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+				/*
+					cmdCheckLicense.parameters().clear();
+					var CallSucceed = cmdCheckLicense.execute();
+					if(!(CallSucceed)){
+						return;
+					}
+						*/
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+											
+					preData();
+						
+					if (actionCode == 'AC_EDIT'){
+						var re = dsUser.saveDB('dsBran');
+					} 
+					else {
+						dsUser.setValue("UITP", %{#session.CheckIn.UserUITP});
+						var re = dsUser.saveDB();
+						var rd = dsBran.getFirstData();
+						while (rd) {
+							rd.setValue("UserID", re.outParameters().getValue("UserID"));
+							rd.post();
+							rd.setState(__Record_STATE_NONE);
+							rd = rd.getNextData();
+						}
+						dsBran.postRecord();
+						re = dsBran.saveDB();
+					}
+						
+					if (re)
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							parent.refreshTable(window.frameElement.src);
+							if (actionCode == 'AC_NEW')
+								newData();
+							else
+								parent.andPageClose(window.frameElement.src);
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("UserCode", UserCode.value, "string");
+				    	ds.parameters().setValue("UserID", dsUser.getValue('UserID'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("UserCode", UserCode.value, "string");
+				    }
+				    ds.flushData();	
+				    
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("编码已经存在，请修改！");
+						UserCode.focus();
+						return true;
+					}
+					
+					if (IDNO.value.length > 0){
+						if (actionCode == 'AC_EDIT'){
+					    	ds = dsQuery_IDDupEdit;
+					    	ds.parameters().setValue("IDNO", IDNO.value, "string");
+					    	ds.parameters().setValue("UserID", dsUser.getValue('UserID'), "int");
+					    } else {
+					    	ds = dsQuery_IDDupNew;
+					    	ds.parameters().setValue("IDNO", IDNO.value, "string");
+					    }
+					    ds.flushData();	
+						if (parseInt(ds.getValue("CNT"), 10) > 0) {
+							smoke.alert("已经存在相同的身份证信息，请修改！");
+							IDNO.focus();
+							return true;
+						}
+					}
+					return false;
+				}
+				
+				function preData()
+				{
+					var isur = (dsUser.getValue("Insurance1")=='1') ? '1' : '0';
+					isur+= (dsUser.getValue("Insurance2")=='1') ? '1' : '0';
+					isur+= (dsUser.getValue("Insurance3")=='1') ? '1' : '0';
+					isur+= (dsUser.getValue("Insurance4")=='1') ? '1' : '0';
+					isur+= (dsUser.getValue("Insurance5")=='1') ? '1' : '0';
+					isur+= (dsUser.getValue("Insurance6")=='1') ? '1' : '0';
+					isur+= (dsUser.getValue("Insurance7")=='1') ? '1' : '0';
+					
+					var isurd = (dsUser.getValue("InsuranceDate1")) ? (dsUser.getValue("InsuranceDate1")) : '          ';
+					isurd+= (dsUser.getValue("InsuranceDate2")) ? (dsUser.getValue("InsuranceDate2")) : '          ';
+					isurd+= (dsUser.getValue("InsuranceDate3")) ? (dsUser.getValue("InsuranceDate3")) : '          ';
+					isurd+= (dsUser.getValue("InsuranceDate4")) ? (dsUser.getValue("InsuranceDate4")) : '          '; 
+					isurd+= (dsUser.getValue("InsuranceDate5")) ? (dsUser.getValue("InsuranceDate5")) : '          '; 
+					isurd+= (dsUser.getValue("InsuranceDate6")) ? (dsUser.getValue("InsuranceDate6")) : '          '; 
+					isurd+= (dsUser.getValue("InsuranceDate7")) ? (dsUser.getValue("InsuranceDate7")) : '          ';
+					
+					dsUser.setValue("Insurance", isur);
+					dsUser.setValue("InsuranceDate", isurd);
+					  
+					var sql = "";
+					if (actionCode == 'AC_NEW')
+					{
+						dsUser.setValue("Password", getMD5('000000'));
+					}
+					
+					dsUser.postRecord();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			g_CurUserID = %{#session.CheckIn.UserID}; 
+			g_CurBranCode =	'%{#session.CheckIn.BranCode}'; 
+			iniData();
+			$(".TabSet .TabSetPucker").css("marginBottom","8px");
+			$(".TabSet .TabSetPucker").children(".tab").css("marginTop","6px");
+		</Event>
+	</Events>
+</View>
+

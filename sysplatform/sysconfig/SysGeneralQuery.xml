@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统通用信息查询
+	乔武军设计      
+	2007.07.10  
+	*****************************************
+-->
+<View skin="default" context="SysDicMaster">
+	<Datasets>
+		<Dataset id="datasetH" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" context="SysDicMaster">
+			<Data type="statement">
+				select DicID,DicCode,DicName, DicDSC, DicType, IsSystem, DicGroup from
+				Sys_Dic_Master A
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="DicCode"
+						close="%">
+						A.DicCode like #DicCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="DicName"
+						open="%" close="%">
+						A.DicName like #DicName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="DicGroup"
+						open="%" close="%">
+						A.DicGroup like #DicGroup#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.DicCode
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="DicCode"
+						estimate="orderbys">
+						A.#DicCode#
+					</isNotNull>
+					<isNotNull prepend="," property="DicName"
+						estimate="orderbys">
+						A.#DicName#
+					</isNotNull>
+					<isNotNull prepend="," property="DicType"
+						estimate="orderbys">
+						A.#DicType#
+					</isNotNull>
+					<isNotNull prepend="," property="DicDSC"
+						estimate="orderbys">
+						A.#DicDSC#
+					</isNotNull>
+					<isNotNull prepend="," property="IsSystem"
+						estimate="orderbys">
+						A.#IsSystem#
+					</isNotNull>
+					<isNotNull prepend="," property="DicGroup"
+						estimate="orderbys">
+						A.#DicGroup#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="DicID" label="" dataType="long" />
+				<Field name="DicCode" label="列表编码" dataType="string" />
+				<Field name="DicName" label="列表名称" dataType="string" />
+				<Field name="DicDSC" label="列表说明" dataType="string" />
+				<Field name="DicType" label="数据类型" dataType="string"
+					align="center" dropDown="ddDicType" />
+				<Field name="IsSystem" label="只读" dataType="boolean"
+					align="center"  />
+				<Field name="DicGroup" label="列表组" dataType="string"
+					align="center"  />
+			</Fields>
+			<!--  
+			<Events>
+				<Event name="afterFlushData">
+					refreshLabels();searchDT();
+				</Event>
+				<Event name="afterScroll">searchDT();</Event>
+			</Events>
+			-->
+		</Dataset>
+		<Dataset id="datasetD" pageSize="100" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" showLoadingTip="false">
+			
+			<MasterLink masterDataset="datasetH" detailKeyFields="DicID"
+				masterKeyFields="DicID" loadAsNeeded="false" />
+			 
+			<Data type="statement">
+				select DicID,DicSNO,DicSCode,DicValue,DicDSC from
+				Sys_Dic_Detail A where A.DicID = #DicID#
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.DicSCode
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="DicSNO"
+						estimate="orderbys">
+						A.#DicSNO#
+					</isNotNull>
+					<isNotNull prepend="," property="DicSCode"
+						estimate="orderbys">
+						A.#DicSCode#
+					</isNotNull>
+					<isNotNull prepend="," property="DicValue"
+						estimate="orderbys">
+						A.#DicValue#
+					</isNotNull>
+					<isNotNull prepend="," property="DicDSC"
+						estimate="orderbys">
+						A.#DicDSC#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="DicID" label="DicID" dataType="long" />
+				<Field name="DicSNO" label="序号" dataType="long" />
+				<Field name="DicSCode" label="编码" dataType="string"
+					align="center" />
+				<Field name="DicValue" label="值" dataType="string" />
+				<Field name="DicDSC" label="描述" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterMoveToPage">
+					dataset.setPageIndex(pageIndex);
+				</Event>
+				<!--  
+				<Event name="afterFlushData">refreshLabels();</Event>
+				-->
+			</Events>
+		</Dataset>
+	</Datasets>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Controls>
+		<Control id="ddDicType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="字符型" value="1" />
+			<DropDownItem label="整数型" value="2" />
+			<DropDownItem label="浮点型" value="3" />
+			<DropDownItem label="日期型" value="4" />
+			<DropDownItem label="布尔型" value="5" />
+		</Control>
+
+		<Control id="pilotD" type="DataPilot" dataset="datasetD"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+		<Control id="tableH" type="DataTable" dataset="datasetH"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysDicMaster">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="DicGroup" field="DicGroup" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DicCode" field="DicCode" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DicName" field="DicName" width="180"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DicDSC" field="DicDSC" width="200"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DicType" field="DicType" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="IsSystem" field="IsSystem" width="50"
+				headerClickable="true" dataOrder="true" />
+		</Control>
+		<Control id="tableD" type="DataTable" dataset="datasetD"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysDicDetail">
+			<Column name="RNO" width="30" pattern="position"
+				align="center" label="序号" />
+			<Column name="DicSCode" field="DicSCode" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DicValue" field="DicValue" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DicDSC" field="DicDSC" width="450"
+				headerClickable="true" dataOrder="true" />
+		</Control>
+		<Control id="spPanel1" type="SplitPanel" orientation="vertical"
+			position="55%" showButtons="fasle" />
+	</Controls>
+
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				//查询方法，用于接受参数以对象形式传来的查询参数
+				function search(objPar)
+				{
+					var dataset=datasetH;
+				  	dataset.parameters().setValue("DicCode", objPar.DicCode,"string");
+					dataset.parameters().setValue("DicName", objPar.DicName,"string");
+					dataset.parameters().setValue("DicGroup", objPar.DicGroup,"string");
+					dataset.flushData();
+				}
+				
+				/*
+				function searchDT()
+				{
+				    var gID = 0;
+				    
+				    if (datasetH.getVisibleCount()>0)
+				 	{
+				 		gID = datasetH.getValue("DicID");
+				 	}
+					var dataset = datasetD;
+					dataset.parameters().setValue("DicID", gID,"long");
+					dataset.flushData();
+				}
+				*/
+				
+				//刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = datasetD;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+				
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					var obj=new Object();
+					obj.Dataset=datasetH;
+					obj.DBGrid=tableH;
+					relating.put("SysGlobeManager", obj);
+					relating.put(datasetH.getContext(), obj);
+					toolBar.Relating=relating;
+				}
+				]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				<!-- setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>列表信息查询</b> &nbsp;&nbsp;查看及维护系统列表相关信息</p>');	 -->
+			]]>
+		</Event>
+	</Events>
+</View>
+

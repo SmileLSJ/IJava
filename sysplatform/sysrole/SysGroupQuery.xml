@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+	<!--
+		***************************************** 
+		系统角色信息查询 乔武军设计 2007.07.2
+		*****************************************
+	-->
+<View showDialogOnLoadingData="false" context="SysGroupManager">
+	<Datasets>
+		<!-- 角色数据集 -->
+		<Dataset id="dsGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false" context="SysGroupManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.GroupID,A.GroupCode, A.GroupName, A.GroupType, A.DSC,A.Valided, A.GroupLevel, C.CNT
+				from Sys_Group A left join (select count(1) as CNT,GroupID 
+				                            from Sys_Group_User group by GroupID) C 
+				   on A.GroupID = C.GroupID
+				   				
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					A.GroupLevel &lt;= #GroupLevel# and A.MCID = %{#session.CheckIn.MCID}
+					<isNotEmpty prepend="and" property="GroupCode" close="%">
+						A.GroupCode like #GroupCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="GroupName" open="%"
+						close="%">
+						A.GroupName like #GroupName#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<!--
+					isParameterPresent | isNotParameterPresent | isEmpty | isNotEmpty |
+					isNotNull | isNull | isNotEqual | isEqual | isGreaterThan |
+					isGreaterEqual | isLessThan | isLessEqual
+				-->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.GroupCode
+					</isNotParameterPresent>
+
+					<isNotNull prepend="," property="GroupCode" estimate="orderbys">
+						A.#GroupCode#
+					</isNotNull>
+					<isNotNull prepend="," property="GroupName" estimate="orderbys">
+						A.#GroupName#
+					</isNotNull>
+					<isNotNull prepend="," property="GroupLevel" estimate="orderbys">
+						A.#GroupLevel#
+					</isNotNull>
+					<isNotNull prepend="," property="DSC" estimate="orderbys">
+						A.#DSC#
+					</isNotNull>
+					<isNotNull prepend="," property="GroupType" estimate="orderbys">
+						A.#GroupType#
+					</isNotNull>
+					<isNotNull prepend="," property="Valided" estimate="orderbys">
+						A.#Valided#
+					</isNotNull>
+					
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="GroupID" label="序号" dataType="long" />
+				<Field name="GroupCode" label="角色编码" dataType="string" />
+				<Field name="GroupName" label="角色名称" dataType="string" />
+				<Field name="GroupType" label="角色类型" dataType="string"
+					dropDown="ddGroupType" />
+				<Field name="DSC" label="说明" dataType="string" />
+				<Field name="Valided" label="状态" dataType="string" align="center" />
+
+				<Field name="GroupLevel" label="角色等级" dataType="long" dropDown="ddGroupLevel" />
+				<Field name="CNT" label="用户数" dataType="long" />
+				
+			</Fields>
+		</Dataset>
+		
+		
+	</Datasets>
+	<Controls>
+		<!-- 组表格 -->
+		<Control id="tbGroup" type="DataTable" dataset="dsGroup"
+			menu="menuSysDynamic" width="100%" readOnly="true" parityRow="3"
+			multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Valided" field="Valided" width="40"
+				headerClickable="true" dataOrder="true">
+				<Events>
+					<Event name="onRefresh">
+						return changeImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="GroupCode" field="GroupCode" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="GroupName" field="GroupName" width="180"
+				headerClickable="true" dataOrder="true" />
+			<Column name="GroupType" field="GroupType" width="120" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="CNT" field="CNT" width="60" align="center"
+				headerClickable="true" dataOrder="true" />
+			<Column name="GroupLevel" field="GroupLevel" width="80" align="center"
+				headerClickable="true" dataOrder="true" />
+			
+			<Column name="DSC" field="DSC" width="200" headerClickable="true"
+				dataOrder="true" />
+		</Control>
+
+		<Control id="ddGroupLevel" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem value="1" label="一级" />
+			<DropDownItem value="2" label="二级" />
+			<DropDownItem value="3" label="三级" />
+			<DropDownItem value="4" label="四级" />
+			<DropDownItem value="5" label="五级" />
+			<DropDownItem value="6" label="六级" />
+			<DropDownItem value="7" label="七级" />
+			<DropDownItem value="8" label="八级" />
+			<DropDownItem value="9" label="九级" />
+		</Control>
+		
+		
+		<Control id="ddGroupType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem value="1" label="普通组" />
+			<DropDownItem value="2" label="收银组" />
+			<DropDownItem value="3" label="导购组" />
+			<DropDownItem value="4" label="采购组" />
+			<DropDownItem value="5" label="财务组" />
+			<DropDownItem value="6" label="制单组" />
+			<DropDownItem value="7" label="批发组" />
+			<DropDownItem value="9" label="其它组" />
+		</Control>
+		
+		<!-- 角色类型 
+		<Control id="ddGroupType" type="DatasetDropDown" dataset="dsDicList"
+			mapValue="true" fixed="true" cachable="true" warmUpDelay="0"
+			readFields="DicSCode" writeFields="GroupType" visibleFields="DicValue"
+			valueField="DicSCode" labelField="DicValue">
+		</Control>
+		-->
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<!--  
+	<Include file="sys.PubControl" loadControls="" loadEvents=""
+		loadDatasets="dsDicList" />
+	-->
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{
+					dsGroup.parameters().clear();
+					dsGroup.parameters().setValue("GroupLevel", __LOGIN_INFO.GroupLevel,"long");
+					if (objPar.GroupCode.length > 0)
+						dsGroup.parameters().setValue("GroupCode", objPar.GroupCode,"string");
+					if (objPar.GroupName.length > 0)
+						dsGroup.parameters().setValue("GroupName", objPar.GroupName,"string");
+					dsGroup.flushData();
+				}
+				
+				//修改Cell样式
+				function changeImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'groupabort.gif';
+							hint = "此角色已经被停用";
+						}
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					
+					var obj=new Object();
+					obj.Dataset=dsGroup;
+					obj.DBGrid=tbGroup;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsGroup.getContext(), obj);
+					
+					toolBar.Relating=relating;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				<!-- setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>角色信息查询</b> &nbsp;&nbsp;查看及维护角色相关信息</p>'); -->
+				//加载角色类型
+				//dsDicList.parameters().setValue("DicCode","SysGroupType", "string");
+				//dsDicList.flushData();
+			]]>
+		</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,33 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>参数选择</title>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+<div class="searchCondition">
+<div class="module">
+	<h2>查询条件:</h2>
+	<div>
+		<p>列表组</p>
+		<div>#fktexteditor("id=DicGroup")</div>
+	</div>
+	<div>
+		<p>列表编码</p>
+		<div>#fktexteditor("id=DicCode")</div>
+	</div>
+	<div>
+		<p>列表名称</p>
+		<div>#fktexteditor("id=DicName")</div>
+	</div>
+</div>
+</div>
+<div class="searchButton">
+<div class="refresh" onclick="window.location.reload();">刷新</div><div class="search" onclick="paramSearch();">查询</div>
+</div>
+	
+	</body>
+#end
+
+</html>

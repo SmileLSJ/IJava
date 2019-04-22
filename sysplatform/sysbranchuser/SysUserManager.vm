@@ -1,0 +1,438 @@
+<html>
+
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>用户维护</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<style type="text/css">
+.spe1
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title1.gif")
+}
+
+.spe2
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title2.gif")
+}
+.spe3
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/gear.gif")
+}
+.spe4
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/list1.gif")
+}
+.spe5
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/list2.gif")
+}
+</style>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+
+	<table border="0" width="100%" id="table1" height="100%"
+		class="autoform">
+		<tr>
+			<td height="36">
+				<div class="form_button">
+	     			#fkbutton("id=btnClose")
+	        		#fkbutton("id=btnSave")
+    	        </div>
+			</td>
+		</tr>
+
+		<tr>
+			<td height="100%" width="100%">
+			<table border="0" width="100%" height="100%">
+				<tr>
+					<td>#fktabset("id=tabset1")
+						#fktab("name=tab1")
+							<div class="form_module rela">
+								<div>
+									<p>
+										<span>基本信息</span>
+									</p>
+					
+									<div>
+										<div class="l">
+											<font color="red">*</font>用户编码
+										</div>
+										<div class="r">
+											#fktexteditor("id=UserCode")
+										</div>
+									</div>
+									<div>
+										<div class="l">
+											<font color="red">*</font>用户名称
+										</div>
+										<div class="r">
+											#fktexteditor("id=UserName")
+										</div>
+									</div>
+									<div>
+										<div class="l">
+											<font color="red">*</font>所属机构
+										</div>
+										<div class="r">
+											#fktexteditor("id=BranCode")
+										</div>
+									</div>
+									<div>
+										<div class="l">
+											<font color="red">*</font>启用日期
+										</div>
+										<div class="r">
+											#fktexteditor("id=BDate")
+										</div>
+									</div>
+									<div>
+										<div class="l">
+											<font color="red">*</font>终止日期
+										</div>
+										<div class="r">
+											#fktexteditor("id=EDate")
+										</div>
+									</div>
+									<div>
+										<div class="l">
+											<font color="red">*</font>性别
+										</div>
+										<div class="r">
+											#fktexteditor("id=Gender")
+										</div>
+									</div>
+									<div>
+										<div class="l">联系电话</div>
+										<div class="r">
+											#fktexteditor("id=Tel")
+										</div>
+									</div>
+									<div>
+										<div class="l">用户工号</div>
+										<div class="r">
+											#fktexteditor("id=UserNO")
+										</div>
+									</div>
+									<div>
+										<div class="r">
+											#fkcheckbox("id=Valided")启用&nbsp;&nbsp;&nbsp;&nbsp;#fkcheckbox("id=IsSysUser")系统用户
+										</div>
+									</div>
+								</div>
+								<div class="sm2">
+									<p>
+										<span>扩展信息</span>
+									</p>
+									<div>
+										<div>
+											<div class="l">
+												<font color="red">*</font>分支机构
+											</div>
+											<div class="r">
+												#fktexteditor("id=BName")
+											</div>
+										</div>
+										<div>
+											<div class="l">身份证号</div>
+											<div class="r">
+												#fktexteditor("id=IDNO")
+											</div>
+										</div>
+										<div>
+											<div class="l">婚姻状况</div>
+											<div class="r">
+												#fktexteditor("id=Wedlock")
+											</div>
+										</div>
+										<div>
+											<div class="l">电子邮件</div>
+											<div class="r">
+												#fktexteditor("id=EMail")
+											</div>
+										</div>
+										<div>
+											<div class="l">移动电话</div>
+											<div class="r">
+												#fktexteditor("id=MTel")
+											</div>
+										</div>
+										<div>
+											<div class="l">工作电话</div>
+											<div class="r">
+												#fktexteditor("id=WTel")
+											</div>
+										</div>
+										<div>
+											<div class="l">职称</div>
+											<div class="r">
+												#fktexteditor("id=Title")
+											</div>
+										</div>
+										<div>
+											<div class="l">文化程度</div>
+											<div class="r">
+												#fktexteditor("id=Education")
+											</div>
+										</div>
+										<div>
+											<div class="l">录用日期</div>
+											<div class="r">
+												#fktexteditor("id=InDate")
+											</div>
+										</div>
+										<div>
+											<div class="l">任职日期</div>
+											<div class="r">
+												#fktexteditor("id=ServingDate")
+											</div>
+										</div>
+										<div>
+											<div class="l">转正日期</div>
+											<div class="r">
+												#fktexteditor("id=PermanentDate")
+											</div>
+										</div>
+									</div>
+									<div>
+										<div>
+											<div class="l">转岗日期</div>
+											<div class="r">
+												#fktexteditor("id=TransferDate")
+											</div>
+										</div>
+										<div>
+											<div class="l">离职日期</div>
+											<div class="r">
+												#fktexteditor("id=LossDate")
+											</div>
+										</div>
+										<div>
+											<div class="l">退休日期</div>
+											<div class="r">
+												#fktexteditor("id=RetireDate")
+											</div>
+										</div>
+										<div>
+											<div class="l">出生年月</div>
+											<div class="r">
+												#fktexteditor("id=BirthDate")
+											</div>
+										</div>
+										<div>
+											<div class="l">民族</div>
+											<div class="r">
+												#fktexteditor("id=Nation")
+											</div>
+										</div>
+										<div>
+											<div class="l">工作岗位</div>
+											<div class="r">
+												#fktexteditor("id=Headship")
+											</div>
+										</div>
+										<div>
+											<div class="l">家庭地址</div>
+											<div class="r">
+												#fktexteditor("id=HomeAddress")
+											</div>
+										</div>
+										<div>
+											<div class="l">用户籍贯</div>
+											<div class="r">
+												#fktexteditor("id=NativePlace")
+											</div>
+										</div>
+										<div>
+											<div class="l">户籍地址</div>
+											<div class="r">
+												#fktexteditor("id=Registered")
+											</div>
+										</div>
+										<div>
+											<div class="l">参与社团</div>
+											<div class="r">
+												#fktexteditor("id=Party")
+											</div>
+										</div>
+										<div>
+											<div class="l">联系地址</div>
+											<div class="r">
+												#fktexteditor("id=Address")
+											</div>
+										</div>
+									</div>
+								</div>
+								<div>
+									<p>
+										<span>登录信息</span>
+									</p>
+									<div>
+										<div class="l">登录次数</div>
+										<div class="r">
+											#fktexteditor("id=LoginCount")
+										</div>
+									</div>
+									<div>
+										<div class="l">登录时间</div>
+										<div class="r">
+											#fktexteditor("id=LoginDate")
+										</div>
+									</div>
+									<div>
+										<div class="l">登录位置</div>
+										<div class="r">
+											#fktexteditor("id=LoginArea")
+										</div>
+									</div>
+								</div>
+							</div>
+						#end
+						#fktab("name=tab2")
+							<div class="form_module rela">
+								<div>
+									<p>
+										<span>扩充信息</span>
+									</p>
+									<div>
+										<div class="l">邮政编码</div>
+										<div class="r">
+											#fktexteditor("id=PostNo")
+										</div>
+									</div>
+									<div>
+										<div class="l">毕业院校</div>
+										<div class="r">
+											#fktexteditor("id=Graduate")
+										</div>
+									</div>
+									<div>
+										<div class="l">用户说明</div>
+										<div class="r">
+											#fktexteditor("id=DSC")
+										</div>
+									</div>
+									<div>
+										<div class="l">个人爱好</div>
+										<div class="r">
+											#fktexteditor("id=Love")
+										</div>
+									</div>
+									<div class="h100">
+										<div class="l">简历信息</div>
+										<div class="r">
+											#fktexteditor("id=Resume")
+										</div>
+									</div>
+								</div>
+								<div>
+									<p>
+										<span>社保信息</span>
+									</p>
+									<div>
+											<div class="l">#fkcheckbox("id=Insurance1")养老保险</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate1")
+											</div>
+										</div>
+										<div>
+											<div class="l">#fkcheckbox("id=Insurance2")医疗保险</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate2")
+											</div>
+										</div>
+										<div>
+											<div class="l">#fkcheckbox("id=Insurance3")生育保险</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate3")
+											</div>
+										</div>
+										<div>
+											<div class="l">#fkcheckbox("id=Insurance4")失业保险</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate4")
+											</div>
+										</div>
+										<div>
+											<div class="l">#fkcheckbox("id=Insurance5")工伤保险</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate5")
+											</div>
+										</div>
+										<div>
+											<div class="l">#fkcheckbox("id=Insurance6")住房公积金</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate6")
+											</div>
+										</div>
+										<div>
+											<div class="l">#fkcheckbox("id=Insurance7")其它保险</div>
+											<div class="r">
+												#fktexteditor("id=InsuranceDate7")
+											</div>
+										</div>
+								</div>
+							</div>
+						#end
+						#fktab("name=tab3")
+						<table border="0" width="100%" id="table1" height="100%"
+								class="autoform" bgcolor="#F1F4FA">
+							<tr>
+								<td height="100%">#fkdatatable("id=tbBran")</td>
+							</tr>			
+						</table>
+						#end
+					#end</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+
+	</body>
+#end
+
+</html>

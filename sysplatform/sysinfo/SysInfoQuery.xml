@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统收件箱查询
+	乔武军设计      
+	2008.01.09  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 公告数据集 -->
+		<Dataset id="dsInfo" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.InfoID, A.SendInfoID, A.SendUserID, C.BranID, 
+					A.InfoDate, A.Title, A.Note, A.Priority, A.IsReaded, A.ReadDate, 
+					'(' || B.UserCode || ')' || B.UserName as SendUser,
+					'(' || C.BranCode || ')' || C.BranName as SendBran 
+				from Sys_Info_Recv A, Sys_User B, Sys_Bran C
+				where A.RecvUserID = #RecvUserID# and A.SendUserID = B.UserID and 
+					B.BranID = C.BranID and A.IsReaded = '0'
+				]]>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.InfoDate desc
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="InfoDate"
+						estimate="orderbys">
+						A.#InfoDate#
+					</isNotNull>
+					<isNotNull prepend="," property="Title"
+						estimate="orderbys">
+						A.#Title#
+					</isNotNull>
+					<isNotNull prepend="," property="Priority"
+						estimate="orderbys">
+						A.#Priority#
+					</isNotNull>
+					<isNotNull prepend="," property="IsReaded"
+						estimate="orderbys">
+						A.#IsReaded#
+					</isNotNull>
+					<isNotNull prepend="," property="SendUser"
+						estimate="orderbys">
+						#SendUser#
+					</isNotNull>
+					<isNotNull prepend="," property="SendBran"
+						estimate="orderbys">
+						#SendBran#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="InfoID" label="序号" dataType="string" />
+				<Field name="SendInfoID" label="发送序号"
+					dataType="string" />
+				<Field name="SendUserID" label="发送序号" dataType="long" />
+				<Field name="BranID" label="发送序号" dataType="long" />
+				<Field name="InfoDate" label="接收日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="Title" label="标题" dataType="string" />
+				<Field name="Note" label="信息内容" dataType="string" />
+				<Field name="Priority" label="优先级" dataType="string" />
+				<Field name="IsReaded" label="状态" dataType="string" />
+				<Field name="ReadDate" label="阅读日期" dataType="date" />
+				<Field name="SendUser" label="发送人员" dataType="string" />
+				<Field name="SendBran" label="发送机构" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">refreshLabels();</Event>
+				<Event name="afterScroll">refreshLabels();</Event>
+			</Events>
+		</Dataset>
+		<Dataset id="dsUpdate" type="SimpleUpdate"
+			sql="update Sys_Info_Recv set IsReaded = '1', ReadDate = sysdate where InfoID = #InfoID#"/>
+	</Datasets>
+	<Controls>
+		<!-- 公告表格 -->
+		<Control id="tbInfo" type="DataTable" dataset="dsInfo"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="IsReaded" field="IsReaded" width="30"
+				headerClickable="true" dataOrder="true" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeIsReadedImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="Title" field="Title" width="260"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Priority" field="Priority" width="50"
+				headerClickable="true" dataOrder="true" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeInfoImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="InfoDate" field="InfoDate" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="SendUser" field="SendUser" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="SendBran" field="SendBran" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Events>
+				<Event name="onRecordDblClick">
+					return openInfoView();
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="pilotInfo" type="DataPilot"
+			dataset="dsInfo" buttonFirstPage="visible"
+			buttonLastPage="visible" buttonAppend="hidden" buttonDelete="hidden"
+			buttonCancel="hidden" buttonMovePrev="hidden" buttonMoveNext="hidden"
+			buttonPost="hidden" />
+	</Controls>
+	
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				//修改Cell样式
+				function changeInfoImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Priority")=="1")
+						{
+							filename = 'tag10.png';
+							hint = "普通公告";
+						}	
+						else if (record.getValue("Priority")=="2")
+						{
+							filename = 'tag9.png';
+							hint = "重要公告";
+						}	
+						else
+						{
+							filename = 'tag11.png';
+							hint = "紧急公告";
+						}
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //修改Cell样式
+				function changeIsReadedImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("IsReaded")=="0")
+						{
+							filename = 'mail1.gif';
+							hint = "新公告，还未阅读，双击阅读详细内容";
+
+						}	
+						else 
+						{
+							filename = 'mail2.gif';
+							hint = "双击阅读详细内容";
+						}	
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsInfo;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+				
+				//打开公告详细窗口信息
+				function openInfoView()
+				{
+					if (dsInfo.getValue("IsReaded") == '0')
+					{
+						dsUpdate.parameters().setValue("InfoID", dsInfo.getValue("InfoID"), "string");
+						if (dsUpdate.saveDB()){
+							dsInfo.setValue("IsReaded", '1');
+							dsInfo.postRecord();
+						}
+					}
+					
+					showModalDialog("sysplatform.do?fileName=/sysplatform/sysinfo/SysInfoView.vm", dsInfo.getValue("InfoID"), "dialogWidth:620px;dialogHeight:480px;center:yes;resizable:no;scroll:no;status:no");
+					return false;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				dsInfo.parameters().setValue("RecvUserID", %{#session.CheckIn.UserID}, "long");
+				dsInfo.flushData();
+				refreshLabels();
+			]]>
+		</Event>
+	</Events>
+</View>
+

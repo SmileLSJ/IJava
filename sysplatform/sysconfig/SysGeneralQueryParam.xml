@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统通用信息查询参数页
+	乔武军设计      
+	2007.07.10  
+	*****************************************
+-->
+<View skin="default">
+	<Datasets>
+		<Dataset id="dsDicGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select DicGroup 
+				from Sys_Dic_Master
+				group by DicGroup
+			</Data>
+			<Fields>
+				<Field name="DicGroup" label="列表组" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="DicGroup" dataType="string"
+					dropDown="ddDicGroup" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddDicGroup" type="DatasetDropDown"
+			dataset="dsDicGroup" fixed="false" mapValue="true"
+			readFields="DicGroup" showColumnHeader="false"
+			visibleFields="DicGroup" writeFields="DicGroup" height="150"
+			valueField="DicGroup" labelField="DicGroup" />
+			
+		<Control id="DicCode" type="TextEditor" width="98%" />
+		<Control id="DicName" type="TextEditor" width="98%" />
+		<Control id="DicGroup" type="TextEditor" width="98%" dataset="dsObject" field="DicGroup"/>
+		<Control id="buttonSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+						parent.transfer({DicGroup:DicGroup.value,DicCode:DicCode.value,DicName:DicName.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({
+									 DicGroup:DicGroup.value.trim(),
+									 DicCode:DicCode.value.trim(),
+									 DicName:DicName.value.trim()
+									});
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				dsDicGroup.flushData();
+				paramSearch();
+	 		 	setParamHeight();
+			]]>
+		</Event>
+	</Events>
+</View>
+

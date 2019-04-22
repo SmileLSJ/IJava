@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统角色人员信息管理
+	乔武军设计      
+	2007.12.12  
+	Width=500 Height=450
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 未分配的角色用户数据集 -->
+		<Dataset id="dsNotDisUser" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.UserID, A.UserCode, A.UserName 
+				from Sys_User A left join Sys_Group_User B
+					on A.UserID = B.UserID and B.GroupID = #GroupID#
+					inner join Sys_Bran C on A.BranID = C.BranID
+				]]>
+				<Dynamic prepend="where">
+					 B.UserID is null and A.MCID = %{#session.CheckIn.MCID}
+					 <isNotEmpty prepend="and" property="TreeBranPath"
+						close="%">
+						C.Path like #TreeBranPath#
+					</isNotEmpty>
+				</Dynamic>
+				order by A.UserCode
+			</Data>
+			<Fields>
+				<Field name="UserID" label="" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="UserName" label="未分配用户名称"
+					dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 已分配的组用户数据集 -->
+		<Dataset id="dsDisUser" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.UserID, A.UserCode, A.UserName
+				from Sys_User A, Sys_Group_User B, Sys_Bran C
+				]]>
+				<Dynamic prepend="where">
+					 A.UserID = B.UserID and B.GroupID = #GroupID# and A.BranID = C.BranID
+					 and C.MCID = %{#session.CheckIn.MCID}
+					 <isNotEmpty prepend="and" property="TreeBranPath"
+						close="%">
+						C.Path like #TreeBranPath#
+					</isNotEmpty>
+				</Dynamic>
+				order by A.UserCode
+			</Data>
+			<Fields>
+				<Field name="UserID" label="" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="UserName" label="已分配用户名称"
+					dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsFind" type="SimpleQuery"
+			sql="select '(' || GroupCode || ') ' || GroupName as GroupInfo from Sys_Group where GroupID=#GroupID#" />
+		<Dataset id="dsFindPath" type="SimpleQuery"
+			sql="select Path from Sys_Bran where BranID =%{#session.CheckIn.BranID}" />
+			
+		<Dataset id="dsUpdateSA" type="SimpleUpdate"
+			sql="insert into Sys_Group_User(GroupID,UserID) values(#GroupID#,#UserID#)" />
+		<Dataset id="dsUpdateSD" type="SimpleUpdate"
+			sql="delete from Sys_Group_User where GroupID = #GroupID# and UserID = #UserID#" />
+		<Dataset id="dsUpdateAD" type="SimpleUpdate"
+			sql="delete from Sys_Group_User where GroupID = #GroupID#" />
+		<Dataset id="dsUpdateAA" type="SimpleUpdate"
+			sql="insert into Sys_Group_User(GroupID,UserID) select #GroupID#, A.UserID from Sys_User A, Sys_Bran B where A.BranID = B.BranID and B.Path like #Path#||'%'" />
+	</Datasets>
+	<Controls>
+		<!--未分配的用户-->
+		<Control id="tbNotDisUser" type="DataTable"
+			dataset="dsNotDisUser" width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="UserCode" field="UserCode" width="80" />
+			<Column name="UserName" field="UserName" width="130" />
+		</Control>
+
+		<!--已分配的用户-->
+		<Control id="tbDisUser" type="DataTable" dataset="dsDisUser"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="UserCode" field="UserCode" width="80" />
+			<Column name="UserName" field="UserName" width="130" />
+		</Control>
+
+		<Control id="btnMoveIn" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g12.gif" toolTip="添加一条">
+			<Events>
+				<Event name="onClick">moveDataIn();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveInAll" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g20.gif" toolTip="添加全部">
+			<Events>
+				<Event name="onClick">moveDataInAll();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveOut" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g11.gif" toolTip="删除一条">
+			<Events>
+				<Event name="onClick">moveDataOut();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveOutAll" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g17.gif" toolTip="删除全部">
+			<Events>
+				<Event name="onClick">moveDataOutAll();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">
+					FloatSubWindowClose();
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionDataset = callObjectInfo.Dataset;
+				var groupID = 0;
+				var branPath = "";
+				
+				//初始化
+				function iniData()
+				{
+					groupID = actionDataset.getValue('GroupID');
+					
+					dsFind.parameters().setValue("GroupID", groupID, "int");
+					dsFind.flushData();
+					loadData();
+					changeMoveBtnStatus();
+				}
+				
+				function loadData()
+				{
+					dsFindPath.flushData();
+					branPath =dsFindPath.getValue("Path");
+					
+					dsNotDisUser.parameters().setValue("GroupID", groupID,"long");
+					dsNotDisUser.parameters().setValue("TreeBranPath", branPath,"string");
+					dsNotDisUser.flushData();
+					
+					dsDisUser.parameters().setValue("GroupID", groupID,"long");
+					dsDisUser.parameters().setValue("TreeBranPath", branPath,"string");
+					dsDisUser.flushData();
+					
+					changeMoveBtnStatus();
+				}
+					
+	  		    //设置4个按钮的状态
+	  		    function changeMoveBtnStatus()
+	  		    {
+	  		    	var lexists = false;
+	  		    	if (dsNotDisUser.getVisibleCount() > 0)
+	  		    		lexists = true;
+	  		    		
+	  		    	var rexists = false;
+	  		    	if (dsDisUser.getVisibleCount() > 0)
+	  		    		rexists = true;
+
+	  		    	btnMoveIn.setEnabled(lexists);
+	  		    	btnMoveInAll.setEnabled(lexists);
+	  		    	btnMoveOut.setEnabled(rexists);
+	  		    	btnMoveOutAll.setEnabled(rexists);
+	  		    	/*
+	  		    	if (lexists)
+	  		    	{
+	  		    		btnMoveIn.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow3.gif");
+	  		    		btnMoveInAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow1.gif");
+	  		    	}
+	  		    	else
+	  		    	{
+	  		    		btnMoveIn.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow3b.gif");
+	  		    		btnMoveInAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow1b.gif");
+	  		    	}
+	  		    	
+	  		    	if (rexists)
+	  		    	{
+	  		    		btnMoveOut.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow4.gif");
+	  		    		btnMoveOutAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow2.gif");
+	  		    	}
+	  		    	else
+	  		    	{
+	  		    		btnMoveOut.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow4b.gif");
+	  		    		btnMoveOutAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow2b.gif");
+	  		    	}
+	  		    	*/
+	  		    }
+	  		    
+	  		    //inOutStatus     boolean 移入或者移出状态标志  true=移入
+	  		    //singleAllStatus boolean 单行或者全部数据标志  true=单行
+	  		    //userID          int     如果是单行操作，则userID不能为空
+	  		    function saveData(inOutStatus, singleAllStatus, userID)
+	  		    {
+	  		    	if (singleAllStatus)
+	  		    	{
+	  		    		if (inOutStatus){
+	  		    			dsUpdateSA.parameters().setValue("GroupID", groupID, "int");
+	  		    			dsUpdateSA.parameters().setValue("UserID", userID, "int");
+	  		    			dsUpdateSA.saveDB();
+	  		    		}
+	  		    		else {
+	  		    			dsUpdateSD.parameters().setValue("GroupID", groupID, "int");
+	  		    			dsUpdateSD.parameters().setValue("UserID", userID, "int");
+	  		    			dsUpdateSD.saveDB();
+	  		    		}
+	  		    	}
+	  		    	//全部处理
+	  		    	else
+	  		    	{
+	  		    		dsUpdateAD.parameters().setValue("GroupID", groupID, "int");
+  		    			dsUpdateAD.saveDB();
+	  		    		//全部分配
+	  		    		if (inOutStatus) {
+	  		    			dsUpdateAA.parameters().setValue("GroupID", groupID, "int");
+	  		    			dsUpdateAA.parameters().setValue("Path", branPath, "string");
+	  		    			dsUpdateAA.saveDB();
+	  		    		}
+	  		    	}
+	  		    	
+  		    		window.returnValue = true;
+  		    		FloatSubWindowClose(true);
+	  		    	return true;
+	  		    }
+	  		    
+	  		    function moveDataIn()
+	  		    {
+	  		    	if (dsNotDisUser.getVisibleCount()<=0)
+	  		    		return;
+	  		    	if (saveData(true, true, dsNotDisUser.getValue('UserID')))
+	  		    	{
+		  		    	dsDisUser.appendRecord();
+		  		    	dsDisUser.copyRecord(dsNotDisUser.getCurrent());
+	  			    	dsDisUser.postRecord();
+	  			    	dsNotDisUser.deleteRecord();
+	  		    		changeMoveBtnStatus();
+	  		    	}
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataInAll()
+	  		    {
+	  		    	//由于数据量非常大时候，单独循环操作效率比较低，因此采用先保存数据后，从新刷新方法来处理
+	  		    	if (saveData(true, false, 0))
+	  		    	{
+	  		    		dsNotDisUser.clearData();
+	  		    		dsDisUser.flushData();
+		  		    	changeMoveBtnStatus();
+		  		    }
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataOut()
+	  		    {
+	  		    	if (dsDisUser.getVisibleCount()<=0)
+	  		    		return;
+	  		    	if (saveData(false, true, dsDisUser.getValue('UserID')))
+	  		    	{
+		  		    	dsNotDisUser.appendRecord();
+		  		    	dsNotDisUser.copyRecord(dsDisUser.getCurrent());
+	  			    	dsNotDisUser.postRecord();
+	  			    	dsDisUser.deleteRecord();
+	  		    		changeMoveBtnStatus();	  		    	
+	  		    	}
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataOutAll()
+	  		    {
+	  		    	//由于数据量非常大时候，单独循环操作效率比较低，因此采用先保存数据后，从新刷新方法来处理
+	  		    	if (saveData(false, false, 0))
+	  		    	{
+	  		    		dsNotDisUser.flushData();
+	  		    		dsDisUser.clearData();
+		  		    	changeMoveBtnStatus();
+		  		    }
+	  		    	return;
+	  		    }
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">
+			iniData();
+		</Event>
+	</Events>
+</View>
+

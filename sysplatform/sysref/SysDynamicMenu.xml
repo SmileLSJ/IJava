@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View>
+	<Controls>
+		<Control id="menuSysDynamic" type="Menu" itemWidth="110" shadow="hidden">
+			<MenuItem name="temp" label="temp" />
+			<Events>
+				<Event name="onItemClick">
+					executeSysDynamicMenu(item);
+				</Event>
+				<Event name="beforeRefreshItem">
+					<![CDATA[
+						if ((parent) && (parent.dsSysModule) && (parent.dsSysAction))
+						{
+							prepareSysDynamicMenu(parent, menu, parent.dsSysModule,parent.dsSysAction);
+						}
+						else if ((window.dialogArguments) && (window.dialogArguments.MainObject) && 
+							(window.dialogArguments.MainObject.dsSysModule) && 
+							(window.dialogArguments.MainObject.dsSysAction))
+						{
+							prepareSysDynamicMenu(window.dialogArguments.MainObject, menu, window.dialogArguments.MainObject.dsSysModule,window.dialogArguments.MainObject.dsSysAction);
+						}
+					]]>
+				</Event>
+				<Event name="onRefreshItem">
+					if(typeof(changeMenuItemStatus)!="undefined")
+						item.setEnabled(changeMenuItemStatus(item.ActionCode, menu));
+				</Event>
+			</Events>
+		</Control>
+		<Control id="menuSysDynamicSub" type="Menu" itemWidth="110" shadow="hidden">
+			<MenuItem name="temp" label="temp" />
+			<Events>
+				<Event name="onItemClick">
+					executeSysDynamicMenu(item);
+				</Event>
+				<Event name="beforeRefreshItem">
+					<![CDATA[
+						if ((parent) && (parent.dsSysModule) && (parent.dsSysAction))
+						{
+							prepareSysDynamicMenu(parent, menu, parent.dsSysModule,parent.dsSysAction);
+						}
+						else if ((window.dialogArguments) && (window.dialogArguments.MainObject) && 
+							(window.dialogArguments.MainObject.dsSysModule) && 
+							(window.dialogArguments.MainObject.dsSysAction))
+						{
+							prepareSysDynamicMenu(window.dialogArguments.MainObject, menu, window.dialogArguments.MainObject.dsSysModule,window.dialogArguments.MainObject.dsSysAction);
+						}
+					]]>
+				</Event>
+				<Event name="onRefreshItem">
+					if(typeof(changeMenuItemStatus)!="undefined")
+						item.setEnabled(changeMenuItemStatus(item.ActionCode, menu));
+				</Event>
+			</Events>
+		</Control>
+		
+		<Control id="menuSysDynamicPrint" type="Menu" itemWidth="110" shadow="hidden">
+			<MenuItem name="temp" label="temp" />
+			<Events>
+				<Event name="onItemClick">
+					executeSysDynamicMenu(item);
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="menuSysDynamicExport" type="Menu" itemWidth="110" shadow="hidden">
+			<MenuItem name="temp" label="temp" />
+			<Events>
+				<Event name="onItemClick">
+					executeSysDynamicMenu(item);
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="toolbarSysDynamic" type="ToolBar">
+			<Events>
+				<Event name="onInitToolBar">
+					<![CDATA[
+						if(typeof(initToolbar)!="undefined")
+							initToolbar(toolBar);
+						if ((parent) && (parent.dsSysModule) && (parent.dsSysAction))
+						{
+							prepareSysDynamicToolbar(parent, toolBar, parent.dsSysModule,parent.dsSysAction);
+						}
+						else if ((window.dialogArguments) && (window.dialogArguments.MainObject) && 
+							(window.dialogArguments.MainObject.dsSysModule) && 
+							(window.dialogArguments.MainObject.dsSysAction))
+						{
+							prepareSysDynamicToolbar(window.dialogArguments.MainObject, toolBar, window.dialogArguments.MainObject.dsSysModule,window.dialogArguments.MainObject.dsSysAction);
+						}
+					]]>
+				</Event>
+				<Event name="onActive">
+				<![CDATA[
+					if(typeof(changeToolbarInfor)!="undefined")
+						changeToolbarInfor(STATUS_NOCHANGE, "未更改", true);
+					if(typeof(changeToolbarButtonStatus)!="undefined")
+						changeToolbarButtonStatus();
+				]]>
+				</Event>
+				<Event name="onButtonClick">
+				<![CDATA[
+					if(tool.getName()=="AC_SAVE" && typeof(saveRecord)!="undefined")
+						saveRecord();
+					else
+						executeSysDynamicMenu(tool);
+				]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				document.write("<script type='text/javascript' src='" + __CONTEXT_PATH + "/exhibit/sysref/SysDynamicMenu.js'></sc"+"ript>");
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+			    var objectArray=__View_Control_Resources._objectArray;
+			    for(var i=0;i<objectArray.length;i++)
+			    {
+				   var observer=objectArray[i];
+				   if(observer._kingfisherClass=="DataTable")
+				   {
+				     var dt = eval(observer.id);
+				     if ((dt.getDataset()) && ((dt.getDataset().getField("plucode")) || (dt.getDataset().getField("pluname")) || (dt.getDataset().getField("bcd"))))
+				     { 
+				       EventManager.addKingfisherEvent
+				       (dt, "onSearchData", 
+				          function(dataset) 
+				          {
+				    		  showModalDialog( __CONTEXT_PATH + "/sys/PubSearch.jsp", dataset, "dialogWidth:350px;dialogHeight:40px;center:yes;resizable:no;scroll:no;status:no");
+							  return false;
+						  }
+						)
+						dt = null;
+					 }	
+				  }
+				}
+			]]>
+		</Event>
+	</Events>
+</View>

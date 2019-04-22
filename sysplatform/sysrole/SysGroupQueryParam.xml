@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="false">
+			<Fields>
+				<Field name="STA" dataType="string" dropDown="ddStatus"
+					defaultValue="-1" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="GroupCode" type="TextEditor" width="97%" />
+		<Control id="GroupName" type="TextEditor" width="97%" />
+		<Control id="buttonSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					<!-- parent.transfer({GroupCode:GroupCode.value,GroupName:GroupName.value}); -->
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({GroupCode:GroupCode.value,GroupName:GroupName.value});
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				paramSearch();
+	 		 	setParamHeight();
+	        ]]>
+		</Event>
+	</Events>
+</View>
+

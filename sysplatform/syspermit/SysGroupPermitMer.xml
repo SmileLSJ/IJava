@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 所有可用模块组 -->
+		<Dataset id="dsPerm2" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select case CNT-PermCNT when 0 then 1 when CNT then -1 else 0 end as Status,	ModuleGroup
+				from ( 
+					  select C.ModuleGroup, count(A.SubActionID) as CNT, nvl(count(B.SubActionID),0) as PermCNT 
+					  from Sys_Module C inner join (select T1.ModuleID, T1.ActionID, nvl(T2.SubActionID,0) as SubActionID 
+					                                from Sys_Module_Action T1 left join Sys_Module_SubAction T2
+					                                  on T1.ModuleID = T2.ModuleID and T1.ActionID = T2.ActionID
+					                                where T1.IsDiv='0' and T1.Checked = '1'
+					                                ) A	on C.ModuleID = A.ModuleID 
+										left join Sys_Group_Module B 
+						on B.GroupID = #GroupID# and A.ModuleID = B.ModuleID and A.ActionID = B.ActionID and A.SubActionID = B.SubActionID
+					  group by C.ModuleGroup 
+					 ) TT
+				order by TT.ModuleGroup
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Status" label="" dataType="long" />
+				<Field name="ModuleGroup" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 所有可用模块 -->
+		<Dataset id="dsPerm3" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select case CNT-PermCNT when 0 then 1 when CNT then -1 else 0 end as Status, ModuleID, ModuleCode,ModuleName 
+				from ( 
+					  select A.ModuleID,A.ModuleCode,A.ModuleName,B.CNT,nvl(C.CNT,0) as PermCNT 
+					  from Sys_Module A inner join ( 
+					  								select T1.ModuleID, count(nvl(T2.SubActionID,0)) as CNT 
+					                                from Sys_Module_Action T1 left join Sys_Module_SubAction T2
+					                                  on T1.ModuleID = T2.ModuleID and T1.ActionID = T2.ActionID
+					  								where T1.IsDiv='0' and T1.Checked = '1'
+					  								group by T1.ModuleID
+					  								) B 
+					  	on A.ModuleID = B.ModuleID
+					  					left join ( 
+					  								select A.ModuleID, count(1) as CNT 
+					  								from (
+							  								select T1.ModuleID, T1.ActionID, nvl(T2.SubActionID,0) as SubActionID 
+							                                from Sys_Module_Action T1 left join Sys_Module_SubAction T2
+							                                  on T1.ModuleID = T2.ModuleID and T1.ActionID = T2.ActionID
+							                                where T1.IsDiv='0' and T1.Checked = '1'
+					                                      ) A, Sys_Group_Module B
+					  								where B.GroupID	= #GroupID# and B.ModuleID = A.ModuleID and B.ActionID = A.ActionID and A.SubActionID = B.SubActionID 
+					  								group by A.ModuleID ) C 
+					  	on A.ModuleID = C.ModuleID
+					  where	A.ModuleGroup=#ModuleGroup# 
+				) TT
+				order by ModuleName
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Status" label="" dataType="long" />
+				<Field name="ModuleID" label="" dataType="long" />
+				<Field name="ModuleCode" label="" dataType="string" />
+				<Field name="ModuleName" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 所有可用动作 -->
+		<Dataset id="dsPerm4" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select case CNT-PermCNT when 0 then 1 when CNT then -1 else 0 end as Status, ModuleID, ActionID, ActionCode, ActionName, SubAction
+				from ( 
+					  select A.ModuleID, A.ActionID, A.ActionCode,A.ActionName,B.CNT,nvl(C.CNT,0) as PermCNT, A.SNO, A.SubAction 
+					  from Sys_Module_Action A inner join ( 
+					  								select T1.ActionID, count(nvl(T2.SubActionID,0)) as CNT 
+					                                from Sys_Module_Action T1 left join Sys_Module_SubAction T2
+					                                  on T1.ModuleID = T2.ModuleID and T1.ActionID = T2.ActionID
+					  								where T1.IsDiv='0' and T1.Checked = '1' and T1.ModuleID = #ModuleID#
+					  								group by T1.ActionID
+					  								) B 
+					  	on A.ActionID = B.ActionID
+					  					left join ( 
+					  								select A.ActionID, count(1) as CNT 
+					  								from (
+							  								select T1.ActionID, nvl(T2.SubActionID,0) as SubActionID 
+							                                from Sys_Module_Action T1 left join Sys_Module_SubAction T2
+							                                  on T1.ModuleID = T2.ModuleID and T1.ActionID = T2.ActionID
+							                                where T1.IsDiv='0' and T1.Checked = '1' and T1.ModuleID = #ModuleID#
+					                                      ) A, Sys_Group_Module B
+					  								where B.GroupID	= #GroupID# and B.ModuleID = #ModuleID# and B.ActionID = A.ActionID and A.SubActionID = B.SubActionID 
+					  								group by A.ActionID 
+					  							  ) C 
+					  	on A.ActionID = C.ActionID
+					 where A.ModuleID = #ModuleID#
+				) TT
+				order by SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Status" dataType="long" label="" />
+				<Field name="ModuleID" label="ID" dataType="long" />
+				<Field name="ActionID" label="AID" dataType="long" />
+				<Field name="ActionCode" label="编码" dataType="string" />
+				<Field name="ActionName" label="动作名称" dataType="string" />
+				<Field name="SubAction" label="是否有子动作" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<!-- 所有可用子动作 -->
+		<Dataset id="dsPerm5" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.ModuleID, A.ActionID, A.SubActionID, A.SubActionCode, A.SubActionName, 
+					case nvl(B.SubActionID,0) when 0 then '-1' else '1' end as Status
+				from Sys_Module_SubAction A left join Sys_Group_Module B 
+					on	A.ModuleID = B.ModuleID and A.ActionID = B.ActionID and B.GroupID = #GroupID# and A.SubActionID = B.SubActionID
+				where A.ModuleID = #ModuleID# and A.ActionID = #ActionID#  
+				order by A.SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="ID" dataType="long" />
+				<Field name="ActionID" label="AID" dataType="long" />
+				<Field name="SubActionID" label="SAID" dataType="long" />
+				<Field name="SubActionCode" label="编码" dataType="string" />
+				<Field name="SubActionName" label="子动作名称" dataType="string" />
+				<Field name="Status" dataType="long" label="" />
+			</Fields>
+		</Dataset>
+			
+		<Dataset id = "dsGroup_Query" type="SimpleQuery" sql="select '(' || GroupCode ||')'|| GroupName as GroupInfo from Sys_Group where GroupID = #GroupID#"/>
+		
+		<!--Level1 SimpleDataset-->
+		<Dataset id = "dsSysGroupModule1_Delete" type="SimpleUpdate" sql="delete from Sys_Group_Module where GroupID = #GroupID# and ModuleID in
+		(select ModuleID from Sys_Module where ModuleGroup = #ModuleGroup#)"/>
+		
+		<Dataset id = 'dsSysGroupModule1_Update' type="SimpleUpdate" sql="insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, 	 UpdateDate, UpdateBy) select #GroupID#,A.ModuleID,B.ActionID,nvl(C.SubActionID,0),sysdate,%{#session.CheckIn.UserName} from
+		sys_module A inner join sys_module_action B on A.ModuleID = B.ModuleID left join Sys_Module_SubAction C on B.ModuleID =  C.ModuleID and B.ActionID = C.ActionID where A.ModuleGroup = #ModuleGroup# order by A.ModuleID,B.SNO,C.SNO"/>
+		
+		<!--Level2 SimpleDataset-->
+		<Dataset id = "dsSysGroupModule2_Delete" type="SimpleUpdate" sql="delete from Sys_Group_Module where GroupID=#GroupID# and ModuleID = #ModuleID#"/>
+		
+		<Dataset id = 'dsSysGroupModule2_Update' type="SimpleUpdate" sql="insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, 	UpdateDate, UpdateBy) select #GroupID# ,A.ModuleID, A.ActionID, nvl(C.SubActionID, 0), sysdate, %{#session.CheckIn.UserName}  
+	     from Sys_Module_Action A left join Sys_Module_SubAction C on A.ModuleID = C.ModuleID and A.ActionID = C.ActionID
+		 where A.ModuleID =#ModuleID# order by A.ModuleID, A.SNO, C.SNO"/>
+		
+		<!--Level3 SimpleDataset-->
+		<Dataset id = "dsSysGroupModule3_Delete" type="SimpleUpdate" sql="delete from Sys_Group_Module where GroupID=#GroupID#  and ModuleID = #ModuleID# and ActionID = #ActionID#"/>
+		
+		<Dataset id = 'dsSysGroupModule3_Update' type="SimpleUpdate" sql="insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, 	UpdateDate, UpdateBy) select #GroupID#, A.ModuleID, A.ActionID, nvl(C.SubActionID, 0), sysdate, %{#session.CheckIn.UserName}
+         from Sys_Module_Action A left join Sys_Module_SubAction C on A.ModuleID = C.ModuleID and A.ActionID = C.ActionID
+          where A.ModuleID =#ModuleID# and A.ActionID = #ActionID#"/>
+                 
+		<!--Level4 SimpleDataset-->
+		<Dataset id = "dsSysGroupModule4_Delete" type="SimpleUpdate" sql="delete from Sys_Group_Module where GroupID=#GroupID# and ModuleID =#ModuleID# and ActionID =#ActionID# and SubActionID = #SubAction#"/>
+ 
+		
+		<Dataset id = 'dsSysGroupModule4_Update' type="SimpleUpdate" sql="insert into Sys_Group_Module(GroupID, ModuleID, ActionID, 	 SubActionID, UpdateDate, UpdateBy) select #GroupID#, A.ModuleID, A.ActionID, A.SubActionID, sysdate, %{#session.CheckIn.UserName}
+         from Sys_Module_SubAction A
+          where A.ModuleID =#ModuleID# and A.ActionID =#ActionID# and SubActionID =#SUBACTIONID#"/>
+		  
+		<!--Sys_Group_Module INSERT-->
+	    <Dataset id="dsSysGroupModule_Insert" type="SimpleUpdate" sql="insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, UpdateDate, UpdateBy) select #GroupID#, A.ModuleID, A.ActionID, 0, sysdate, %{#session.CheckIn.UserName}
+		from Sys_Module_Action A left join (select ModuleID, ActionID from Sys_Group_Module where GroupID =#GroupID# group by ModuleID, ActionID) B 
+		 on A.ModuleID = B.ModuleID and A.ActionID = B.ActionID
+		  where A.IsDiv = '1' and B.ModuleID is null order by A.ModuleID, A.SNO"/>
+		  
+	</Datasets>
+	<Controls>
+		<!-- 模块树 -->
+		<Control id="moduleTree" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					expandNode(tree, node);
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnOK" type="Button" value="保存" width="75">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+
+	</Controls>
+	
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var v_GroupID = actionDataset.getValue('GROUPID');
+				document.write("<script type='text/javascript' src='" + __CONTEXT_PATH + "/exhibit/sysref/SysOperator.js'></sc"+"ript>");
+				
+				//初始化
+				function iniData()
+				{	
+					dsGroup_Query.parameters().setValue("GroupID",v_GroupID,"int");
+					dsGroup_Query.flushData();
+					if (dsGroup_Query.getCurrent() != null)
+					{
+						document.title = "角色权限管理  " +dsGroup_Query.getValue("GroupInfo");
+					}
+				}
+				
+				//设置树的节点CheckBox类型
+				function setTreeStatus(pnode, node, status)
+				{
+					/*
+					if (pnode)
+					{
+						//alert(pnode.getLabel());
+						//alert(pnode.isHalf());
+						//alert(pnode.isChecked());
+					}
+					*/
+					//如果半选则按照数据库来更新
+					if ((!(pnode)) || (pnode.isHalf()))
+					{
+						if (status == 1)
+							node.setChecked(true);
+						else if (status == 0)
+						{
+							node.setChecked(true);
+							node.setHalfmoon(true);
+						}
+						else
+							node.setChecked(false);
+					}
+					else if (pnode.isChecked())
+					{
+						node.setChecked(true);
+					}
+					else
+						node.setChecked(false);
+				}
+				
+				//展开树
+				function expandNode(tree, node)
+				{
+					if (v_GroupID === 0) return;
+
+					if (node.children().getLength()>0) return;
+					var treeLevel = node.getLevel();
+					var status = 0;
+					
+					//二级
+					if (treeLevel === 0)
+					{
+						dsPerm2.parameters().setValue("GroupID", v_GroupID, "long");
+						dsPerm2.flushData();
+						while (!dsPerm2.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm2.getString("ModuleGroup"));
+						     curNode.ModuleID = -2;
+							 curNode.ActionID = 0;
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/list2.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/list2.gif");
+							 curNode.setCheckable(true);
+							 setTreeStatus(null, curNode, dsPerm2.getValue("Status"));
+							 dsPerm2.moveNext();
+							 //curNode.setExpanded(true);
+						}
+					}
+					//三级
+					else if (treeLevel === 1)
+					{
+						dsPerm3.parameters().setValue("GroupID", v_GroupID, "long");
+						dsPerm3.parameters().setValue("ModuleGroup", node.getLabel(), "string");
+						dsPerm3.flushData();
+						while (!dsPerm3.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm3.getString("ModuleName"));
+						     curNode.ModuleID = parseInt(dsPerm3.getString("ModuleID"));
+						     curNode.ActionID = 0;
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node3.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node3.gif");
+							 curNode.setCheckable(true);
+							 curNode.setHasChild(true);
+							 setTreeStatus(node, curNode, dsPerm3.getValue("Status"));
+							 dsPerm3.moveNext();
+							 //curNode.setExpanded(true);
+						}
+					}
+					//四级
+					else if (treeLevel === 2)
+					{
+						dsPerm4.parameters().setValue("ModuleID", node.ModuleID, "long");
+						dsPerm4.parameters().setValue("GroupID", v_GroupID, "long");
+						dsPerm4.flushData();
+						while (!dsPerm4.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm4.getString("ActionName"));
+						     curNode.ModuleID = node.ModuleID;
+						     curNode.ActionID = parseInt(dsPerm4.getString("ActionID"));
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node4.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node4.gif");
+							 curNode.setCheckable(true);
+							 curNode.setHasChild(dsPerm4.getString("SubAction") == '1');
+							 setTreeStatus(node, curNode, dsPerm4.getValue("Status"));
+							 dsPerm4.moveNext();
+						}
+					}
+					//五级
+					else if (treeLevel === 3)
+					{
+						dsPerm5.parameters().setValue("ModuleID", node.ModuleID, "long");
+						dsPerm5.parameters().setValue("ActionID", node.ActionID, "long");
+						dsPerm5.parameters().setValue("GroupID", v_GroupID, "long");
+						dsPerm5.flushData();
+						while (!dsPerm5.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm5.getString("SubActionName"));
+						     curNode.ModuleID = node.ModuleID;
+						     curNode.ActionID = node.ActionID;
+						     curNode.SubActionID = parseInt(dsPerm5.getString("SubActionID"));
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node2.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node2.gif");
+							 curNode.setCheckable(true);
+							 curNode.setHasChild(false);
+							 setTreeStatus(node, curNode, dsPerm5.getValue("Status"));
+							 dsPerm5.moveNext();
+						}
+					}
+				}
+				
+				//修改Cell样式
+				function changeGroupImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'groupabort.gif';
+							hint = "此组已经被停用";
+						}
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //Level + Status + Param
+	  		    // case Level  1 {Param:Label}
+	  		    //			   2 {Param:ModuleGroup}
+	  		    //			   3 {Param:ModuleID}
+	  		    //             4 {Param:ModuleID=ActionID}
+	  		    //获取选择数据
+	  		    function preData(node)
+	  		    {
+					var subnodes=node.children();
+					var itr=subnodes.iterator();
+					var status = "0";
+					var sql = "";
+					while(itr.hasNext())
+					{
+						var subnode=itr.next();
+						if (!(subnode.isChecked()))
+						{
+							status = "0";
+						}
+						else if(subnode.isChecked() && (!subnode.isHalf()))
+						{
+							status = "1";
+						}
+						else 
+							status = "-1";
+
+
+												if (status !== "-1")
+						{
+							if (subnode.getLevel() === 1)
+							{
+								dsSysGroupModule1_Delete.parameters().setValue("GroupID", v_GroupID, "int");
+								dsSysGroupModule1_Delete.parameters().setValue("ModuleGroup", subnode.getLabel(), "string");
+								dsSysGroupModule1_Delete.saveDB();
+								if (status == '1'){
+									dsSysGroupModule1_Update.parameters().setValue("GroupID", v_GroupID, "int");
+									dsSysGroupModule1_Update.parameters().setValue("ModuleGroup", subnode.getLabel(), "string");
+									dsSysGroupModule1_Update.saveDB();
+								}
+							}
+							else if (subnode.getLevel() === 2)
+							{
+								dsSysGroupModule2_Delete.parameters().setValue("GroupID", v_GroupID, "int");
+								dsSysGroupModule2_Delete.parameters().setValue("ModuleID", subnode.ModuleID, "int");
+								dsSysGroupModule2_Delete.saveDB();
+								if (status == '1'){
+									dsSysGroupModule2_Update.parameters().setValue("GroupID", v_GroupID, "int");
+									dsSysGroupModule2_Update.parameters().setValue("ModuleID", subnode.ModuleID, "int");
+									dsSysGroupModule2_Update.saveDB();
+								}
+							}	
+							else if (subnode.getLevel() === 3)	
+							{			
+								dsSysGroupModule3_Delete.parameters().setValue("GroupID", v_GroupID, "int");
+								dsSysGroupModule3_Delete.parameters().setValue("ModuleID", subnode.ModuleID, "int");
+								dsSysGroupModule3_Delete.parameters().setValue("ActionID", subnode.ActionID, "int");
+								dsSysGroupModule3_Delete.saveDB();
+								if (status == '1'){
+									dsSysGroupModule3_Update.parameters().setValue("GroupID", v_GroupID, "int");
+									dsSysGroupModule3_Update.parameters().setValue("ModuleID", subnode.ModuleID, "int");
+									dsSysGroupModule3_Update.parameters().setValue("ActionID", subnode.ActionID, "int");
+									dsSysGroupModule3_Update.saveDB();
+								}
+							}	
+							else if (subnode.getLevel() === 4)	
+							{			
+								dsSysGroupModule4_Delete.parameters().setValue("GroupID", v_GroupID, "int");
+								dsSysGroupModule4_Delete.parameters().setValue("ModuleID", subnode.ModuleID, "int");
+								dsSysGroupModule4_Delete.parameters().setValue("ActionID", subnode.ActionID, "int");
+								dsSysGroupModule4_Delete.parameters().setValue("SubActionID", subnode.SubActionID, "int");
+								dsSysGroupModule4_Delete.saveDB();
+								if (status == '1'){
+									dsSysGroupModule4_Update.parameters().setValue("GroupID", v_GroupID, "int");
+									dsSysGroupModule4_Update.parameters().setValue("ModuleID", subnode.ModuleID, "int");
+									dsSysGroupModule4_Update.parameters().setValue("ActionID", subnode.ActionID, "int");
+									dsSysGroupModule4_Update.parameters().setValue("SubActionID", subnode.SubActionID, "int");
+									dsSysGroupModule4_Update.saveDB();
+								}		
+							}	
+						}
+						preData(subnode);
+						
+						
+						/*if (status !== "-1")
+						{
+							if (subnode.getLevel() === 1)
+							{
+								sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_Group_Module where GroupID=" + v_GroupID + 
+									" and ModuleID in (select ModuleID from Sys_Module where ModuleGroup = '" + subnode.getLabel() + "')";
+								if (status == '1')
+									sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, UpdateDate, UpdateBy) " +
+										"select " + v_GroupID + ", A.ModuleID, B.ActionID, nvl(C.SubActionID, 0), sysdate, '%{#session.CheckIn.UserName}' " +
+										"from Sys_Module A inner join Sys_Module_Action B on A.ModuleID = B.ModuleID " +
+										"left join Sys_Module_SubAction C on B.ModuleID = C.ModuleID and B.ActionID = C.ActionID " +
+										"where A.ModuleGroup = '" + subnode.getLabel() + "' order by A.ModuleID, B.SNO, C.SNO";
+							}
+							else if (subnode.getLevel() === 2)
+							{
+								sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_Group_Module where GroupID=" + v_GroupID + " and ModuleID = " + subnode.ModuleID;
+								if (status == '1')
+									sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, UpdateDate, UpdateBy) " +
+										"select " + v_GroupID + ", A.ModuleID, A.ActionID, nvl(C.SubActionID, 0), sysdate, '%{#session.CheckIn.UserName}'  " +
+										"from Sys_Module_Action A left join Sys_Module_SubAction C on A.ModuleID = C.ModuleID and A.ActionID = C.ActionID " +
+										"where A.ModuleID = " + subnode.ModuleID + " order by A.ModuleID, A.SNO, C.SNO";
+							}	
+							else if (subnode.getLevel() === 3)	
+							{					
+								sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_Group_Module where GroupID=" + v_GroupID + 
+									" and ModuleID = " + subnode.ModuleID + " and ActionID = " + subnode.ActionID;
+								if (status == '1')
+									sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, UpdateDate, UpdateBy) " +
+										"select " + v_GroupID + ", A.ModuleID, A.ActionID, nvl(C.SubActionID, 0), sysdate, '%{#session.CheckIn.UserName}'  " +
+										"from Sys_Module_Action A left join Sys_Module_SubAction C on A.ModuleID = C.ModuleID and A.ActionID = C.ActionID " +
+										"where A.ModuleID = " + subnode.ModuleID + " and A.ActionID = " + subnode.ActionID;
+							}	
+							else if (subnode.getLevel() === 4)	
+							{					
+								sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_Group_Module where GroupID=" + v_GroupID + 
+									" and ModuleID = " + subnode.ModuleID + " and ActionID = " + subnode.ActionID + " and SubActionID = " + subnode.SubActionID;
+								if (status == '1')
+									sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_Group_Module(GroupID, ModuleID, ActionID, SubActionID, UpdateDate, UpdateBy) " +
+										"select " + v_GroupID + ", A.ModuleID, A.ActionID, A.SubActionID, sysdate, '%{#session.CheckIn.UserName}'  " +
+										"from Sys_Module_SubAction A "+
+										"where A.ModuleID = " + subnode.ModuleID + " and A.ActionID = " + subnode.ActionID + " and SubActionID = " + subnode.SubActionID ;
+							}	
+						}
+						sql += getSQL(subnode);
+						*/
+					}
+					return sql;
+	  		    }
+	  		    
+	  		    //准备参数
+	  		    function saveData()
+				{
+					preData(moduleTree.getTopNode());
+					dsSysGroupModule_Insert.parameters().setValue("GroupID", v_GroupID, "int");
+					dsSysGroupModule_Insert.saveDB();
+					smoke.alert("保存成功！");
+					return true;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				iniData();
+			]]>
+		</Event>
+	</Events>
+</View>
+

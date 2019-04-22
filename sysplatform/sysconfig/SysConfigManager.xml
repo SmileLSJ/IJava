@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+	<!--
+		*****************************************
+		 字典项信息管理 
+		 乔武军设计 
+		 2013.06.16
+		Width=350 Height=250 
+		*****************************************
+	-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 数据集 -->
+		<Dataset id="dsConfig" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Config">
+			<Data type="statement">
+				<![CDATA[
+				select CfgID, CfgCode, CfgName, CfgLabel, CfgValue, CfgSValue, CfgGroup, UpdateDate, UpdateBy,MCID
+				from Sys_Config
+				where CfgID = #CfgID#
+				]]>
+			</Data>
+			<Fields>
+				<Field name="CfgID" label="序号" dataType="long" key="true" valueOnEmpty="max"/>
+				<Field name="CfgCode" label="" dataType="string">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="CfgName" label="名称" dataType="string">
+					<Validator type="Length" maxLength="40" />
+				</Field>
+				<Field name="CfgLabel" label="" dataType="string">
+					<Validator type="Length" maxLength="250" />
+				</Field>
+				<Field name="CfgValue" label="" dataType="string" >
+					<Validator type="Length" maxLength="40" />
+				</Field>
+				<Field name="CfgSValue" label="" dataType="string" >
+					<Validator type="Length" maxLength="40" />
+				</Field>
+				<Field name="CfgGroup" label="" dataType="string" dropDown="ddCfgGroup" >
+					<Validator type="Length" maxLength="40" />
+				</Field>
+				<Field name="UpdateDate" label="修改日期" dataType="datetime"/>
+				<Field name="UpdateBy" label="修改人员" dataType="string" />
+				<Field name="MCID" label="商户" dataType="int" valueOnEmpty="%{#session.CheckIn.MCID}"/>
+			</Fields>
+		</Dataset>
+		<!-- 下拉数据 -->
+		<Dataset id="dsCfgGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="true" showLoadingTip="false">
+			<Data type="statement">
+				select CfgGroup from Sys_Config where MCID = %{#session.CheckIn.MCID}
+				group by CfgGroup
+				order by CfgGroup
+			</Data>
+			<Fields>
+				<Field name="CfgGroup" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddCfgGroup" type="DatasetDropDown" dataset="dsCfgGroup"
+			readFields="CfgGroup" showColumnHeader="false" visibleFields="CfgGroup"
+			writeFields="CfgGroup" labelField="CfgGroup" height="80" valueField="CfgGroup" />
+		<Control id="CfgCode" type="TextEditor" width="100%" dataset="dsConfig"
+			field="CfgCode">
+		</Control>
+		<Control id="CfgGroup" type="TextEditor" width="100%" dataset="dsConfig"
+			field="CfgGroup">
+		</Control>
+		<Control id="CfgName" type="TextEditor" width="100%" dataset="dsConfig"
+			field="CfgName">
+		</Control>
+		<Control id="CfgValue" type="TextEditor" width="100%" dataset="dsConfig"
+			field="CfgValue">
+		</Control>
+		<Control id="CfgSValue" type="TextEditor" width="100%" dataset="dsConfig"
+			field="CfgSValue">
+		</Control>
+		<Control id="CfgLabel" type="TextEditor" width="100%" dataset="dsConfig" height="50"
+			field="CfgLabel" editorType="textarea">
+		</Control>
+
+		<Control id="btnSave" type="Button" value="保存">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					  parent.andPageClose(window.frameElement.src);
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysconfig.SysConfigPub"/>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				//初始化
+				function iniData()
+				{
+					
+					if (actionCode == 'AC_NEW')
+					{
+						newData();
+					}
+					else
+					{
+						var ID = actionDataset.getValue('CfgID');
+						editData(ID);
+					}
+				}
+				
+				//新增
+				function newData()
+				{
+					dsConfig.clearData();
+					dsConfig.parameters().setValue("CfgID", 0,"long");
+					dsConfig.appendRecord();
+		      	 	CfgCode.focus();
+				}
+				
+				//编辑
+				function editData(ID)
+				{
+					dsConfig.parameters().setValue("CfgID", ID,"long");
+					dsConfig.flushData();
+					CfgCode.focus();
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(CfgCode.value.length == 0){
+						smoke.alert("请输入编码！");
+						CfgCode.focus();
+						return false;
+					}
+					else if(CfgName.value.length == 0){
+						smoke.alert("请输入名称！");
+						CfgName.focus();
+						return false;
+					}
+					else if(CfgGroup.value.length == 0){
+						smoke.alert("请选择或者输入类型！");
+						CfgGroup.focus();
+						return false;
+					}
+					else if(CfgValue.value.length == 0){
+						smoke.alert("请输入主配置值！");
+						CfgValue.focus();
+						return false;
+					}
+					else
+						return true;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+						
+					if (dsConfig.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							parent.refreshTable(window.frameElement.src);
+							if (actionCode == 'AC_EDIT')
+								parent.andPageClose(window.frameElement.src);
+							else
+								newData();
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("CfgCode", CfgCode.value, "string");
+				    	ds.parameters().setValue("CfgID", dsConfig.getValue('CfgID'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("CfgCode", CfgCode.value, "string");
+				    }
+				    ds.flushData();	
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("编码已经存在，请修改！");
+						CfgCode.focus();
+						return true;
+					}
+					return false;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			iniData();
+		</Event>
+	</Events>
+</View>
+
+

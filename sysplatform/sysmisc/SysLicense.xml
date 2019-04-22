@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsQuery1" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Bran where BranType = '2'" />
+		<Dataset id="dsQuery2" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Bran a, Sys_User b where a.BranType = '1' and a.BranID = b.BranID and b.IsSysUser='1'" />
+		<Dataset id="dsQuery3" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_User where IsSysUser='1' and Valided = '1'" />
+	</Datasets>
+	<Controls>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+		<Control id="cmdPreData" type="RPCCommand" flushDataOnSuccess="false"
+			showLoadingTip="false" commandType="Script">
+			<ActionScript include="sysplatform.sysmisc.SysLicense" />
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				//初始化
+				function iniData()
+				{
+					var cmd = cmdPreData;
+					var s = "";
+					cmd.parameters().clear();
+					var CallSucceed = cmd.execute();
+					if(CallSucceed){
+						dsQuery1.flushData();
+					    s = cmd.outParameters().getValue("BranCount") + "<font color='red'>&nbsp;(实际:" + dsQuery1.getValue("CNT") + ")</font>";
+						lbl_BranCount.innerHTML = s;
+						lbl_BranUserCount.innerText = cmd.outParameters().getValue("BranUserCount");
+
+					    dsQuery2.flushData();
+					    s = cmd.outParameters().getValue("HqUserCount") + "<font color='red'>&nbsp;(实际:" + dsQuery2.getValue("CNT") + ")</font>";
+						lbl_HQUserCount.innerHTML = s;
+						
+						dsQuery3.flushData();
+					    s = cmd.outParameters().getValue("TotalUserCount") + "<font color='red'>&nbsp;(实际:" + dsQuery3.getValue("CNT") + ")</font>";
+						lbl_TotalUserCount.innerHTML = s;
+						lbl_ValidDate.innerText = cmd.outParameters().getValue("ValidDate");
+						lbl_MCName.innerText = cmd.outParameters().getValue("MCName").substr(0,19);
+						
+						lbl_JavaVer.innerText = cmd.outParameters().getValue("JavaVer");
+						lbl_OS.innerText = cmd.outParameters().getValue("OS");
+						lbl_FreeMem.innerText = cmd.outParameters().getValue("FreeMem");
+						
+					}
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

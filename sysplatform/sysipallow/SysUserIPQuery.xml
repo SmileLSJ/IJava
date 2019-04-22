@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统用户查询
+	乔武军设计      
+	2007.07.2  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false"
+	context="SysUserManager">
+	<Datasets>
+		<!-- 用户数据集 -->
+		<Dataset id="dsUser" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysUserManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.USERID,A.USERCODE,A.USERNAME,A.DSC,A.PASSWORD,A.GENDER,
+					A.BIRTHDATE,A.NATION,A.NATIVEPLACE,A.EDUCATION,A.USERNO,A.PARTY,
+					A.WEDLOCK,A.GRADUATE,A.LOVE,A.IDNO,A.TEL,A.MTEL,A.WTEL,A.EMAIL,
+					A.ADDRESS,A.POSTNO,A.INDATE,A.HEADSHIP,A.VALIDED,A.LASTDATE,A.LASTAREA,
+					A.BDATE,A.EDATE, A.LinkCode, '('||C.BranCode || ')' || C.BranName  as BranInfo 
+				from Sys_User A, Sys_Bran_User B, Sys_Bran C
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					A.BranID = B.BranID and B.UserID =
+					%{#session.CheckIn.UserID} and A.BranID = C.BranID
+					<isNotEmpty prepend="and" property="TreeBranID">
+						A.BranID = #TreeBranID#
+					</isNotEmpty>
+					<isEmpty prepend="and" property="TreeBranID">
+						1 = 0
+					</isEmpty>
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						A.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						A.UserName like #UserName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="SysType">
+						A.SysType = #SysType#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.UserCode
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="UserCode"
+						estimate="orderbys">
+						A.#UserCode#
+					</isNotNull>
+					<isNotNull prepend="," property="UserName"
+						estimate="orderbys">
+						A.#UserName#
+					</isNotNull>
+					<isNotNull prepend="," property="Gender"
+						estimate="orderbys">
+						A.#Gender#
+					</isNotNull>
+					<isNotNull prepend="," property="Tel"
+						estimate="orderbys">
+						A.#Tel#
+					</isNotNull>
+					<isNotNull prepend="," property="DSC"
+						estimate="orderbys">
+						A.#DSC#
+					</isNotNull>
+					<isNotNull prepend="," property="Valided"
+						estimate="orderbys">
+						A.#Valided#
+					</isNotNull>
+					<isNotNull prepend="," property="LinkCode"
+						estimate="orderbys">
+						A.#LinkCode#
+					</isNotNull>
+					<isNotNull prepend="," property="BranInfo"
+						estimate="orderbys">
+						#BranInfo#
+					</isNotNull>
+					<isNotNull prepend="," property="BDate"
+						estimate="orderbys">
+						#BDate#
+					</isNotNull>
+					<isNotNull prepend="," property="EDate"
+						estimate="orderbys">
+						#EDate#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="用户序号" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="UserName" label="用户名称" dataType="string" />
+				<Field name="DSC" label="说明" dataType="string" />
+				<Field name="Password" label="说明" dataType="string" />
+				<Field name="Gender" label="性别" dataType="string"
+					dropDown="ddGender" align="center" />
+				<Field name="BirthDate" label="出生日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="Nation" label="民族" dataType="string"
+					align="center" />
+				<Field name="NativePlace" label="籍贯" dataType="string" />
+				<Field name="Education" label="文化程度" dataType="string" />
+				<Field name="UserNO" label="工号" dataType="string" />
+				<Field name="Party" label="社团党派" dataType="string" />
+				<Field name="Wedlock" label="婚姻" dataType="string"
+					align="center" dropDown="ddWedlock" />
+				<Field name="Graduate" label="毕业学校" dataType="string" />
+				<Field name="Love" label="个人喜好" dataType="string" />
+				<Field name="IDNO" label="身份证号" dataType="string"
+					align="center" />
+
+				<Field name="Tel" label="联系电话" dataType="string" />
+				<Field name="MTel" label="移动电话" dataType="string" />
+				<Field name="WTel" label="工作电话" dataType="string" />
+				<Field name="EMail" label="电子邮件" dataType="string" />
+				<Field name="Address" label="联系地址" dataType="string" />
+
+				<Field name="PostNo" label="邮政编码" dataType="string" />
+				<Field name="InDate" label="录用日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="Headship" label="当前职务" dataType="string" />
+				<Field name="Valided" label="状态" dataType="string"
+					align="center" />
+				<Field name="LastDate" label="登录时间" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="LastArea" label="登录位置" dataType="string" />
+				<Field name="BDate" label="启用日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="EDate" label="终止日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="LinkCode" label="关联编码" dataType="string" />
+				<Field name="BranInfo" label="默认机构" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">
+					refreshLabels();
+				</Event>
+				<Event name="afterScroll">
+					refreshLabels();
+				</Event>
+			</Events>
+		</Dataset>
+
+		<!-- IP数据集 -->
+		<Dataset id="dsIPAllow" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<MasterLink masterDataset="dsUser"
+				detailKeyFields="UserID" masterKeyFields="UserID"
+				loadAsNeeded="false" />
+			<Data type="statement">
+				<![CDATA[
+				select UserID, IP, DSC, SNO, AllowType 
+				from Sys_User_IPAllow
+				where UserID = #UserID# and AllowType = '0'
+				order by SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="UserID" dataType="long"
+					readOnly="true" />
+				<Field name="IP" label="允许访问的IP地址" dataType="string"
+					readOnly="false" />
+				<Field name="DSC" label="备注描述" dataType="string"
+					readOnly="false" />
+				<Field name="SNO" label="序号" dataType="long"
+					readOnly="false" />
+				<Field name="AllowType" label="类型" dataType="string"
+					readOnly="false" />
+			</Fields>
+		</Dataset>
+		
+		<!-- 禁止IP数据集 -->
+		<Dataset id="dsIPDisable" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<MasterLink masterDataset="dsUser"
+				detailKeyFields="UserID" masterKeyFields="UserID"
+				loadAsNeeded="false" />
+			<Data type="statement">
+				<![CDATA[
+				select UserID, IP, DSC, SNO, AllowType 
+				from Sys_User_IPAllow
+				where UserID = #UserID# and AllowType = '1'
+				order by SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="UserID" dataType="long"
+					readOnly="true" />
+				<Field name="IP" label="禁止访问的IP地址" dataType="string"
+					readOnly="false" />
+				<Field name="DSC" label="备注描述" dataType="string"
+					readOnly="false" />
+				<Field name="SNO" label="序号" dataType="long"
+					readOnly="false" />
+				<Field name="AllowType" label="类型" dataType="string"
+					readOnly="false" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddGender" type="ListDropDown" mapValue="true"
+			autoDropDown="true" fixed="true">
+			<DropDownItem label="男" value="1" />
+			<DropDownItem label="女" value="0" />
+		</Control>
+
+		<Control id="ddWedlock" type="ListDropDown" mapValue="true"
+			autoDropDown="true" fixed="true">
+			<DropDownItem label="" value="0" />
+			<DropDownItem label="已婚" value="1" />
+		</Control>
+
+		<!-- 用户表格 -->
+		<Control id="tbUser" type="DataTable" dataset="dsUser"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysUserManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Valided" field="Valided" width="30"
+				headerClickable="true" dataOrder="true">
+				<Events>
+					<Event name="onRefresh">
+						return changeUserImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="UserCode" field="UserCode" width="100"
+				headerClickable="true" dataOrder="true" />
+			<Column name="UserName" field="UserName" width="130"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Gender" field="Gender" width="30"
+				headerClickable="true" dataOrder="true" />
+			<Column name="DSC" field="DSC" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="UserNO" field="UserNO" width="50"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BDate" field="BDate" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="EDate" field="EDate" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BranInfo" field="BranInfo" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="LinkCode" field="LinkCode" width="60"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Tel" field="Tel" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Column name="MTel" field="MTel" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Column name="WTel" field="WTel" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Column name="EMail" field="EMail" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Address" field="Address" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Wedlock" field="Wedlock" width="30"
+				headerClickable="true" dataOrder="true" />
+			<Column name="Nation" field="Nation" width="30"
+				headerClickable="true" dataOrder="true" />
+
+			<Column name="LastDate" field="LastDate" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="LastArea" field="LastArea" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Events>
+				<Event name="onDblClick">
+					<![CDATA[
+						
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+		<!-- IP访问表格 -->
+		<Control id="tbAllowIP" type="DataTable" dataset="dsIPAllow"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysUserIPManager">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="IP" field="IP" width="150" />
+			<Column name="DSC" field="DSC" width="150" />
+		</Control>
+		
+		<!-- 禁止IP访问表格 -->
+		<Control id="tbDisableIP" type="DataTable" dataset="dsIPDisable"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysUserIPManager">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="IP" field="IP" width="150" />
+			<Column name="DSC" field="DSC" width="150" />
+		</Control>
+		
+		<Control id="spPanel1" type="SplitPanel" orientation="vertical"
+			position="60%" showButtons="fasle" />
+
+		<Control id="pilotUser" type="DataPilot" dataset="dsUser"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{
+					if (objPar.TreeBranID != 0)
+						dsUser.parameters().setValue("TreeBranID", objPar.TreeBranID,"long");
+					else
+						dsUser.parameters().setValue("TreeBranID", 0,"long");
+						
+					if (objPar.SysType)
+						dsUser.parameters().setValue("SysType", objPar.SysType,"long");
+					dsUser.parameters().setValue("UserCode", objPar.UserCode,"string");
+					dsUser.parameters().setValue("UserName", objPar.UserName,"string");
+					dsUser.flushData();
+				}
+				
+				/*
+				function searchDT()
+				{
+					var curUserID;
+				 	if (dsUser.getVisibleCount()>0)
+				 	{
+				 		curUserID = dsUser.getValue("UserID");
+				 		dsIPAllow.parameters().setValue("UserID", curUserID, "long");
+				 		dsIPAllow.flushData();
+				 		dsIPDisable.parameters().setValue("UserID", curUserID, "long");
+				 		dsIPDisable.flushData();
+				 	}
+				 	else
+				 	{
+				 		dsIPAllow.clearData();
+				 		dsIPDisable.clearData();
+				 	}
+				}
+				*/
+				
+				//修改Cell样式
+				function changeUserImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'usernormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'userabort.gif';
+							hint = "此用户已经被停用";
+						}
+						
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //修改Cell样式
+				function changeGroupImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'groupabort.gif';
+							hint = "此组已经被停用";
+						}
+						cell.innerHTML = '<img src="' + __CONTEXT_PATH +'/exhibit/sysimgs/' + filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsUser;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+				
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					
+					var obj=new Object();
+					obj.Dataset=dsUser;
+					obj.DBGrid=tbUser;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsUser.getContext(), obj);
+					
+					//var obj=new Object();
+					//obj.Dataset=dsGroup;
+					//obj.DBGrid=tbGroup;
+					//relating.put(dsGroup.getContext(), obj);
+					
+					//var obj=new Object();
+					//obj.Dataset=dsBran;
+					//obj.DBGrid=tbBran;
+					//relating.put(dsBran.getContext(), obj);
+					
+					toolBar.Relating=relating;
+				}
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>用户IP限制查询</b> &nbsp;&nbsp;查看及维护系统用户IP限制相关信息');
+				refreshLabels();
+				dsUser.parameters().setValue("TreeBranCode", "none", "string");
+			]]>
+		</Event>
+	</Events>
+</View>
+

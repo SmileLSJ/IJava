@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统通知查询
+	乔武军设计      
+	2008.01.09  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false"
+	context="SysNotifyManager">
+	<Datasets>
+		<!-- 公告数据集 -->
+		<Dataset id="dsNotify" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysNotifyManager">
+			<Data type="statement">
+				<![CDATA[
+					select NotifyID, Title, InDate, BDate, EDate, Valided
+					from Sys_Notify
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<![CDATA[
+					BDate >= #BDate# and BDate <= #EDate#
+					]]>
+					<isNotEmpty prepend="and" property="Note" open="%"
+						close="%">
+						Note like #Note#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="Title" open="%"
+						close="%">
+						Title like #Title#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						NotifyID desc
+					</isNotParameterPresent>
+
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="InDate"
+						estimate="orderbys">
+						#InDate#
+					</isNotNull>
+					<isNotNull prepend="," property="Title"
+						estimate="orderbys">
+						#Title#
+					</isNotNull>
+					<isNotNull prepend="," property="BDate"
+						estimate="orderbys">
+						#BDate#
+					</isNotNull>
+					<isNotNull prepend="," property="EDate"
+						estimate="orderbys">
+						#EDate#
+					</isNotNull>
+					<isNotNull prepend="," property="Valided"
+						estimate="orderbys">
+						#Valided#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="NotifyID" label="序号" dataType="string" />
+				<Field name="Title" label="标题" dataType="string" />
+				<Field name="InDate" label="录入日期" dataType="date" />
+				<Field name="BDate" label="开始日期" dataType="date" />
+				<Field name="EDate" label="结束日期" dataType="date" />
+				<Field name="Valided" label="生效" dataType="boolean" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">refreshLabels();</Event>
+				<Event name="afterScroll">refreshLabels();</Event>
+			</Events>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<!-- 公告表格 -->
+		<Control id="tbNotify" type="DataTable" dataset="dsNotify"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysNotifyManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Valided" field="Valided" width="30"
+				headerClickable="true" dataOrder="true" align="center">
+			</Column>
+			<Column name="Title" field="Title" width="350"
+				headerClickable="true" dataOrder="true" />
+			<Column name="BDate" field="BDate" width="80"
+				headerClickable="true" dataOrder="true" align="center" />
+			<Column name="EDate" field="EDate" width="80"
+				headerClickable="true" dataOrder="true" align="center" />
+			<Column name="InDate" field="InDate" width="80"
+				headerClickable="true" dataOrder="true" align="center" />
+		</Control>
+
+		<Control id="pilotNotify" type="DataPilot" dataset="dsNotify"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function strToDate(str,isLastTime)
+				{
+					var newDate;
+					var arys= new Array();
+					arys=str.split('-');
+					if (isLastTime == false)
+						newDate=new Date(arys[0],arys[1]-1,arys[2]); 
+					else
+					 	newDate=new Date(arys[0],arys[1]-1,arys[2],23,59,59); 
+					return newDate;
+				} 
+				
+				function search(objPar)
+				{
+					dsNotify.parameters().setValue("BDate", strToDate(objPar.BDate,false),"datetime");
+					dsNotify.parameters().setValue("EDate", strToDate(objPar.EDate,true),"datetime");
+					dsNotify.parameters().setValue("Title", objPar.Title,"string");
+					dsNotify.parameters().setValue("Note", objPar.Note,"string");
+					dsNotify.flushData();
+				}
+				
+	  		    //刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsNotify;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+				
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					
+					var obj=new Object();
+					obj.Dataset=dsNotify;
+					obj.DBGrid=tbNotify;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsNotify.getContext(), obj);
+					
+					toolBar.Relating=relating;
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				refreshLabels();
+				setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>系统通知</b> &nbsp;&nbsp;查看系统通知相关信息</p>');
+			]]>
+		</Event>
+	</Events>
+</View>
+

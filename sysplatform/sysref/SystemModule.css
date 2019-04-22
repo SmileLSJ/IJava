@@ -1,0 +1,26 @@
+.titleHint {
+	border:1px #c0c0c0 solid;
+	background-color: #e3e3e3;
+	font:"ËÎÌו";
+	font-size:14px;
+}
+
+
+.titleHintLeft {
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:2px;
+	padding-bottom:1px;
+	padding-left:24px;
+	padding-right:0px;
+	text-align:left;
+	background-image:url(hint.gif);
+}
+
+.titleHintRight {
+	padding-top:2px;
+	padding-bottom:1px;
+	padding-left:0px;
+	padding-right:0px;
+	text-align:right;
+}

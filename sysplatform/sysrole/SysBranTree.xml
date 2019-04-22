@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false" dropDownBox="custom">
+	<Datasets>
+		<Dataset id="dsBranTree" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false">
+			<Data type="statement">
+				<![CDATA[  
+				select A.BranID, A.BranCode, A.BranName, A.BranCode || '-' || A.BranName as BranInfo, A.Path, count(B.BranCode) as SubCount
+				from Sys_Bran A left join Sys_Bran B 
+					on A.BranID = B.PBranID and A.MCID = %{#session.CheckIn.MCID}
+				where A.PBranID = #PBranID# or A.BranID = #BranID#
+				group by A.BranID, A.BranCode, A.BranName, A.BranCode || '-' || A.BranName, A.Path
+				order by A.BranCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="" dataType="long" />
+				<Field name="BranCode" label="" dataType="string" />
+				<Field name="BranName" label="" dataType="string" />
+				<Field name="BranInfo" label="" dataType="string" />
+				<Field name="Path" label="" dataType="string" />
+				<Field name="SubCount" label="" dataType="long" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsResult" type="Custom" insertOnEmpty="true">
+			<Fields>
+				<Field name="BranID" dataType="long" />
+				<Field name="BranCode" dataType="string" />
+				<Field name="BranName" dataType="string" />
+				<Field name="BranInfo" dataType="string" />
+				<Field name="BranPath" dataType="string" />
+				<Field name="BranLevel" dataType="long" />
+				<Field name="IsLeaf" dataType="boolean" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="TreeInfo" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					<![CDATA[
+					TreeInfo.setCheckableLinkage(false);
+					
+					if (node.children().getLength()>0) return;
+					var dataset = dsBranTree;
+					dataset.parameters().clear();
+					var BMP = "%{#session.CheckIn.ApplicationRoot}/exhibit/sysimgs/node1.gif";
+					if (node.getLevel() !== 0)
+					{
+						BMP = "%{#session.CheckIn.ApplicationRoot}/exhibit/sysimgs/node2.gif";
+						dataset.parameters().setValue("PBranID", node.CurBranID,"long");
+						dataset.parameters().setValue("BranID", -1, "long");
+					}
+					else
+					{
+						if((g_ParamNames.length == g_ParamValues.length) && (g_ParamNames.length > 0))
+						{ 
+							for(var	i=0; i < g_ParamNames.length; i++){
+								dataset.parameters().setValue(g_ParamNames[i].trim(), g_ParamValues[i].trim());
+							} 
+						} 
+						else
+						{
+							dataset.parameters().setValue("BranID", __LOGIN_INFO.BranID, "long");
+							dataset.parameters().setValue("PBranID", -1, "long");
+						}
+					}
+						
+					
+					dataset.flushData();
+				    
+				  	while (!dataset.isLast())
+				  	{
+					     var label = dataset.getString("BranInfo");
+					     var newNode = tree.addNode(node, label);
+					     newNode.setHasChild(dataset.getValue("SubCount") > 0);
+					     newNode.CurBranID = dataset.getValue("BranID");
+					     newNode.CurBranPath = dataset.getValue("Path");
+					     newNode.CurBranName = dataset.getValue("BranName");
+					     newNode.CurBranCode = dataset.getValue("BranCode");
+					     newNode.CurBranInfo = dataset.getValue("BranInfo");
+					     newNode.CurLevel = newNode.getLevel();
+					     newNode.setIcon(BMP);
+					     newNode.setExpandedIcon(BMP);
+					     dataset.moveNext();
+					     newNode.setChecked(false);
+					     //newNode.setCheckable(true);
+				    }
+				    if (node.getLevel() == 0)
+				    	newNode.setExpanded(true);
+					]]>
+				</Event>
+				<Event name="onClick">
+					selectValue();
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="onInit"> 
+			<![CDATA[ 
+				
+			]]>
+		</Event>
+
+		<Event name="functions">
+			<![CDATA[
+			    var	g_ParamNames = "%{#parameters["paramName"]}"; 
+				var	g_ParamValues = "%{#parameters["paramValue"]}";
+				
+				if (g_ParamNames.length > 0)
+				{
+					g_ParamNames = g_ParamNames.split(","); 
+					g_ParamValues = g_ParamValues.split(",");
+				}
+			    
+				function selectValue()
+				{
+					if (TreeInfo.getCurrentNode()) 
+					{
+						var node = TreeInfo.getCurrentNode();
+						dsResult.setValue("BranID", node.CurBranID, "long");
+						dsResult.setValue("BranCode", node.CurBranCode, "string");
+						dsResult.setValue("BranName", node.CurBranName, "string");
+						dsResult.setValue("BranInfo", node.CurBranInfo, "string");
+						dsResult.setValue("BranPath", node.CurBranPath, "string");
+						dsResult.setValue("BranLevel", node.CurLevel, "long");
+						dsResult.setValue("IsLeaf", !node.isHasChild(), "boolean");
+						DropDown.closeFrame(dsResult.getCurrent());
+					}
+				}
+			]]>
+		</Event>
+	</Events>
+</View>

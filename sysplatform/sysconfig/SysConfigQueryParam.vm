@@ -1,0 +1,34 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>参数选择</title>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+<div class="searchCondition">
+<div class="module">
+	<h2>用户选项:</h2>
+	<div>
+		<p>配置类型</p>
+		<div>#fktexteditor("id=CfgGroup")</div>
+	</div>
+	<div>
+		<p>配置编码</p>
+		<div>#fktexteditor("id=CfgCode")</div>
+	</div>
+	<div>
+		<p>配置名称</p>
+		<div>#fktexteditor("id=CfgName")</div>
+	</div>
+</div>
+</div>
+<div class="searchButton">
+<div class="refresh" onclick="window.location.reload();">刷新</div><div class="search" onclick="paramSearch();">查询</div>
+</div>
+	
+	</body>
+#end
+
+</html>

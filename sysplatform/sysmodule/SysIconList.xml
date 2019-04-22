@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="datasetDropDown" type="Custom" insertOnEmpty="true">
+			<Fields>
+				<Field name="ICON" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				var clientHeight;//下拉框页面高度
+				var clientWidth;//下拉框页面宽度
+				var rows;//图标行数
+				var cols;//图标列数
+				var pages;//页数
+				var pageSize;//每页显示图标数
+				function selectIcon(value){
+					datasetDropDown.setValue("ICON", value, "string");
+					DropDown.closeFrame(datasetDropDown.getCurrent());
+				}
+				
+				function showPage(totalpage,page){
+					//隐藏所有图标
+					for(var i=1;i<=totalpage;i++){
+						document.getElementById('div-container_'+i).style.display = 'none';
+					}
+					//显示指定页图标
+					document.getElementById('div-container_'+page).style.display = 'inline';
+					//更新下方分页条
+					var divpagebar = document.getElementById('div-pagebar');
+					var _innerHTML = '';
+					for(var j=1;j<=totalpage;j++){
+						if(j==page){
+							_innerHTML += '<span class="current">' + j + '</span>';
+						}
+						else{
+							_innerHTML += '<a href="#" onclick="showPage('+totalpage+','+j+')">'+j+'</a>';
+						}
+					}
+					divpagebar.innerHTML = _innerHTML;
+				}
+				
+				//初始化图标位置
+				function initDivIcons(){
+					var cmd = buildKingfisherElement("RPCCommand",null,"cmdTest");
+					cmd.setAction("/retrieve.do?className=session.sys.SysManagerDAO&ferry=set&method=getSysSmallImage");
+					cmd.setShowLoadingTip(false);
+					if (!cmd.execute()) return;
+					
+					var divIcons = cmd.outParameters().getValue("SmallImage").split(";");
+				
+					clientHeight = document.body.clientHeight;
+					clientWidth = document.body.clientWidth;
+					cols = Math.floor(clientWidth / (16+3+3)); //16像素图片+padding3
+					rows = Math.floor((clientHeight-10) / (16+3)) - 1;//下方分页条占一行
+					pageSize = parseInt(rows,10)*parseInt(cols,10);
+					pages = Math.ceil(divIcons.length / pageSize);
+				
+					var _innerHTML = '';
+					for(var i=1;i<=divIcons.length-1;i++){
+						if(i % pageSize == 1){
+							_innerHTML += '<div style="display:'+(i==1?'inline;':'none;')+'" id="div-container_'+(Math.ceil(i/pageSize))+'">';
+						}
+						_innerHTML += '<div class="divIcon"><img width="16" height="16" alt="'+divIcons[i-1]+'"'
+									  + ' onclick="selectIcon(\''+divIcons[i-1]+'\')" src="'+__CONTEXT_PATH+'/'+divIcons[i-1]
+									  +'"></img></div>';
+						if(i % pageSize == 0){
+							_innerHTML += '</div>';
+						}
+					}
+					
+					if(i % pageSize != 0){
+						_innerHTML += '</div>';
+					}
+					
+					//最后加上分页条
+					_innerHTML += '<div id="div-pagebar" class="manu"></div>';
+					document.body.innerHTML += _innerHTML;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				initDivIcons();
+				showPage(pages,1);
+			]]>
+		</Event>
+	</Events>
+</View>

@@ -1,0 +1,59 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>角色人员设置</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<style type="text/css">
+	.button{overflow: hidden; padding: 0!important;}
+	.button img{margin: 0!important;}
+</style>
+</head>
+
+#fkview("config=${cfgFileName}")
+
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+		<div class="subwindowCondition">
+			<table border="0" width="100%" height="100%">
+						<tr>
+							<td width="47%">#fkdatatable("id=tbNotDisUser")</td>
+							<td width="6%">
+							<table border="0" width="100%" height="100%">
+								<tr>
+									<td height="30%"></td>
+								</tr>
+								<tr>
+									<td height="25" align="center">#fkbutton("id=btnMoveIn")</td>
+								</tr>
+								<tr>
+									<td height="25" align="center">#fkbutton("id=btnMoveInAll")</td>
+								</tr>
+								<tr>
+									<td height="25" align="center">#fkbutton("id=btnMoveOut")</td>
+								</tr>
+								<tr>
+									<td height="25" align="center">
+										#fkbutton("id=btnMoveOutAll")
+									</td>
+								</tr>
+								<tr>
+									<td height="30%"></td>
+								</tr>
+							</table>
+
+							</td>
+							<td width="47%">#fkdatatable("id=tbDisUser")</td>
+						</tr>
+					</table>
+		</div>
+		<div class="subwindowButton">
+			<div class="btnOK">
+				#fkbutton("id=btnClose")
+			</div>
+			<div style="color: #0000CC;float: left;height: 30px;line-height: 30px;margin: 9px 0;">提示：人员分配后数据自动保存！</div>
+		</div>
+	</body>
+#end
+
+</html>

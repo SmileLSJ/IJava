@@ -1,0 +1,42 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>重置密码</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+		<div class="subwindowCondition">
+			<div class="module">
+				<div>
+					<span style="width: 50px;">用户：</span>
+					<div>
+						#fktexteditor("id=UserCode")
+					</div>
+				</div>
+				<div>
+					<span style="width: 50px;">名称：</span>
+					<div>
+						#fktexteditor("id=UserName")
+					</div>
+				</div>
+				<div>
+					<span style="width: 100%;color: #FF0000;text-align: center;">密码将重置为“000000”</span>
+				</div>
+			</div>
+		</div>
+		<div class="subwindowButton">
+			<div class="btnOK">
+				#fkbutton("id=btnOK")
+			</div>
+			<div class="btnClose">
+				#fkbutton("id=btnClose")
+			</div>
+		</div>
+	</body>
+#end
+
+</html>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false" context="SysFinBranManager">
+	<Datasets>
+		<Dataset id="dsFB" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="true" showLoadingTip="false"
+			context="SysFinBranManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.FBID, A.FBCode, A.FBName, A.DSC, A.LinkMan, A.Tel, A.Fax, 
+					A.MTel, A.PostCode, A.Address, A.Bank, A.BankCode, A.TaxNo, A.LegalPSN 
+				from Sys_FB A 
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					1=1 and A.MCID = %{#session.CheckIn.MCID}
+					<isNotEmpty prepend="and" property="FBCode"
+						close="%">
+						A.FBCode like #FBCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="FBName"
+						open="%" close="%">
+						A.FBName like #FBName#
+					</isNotEmpty>
+				</Dynamic>
+				order by A.FBCode
+			</Data>
+			<Fields>
+				<Field name="FBID" label="序号" dataType="long" />
+				<Field name="FBCode" label="财务机构编码" dataType="string" />
+				<Field name="FBName" label="财务机构名称" dataType="string" />
+				<Field name="DSC" label="备注说明" dataType="string" />
+				<Field name="LinkMan" label="联系人" dataType="string"/>
+				<Field name="Tel" label="联系电话" dataType="string" />
+				<Field name="Fax" label="联系传真" dataType="string" />
+				<Field name="MTel" label="移动电话" dataType="string"/>
+				<Field name="PostCode" label="邮政编码" dataType="string" />
+				<Field name="Address" label="联系地址" dataType="string" />
+				<Field name="Bank" label="开户银行" dataType="string" />
+				<Field name="BankCode" label="银行账号" dataType="string" />
+				<Field name="TaxNo" label="纳税编号" dataType="string" />
+				<Field name="LegalPSN" label="法人" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">
+					searchDT();
+				</Event>
+				<Event name="afterScroll">
+					searchDT();
+				</Event>
+			</Events>
+		</Dataset>
+		
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="true" showLoadingTip="false"
+			context="SysBranManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.BranID, A.BranCode, A.BranName, A.DSC 
+				from Sys_Bran A, Sys_FB_Bran B
+				where A.BranID = B.BranID and B.FBID = #FBID#
+				order by A.BranCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="BranCode" label="业务机构编码" dataType="string"/>
+				<Field name="BranName" label="业务机构名称" dataType="string" />
+				<Field name="DSC" label="备注说明" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="tbFB" type="DataTable" dataset="dsFB"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysFinBranManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="FBCode" field="FBCode" width="120" align="center"/>
+			<Column name="FBName" field="FBName" width="180" />
+			<Column name="LinkMan" field="LinkMan" width="80" />
+			<Column name="Tel" field="Tel" width="100" />
+			<Column name="Fax" field="Fax" width="100" />
+			<Column name="MTel" field="MTel" width="100" />
+			<Column name="PostCode" field="PostCode" width="80" align="center"/>
+			<Column name="Address" field="Address" width="200" />
+			<Column name="Bank" field="Bank" width="100" />
+			<Column name="BankCode" field="BankCode" width="100" />
+			<Column name="TaxNo" field="TaxNo" width="100" align="center"/>
+			<Column name="LegalPSN" field="LegalPSN" width="100" />
+			<Column name="DSC" field="DSC" width="200" />
+		</Control>
+		
+		<Control id="tbBran" type="DataTable" dataset="dsBran"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysBranManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="BranCode" field="BranCode" width="100" align="center"/>
+			<Column name="BranName" field="BranName" width="150" />
+			<Column name="DSC" field="DSC" width="200" />
+		</Control>
+
+		<Control id="spPanel1" type="SplitPanel" orientation="vertical"
+			position="40%" showButtons="fasle" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{
+					dsFB.parameters().clear();
+					dsFB.parameters().setValue("FBCode", objPar.FBCode,"string");
+					dsFB.parameters().setValue("FBName", objPar.FBName,"string");
+					dsFB.flushData();
+				}
+				
+				function searchDT()
+				{
+					if (dsFB.getVisibleCount()>0)
+				 	{
+				 		dsBran.parameters().setValue("FBID", dsFB.getValue("FBID"), "long");
+				 		dsBran.flushData();
+				 	}
+				 	else
+				 	{
+				 		dsBran.clearData();
+				 	}
+				}
+				
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					
+					var obj=new Object();
+					obj.Dataset=dsFB;
+					obj.DBGrid=tbFB;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsFB.getContext(), obj);
+					
+					toolBar.Relating=relating;
+				}
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>财务机构查询</b> &nbsp;&nbsp;查看及维护财务机构相关信息');
+			]]>
+		</Event>
+	</Events>
+</View>
+

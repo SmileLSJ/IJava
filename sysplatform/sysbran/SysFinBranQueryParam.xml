@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<View skin="default" showDialogOnLoadingData="false">
+	<Controls>
+		<Control id="FBCode" type="TextEditor" width="97%" />
+		<Control id="FBName" type="TextEditor" width="97%" />
+		<Control id="buttonSearch" type="Button" value="查询" 
+			width="75" decorate="%{applicationRoot}/exhibit/sysimgs/search.gif">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					parent.transfer({FBCode:FBCode.value,FBName:FBName.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+</View>
+

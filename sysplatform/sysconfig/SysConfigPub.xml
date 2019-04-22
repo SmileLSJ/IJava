@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View>
+	<Datasets>
+		<Dataset id="dsQuery_CodeDupEdit" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Config where CfgID &lt;&gt; #CfgID# and CfgCode=#CfgCode# and mcid = %{#session.CheckIn.MCID}" />
+		<Dataset id="dsQuery_CodeDupNew" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Config where CfgCode=#CfgCode# and mcid = %{#session.CheckIn.MCID}" />
+
+		<Dataset id="dsConfig_Find" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Config where CfgID = #CfgID# and mcid = %{#session.CheckIn.MCID}" />
+
+		<Dataset id="dsConfig_Delete" type="SimpleUpdate"
+			sql="delete from Sys_Config where CfgID = #CfgID# and mcid = %{#session.CheckIn.MCID}" />
+	</Datasets>
+</View>

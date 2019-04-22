@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+					select BranID, BranCode || '-' || BranName as BranInfo
+					from Sys_Bran
+					
+					order by BranCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="" dataType="long" />
+				<Field name="BranInfo" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsDept" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql" type="Wrapper"
+			loadOnPageOpen="false">
+			<Data type="statement">
+				<![CDATA[  
+				select A.DeptID,A.DeptCode  || '-' || A.DeptName as DeptInfo, COUNT(B.DeptCode)as SubCount 
+				  from Bas_Dept A left join Bas_Dept B on A.DeptID=B.PDeptID
+				]]>
+				<Dynamic prepend="where">
+					1=1
+					<isEmpty prepend="and" property="PDeptID">
+						nvl(A.PDeptID,0) = 0
+					</isEmpty>
+					<isNotNull prepend="and" property="PDeptID">
+					    A.PDeptID=#PDeptID#
+					</isNotNull>
+					<isNotNull prepend="and" property="BranID">
+					    A.BranID = #BranID#
+					</isNotNull>
+				</Dynamic>
+				group by A.DeptID, a.DeptCode || '-' || A.DeptName
+                order by a.DeptCode || '-' || A.DeptName
+			</Data>
+			<Fields>
+				<Field name="DeptID" label="" dataType="int" />
+				<Field name="DeptInfo" label="" dataType="string" />
+				<Field name="SubCount" label="" dataType="int" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<!-- 模块树 -->
+		<Control id="trDeptInfo" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					expandNode(tree, node);
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnSave" type="Button" value="保存" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionDataset = callObjectInfo.Dataset;
+				var v_UserID = actionDataset.getValue('UserID');
+								
+				document.write("<script type='text/javascript' src='" + __CONTEXT_PATH + "/exhibit/sysref/SysOperator.js'></sc"+"ript>");
+				
+				//初始化
+				function iniData()
+				{
+					var Result = sysSQLSelect("select '(' || UserCode || ') '|| UserName as UserInfo from Sys_User where UserID = " + v_UserID);
+					if (Result)
+					{
+						lbl_Title.innerText = "  " +Result.outParameters().getValue("UserInfo");
+					}
+				}
+				
+				function setBranTreeStatus(node){
+					var sql = "select count(1) as CNT from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+						"start with BranID = " + node.BranID + " and PDeptID = 0 connect by prior DeptID = PDeptID) where IsLeaf = 1";
+					var i = sysExecSQL(sql).outParameters().getValue("CNT");
+					sql = "select count(1) as PerCNT from Sys_User_Dept a inner join (" +
+						"select DeptID from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+						"start with BranID = " + node.BranID + " and PDeptID = 0 connect by prior DeptID = PDeptID) where IsLeaf = 1) b " +
+						"on a.DeptID = b.DeptID where UserID=" + v_UserID;
+					var n = sysExecSQL(sql).outParameters().getValue("PerCNT");
+					if (n == 0)
+						node.setChecked(false);
+					else if (i==n)
+						node.setChecked(true);
+					else {
+						node.setChecked(true);
+						node.setHalfmoon(true);
+					}
+				}
+				
+				function setDeptTreeStatus(pnode, node){
+					if (pnode.isChecked() && (!pnode.isHalf()))
+						node.setChecked(true);
+					else if (!pnode.isChecked())
+						node.setChecked(false);
+					else {
+						if (node.isHasChild()){
+							var sql = "select count(1) as CNT from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+								"start with BranID = " + node.BranID + " and PDeptID = " + node.DeptID + " connect by prior DeptID = PDeptID) where IsLeaf = 1";
+							var i = sysSQLSelect(sql).outParameters().getValue("CNT");
+							sql = "select count(1) as PerCNT from Sys_User_Dept a inner join (" +
+								"select DeptID from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+								"start with BranID = " + node.BranID + " and PDeptID = " + node.DeptID + " connect by prior DeptID = PDeptID) where IsLeaf = 1) b " +
+								"on a.DeptID = b.DeptID where UserID=" + v_UserID;
+							var n = sysSQLSelect(sql).outParameters().getValue("PerCNT");
+						}
+						else{
+							var sql = "select count(1) as CNT from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+								"start with BranID = " + node.BranID + " and DeptID = " + node.DeptID + " connect by prior DeptID = PDeptID) where IsLeaf = 1";
+							var i = sysSQLSelect(sql).outParameters().getValue("CNT");
+							sql = "select count(1) as PerCNT from Sys_User_Dept a inner join (" +
+								"select DeptID from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+								"start with BranID = " + node.BranID + " and DeptID = " + node.DeptID + " connect by prior DeptID = PDeptID) where IsLeaf = 1) b " +
+								"on a.DeptID = b.DeptID where UserID=" + v_UserID;
+							var n = sysSQLSelect(sql).outParameters().getValue("PerCNT");
+						}
+						if (n == 0)
+							node.setChecked(false);
+						else if (i==n)
+							node.setChecked(true);
+						else {
+							node.setChecked(true);
+							node.setHalfmoon(true);
+						}
+					}
+				}
+				
+				//展开树
+				function expandNode(tree, node)
+				{
+					if (v_UserID === 0) return;
+
+					if (node.children().getLength()>0) return;
+					var treeLevel = node.getLevel();
+					var status = 0;
+					//一级
+					if (treeLevel === 0){
+						dsBran.flushData();
+						while (!dsBran.isLast()){
+							var curNode = tree.addNode(node, dsBran.getValue("BranInfo"));
+							curNode.BranID = dsBran.getValue("BranID");
+							curNode.DeptID = 0;
+							curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/store.png");
+							curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/store.png");
+							curNode.setCheckable(true);
+							setBranTreeStatus(curNode);
+							dsBran.moveNext();
+						}
+					}
+					
+					//二级
+					else if (treeLevel > 0)
+					{
+						dsDept.parameters().setValue("BranID", node.BranID, "long");
+						if (treeLevel == 1)
+							dsDept.parameters().setValue("PDeptID", 0, "long");
+						else
+							dsDept.parameters().setValue("PDeptID", node.DeptID, "long");
+						dsDept.flushData();
+						var bmp = "%{applicationRoot}/exhibit/sysimgs/node2.gif";
+						if (treeLevel == 1)
+							bmp = "%{applicationRoot}/exhibit/sysimgs/node1.gif";
+						else if (treeLevel == 2)
+							bmp = "%{applicationRoot}/exhibit/sysimgs/node4.gif";
+						while (!dsDept.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsDept.getString("DeptInfo"));
+						     curNode.BranID = node.BranID;
+						     curNode.DeptID = dsDept.getValue("DeptID");
+						     curNode.setIcon(bmp);
+							 curNode.setExpandedIcon(bmp);
+							 curNode.setCheckable(true);
+							 curNode.setHasChild(dsDept.getValue("SubCount") > 0);
+							 setDeptTreeStatus(node,curNode);
+							 dsDept.moveNext();
+						}
+					}
+				}
+				
+	  		    //获取选择数据
+	  		    function getSQL(node)
+	  		    {
+					var subnodes=node.children();
+					var itr=subnodes.iterator();
+					var status = "0";
+					var sql = "";
+					while(itr.hasNext())
+					{
+						var subnode=itr.next();
+						if (!(subnode.isChecked()))
+						{
+							status = "0";
+						}
+						else if(subnode.isChecked() && (!subnode.isHalf()))
+						{
+							status = "1";
+						}
+						else 
+							status = "-1";
+						
+						if (status !== "-1")
+						{
+							if (subnode.getLevel() === 1)
+							{
+								sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_User_Dept where UserID=" + v_UserID + 
+									" and DeptID in (select DeptID from Bas_Dept " + 
+									"start with BranID = " + subnode.BranID + " and PDeptID = 0 connect by prior DeptID = PDeptID)";
+								if (status == '1')
+									sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_User_Dept(UserID, DeptID) " +
+										"select " + v_UserID + ", DeptID  from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+            							"start with BranID = " + subnode.BranID + " and PDeptID = 0 connect by prior DeptID = PDeptID) where IsLeaf = 1 ";
+							}
+							else if (subnode.getLevel() >= 2)
+							{
+								if (subnode.isHasChild()>0){
+									sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_User_Dept where UserID=" + v_UserID + 
+										" and DeptID in (select DeptID from Bas_Dept " + 
+										"start with BranID = " + subnode.BranID + " and DeptID = " + subnode.DeptID + " connect by prior DeptID = PDeptID)";
+									if (status == '1')
+										sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_User_Dept(UserID, DeptID) " +
+											"select " + v_UserID + ", DeptID  from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+	            							"start with BranID = " + subnode.BranID + " and PDeptID = " + subnode.DeptID + " connect by prior DeptID = PDeptID) where IsLeaf = 1 ";
+	            				}
+            					else {
+            						sql += __LOGIN_INFO.SQLSeparator + "delete from Sys_User_Dept where UserID=" + v_UserID + 
+										" and DeptID in (select DeptID from Bas_Dept " + 
+										"start with BranID = " + subnode.BranID + " and DeptID = " + subnode.DeptID + " connect by prior DeptID = PDeptID)";
+									if (status == '1')
+										sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_User_Dept(UserID, DeptID) " +
+											"select " + v_UserID + ", DeptID  from (select DeptID, connect_by_isleaf as IsLeaf from Bas_Dept " + 
+	            							"start with BranID = " + subnode.BranID + " and DeptID = " + subnode.DeptID + " connect by prior DeptID = PDeptID) where IsLeaf = 1 ";
+            					}
+							}	
+						}
+						sql += getSQL(subnode);
+					}
+					return sql;
+	  		    }
+	  		    
+	  		    //准备参数
+	  		    function saveData()
+				{
+					var sql = "";
+					sql = getSQL(trDeptInfo.getTopNode());
+	  		    	sql = sql.substr(__LOGIN_INFO.SQLSeparator.length,sql.length - __LOGIN_INFO.SQLSeparator.length);
+					if (sysSQLUpdate(sql))
+					{
+						smoke.alert("保存成功！");
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				iniData();
+			]]>
+		</Event>
+	</Events>
+</View>
+

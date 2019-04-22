@@ -1,0 +1,141 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>公告回复</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<script type="text/javascript" src="${applicationRoot}/exhibit/sysinfo/tqeditor/TQEditor.js"></script>
+<style type="text/css">
+.spe1
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title1.gif")
+}
+
+.spe2
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title2.gif")
+}
+</style>
+</head>
+
+#fkview("config=${cfgFileName}")
+
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+
+	<table border="0" width="100%" id="table1" height="100%"
+		class="autoform">
+		<tr>
+			<td colspan="3" height="20">
+			<table border="0" width="100%" height="100%" class="titleHint">
+				<tr>
+					<td>
+					<p class="titleHintLeft"><b>公告回复</b> &nbsp;&nbsp;回复公告相关信息</p>
+					</td>
+					<td>
+					<p class="titleHintRight"><label id="lbl_Status"
+						style="color:#0000CC;" /></p>
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+
+		<tr>
+			<td height="100%" width="100%">
+			<table border="0" width="100%" height="100%">
+				<tr>
+					<td>#fktabset("id=tabset1")
+						#fktab("name=tab1")
+							<table border="0" width="100%" id="table1" height="40"
+								class="autoform" bgcolor="#F1F4FA">
+								<tr>
+									<td height="20" style="padding-left:2px;">
+									<p class="spe1" style="width: 220; height: 100%">发送信息</p>
+									</td>
+								</tr>
+								<tr>
+									<td>
+									<table border="0" height="100%">
+										<tr>
+											<td height="22" width="60" align="right"><font
+												color="red">*</font>公告标题&nbsp;</td>
+											<td colspan="3">#fktexteditor("id=Title")</td>
+										</tr>
+										<tr>
+											<td height="22" align="right"><font color="red">*</font>接收对象&nbsp;</td>
+											<td width="183">#fkbutton("id=btnUser")&nbsp;
+												#fkbutton("id=btnGroup")&nbsp;
+												#fkbutton("id=btnBran")</td>
+											<td align="center" width="60">重要程度</td>
+											<td>#fktexteditor("id=Priority")</td>
+										</tr>
+									</table>
+									</td>
+								</tr>
+								<tr>
+									<td height="20" style="padding-left:2px;">
+									<p class="spe2" style="width: 220; height: 100%">公告信息</p>
+									</td>
+								</tr>
+								<tr>
+									<td>
+									<table border="0" height="100%">
+										<tr>
+											<td><textarea name="Note" id="Note" cols="150" rows="50" style="width:600px;height:200px;"></textarea></td>
+											<script type="text/javascript">
+												    var _tqEditor = new tqEditor('Note',{height:'100%',toolbar:['fontsize','fontname','forecolor','backcolor','|','bold','italic','underline','strikethrough','removeformat','|','align','justifyfull','justifynone','list','|','indent','outdent','inserthorizontalrule','createlink','unlink','inserttable','|','insertface','insertimage','insertflash','insertvideo','|','cleanword','typeset']}); 
+											</script>
+										</tr>
+									</table>
+									</td>
+								</tr>
+								<tr height="100%">
+									<td></td>
+								</tr>
+							</table>
+						#end
+						#fktab("name=tab2")
+							#fkdatatable("id=tbUser")
+						#end
+					#end
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+
+		<tr>
+			<td height="22" align="right" style="padding-right:4px;">
+				#fkbutton("id=btnSend")&nbsp; 
+				#fkbutton("id=btnSave")&nbsp; 
+				#fkbutton("id=btnClose")</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+	</table>
+
+	</body>
+#end
+
+</html>

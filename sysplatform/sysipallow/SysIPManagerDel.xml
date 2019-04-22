@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	IP信息删除 
+	乔武军设计      
+	2008.07.12  
+	Width=420 Height=300
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsList" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select SNO, BranID as ID, '(' || IP || ') ' ||
+				DSC as DSC, '' as Result from Sys_Bran_IPAllow
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="SNO"
+						joinSQL="true">
+						SNO in (#SNO#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ID"
+						joinSQL="true">
+						BranID in (#ID#)
+					</isNotEmpty>
+					<isEmpty prepend="and" property="IsBran"
+						joinSQL="true">
+						1=0
+					</isEmpty>
+				</Dynamic>
+				union all
+				select SNO,  GroupID as ID, '(' || IP || ') ' ||
+				DSC as DSC, '' as Result from Sys_Group_IPAllow
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="SNO"
+						joinSQL="true">
+						SNO in (#SNO#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ID"
+						joinSQL="true">
+						GroupID in (#ID#)
+					</isNotEmpty>
+					<isEmpty prepend="and" property="IsGroup"
+						joinSQL="true">
+						1=0
+					</isEmpty>
+				</Dynamic>
+				union all
+				select SNO,  UserID as ID, '(' || IP || ') ' ||
+				DSC as DSC, '' as Result from Sys_User_IPAllow
+				<Dynamic prepend="where">
+					1 = 1
+					<isNotEmpty prepend="and" property="SNO"
+						joinSQL="true">
+						SNO in (#SNO#)
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ID"
+						joinSQL="true">
+						UserID in (#ID#)
+					</isNotEmpty>
+					<isEmpty prepend="and" property="IsUser"
+						joinSQL="true">
+						1=0
+					</isEmpty>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="SNO" label="序号" dataType="long" />
+				<Field name="ID" label="ID" dataType="long" />
+				<Field name="DSC" label="内容" dataType="string" />
+				<Field name="Result" label="结果" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="tbList" type="DataTable" dataset="dsList"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="DSC" field="DSC" width="200" />
+			<Column name="Result" field="Result" width="130" />
+		</Control>
+
+		<Control id="btnOK" type="Button" value="执行" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/exec.gif">
+			<Events>
+				<Event name="onClick">Exec();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var ActionCode = callObjectInfo.ActionCode;
+				var ActionName = callObjectInfo.ActionName;
+				var isBran = false;
+				var isGroup = false;
+				var isUser = false;
+				
+				//执行
+				function Exec()
+				{
+					if (dsList.getVisibleCount()<=0)
+						return;
+					btnOK.setEnabled(false);
+					
+					var sql="";
+					var rd = dsList.getFirstRecord();
+					while(rd)
+					{
+						if (isBran)
+							sql = "delete from Sys_Bran_IPAllow where SNO = " + rd.getValue("SNO") + " and BranID = " + rd.getValue("ID");
+						else if (isGroup)
+							sql = "delete from Sys_Group_IPAllow where SNO = " + rd.getValue("SNO") + " and GroupID = " + rd.getValue("ID");
+						else
+							sql = "delete from Sys_User_IPAllow where SNO = " + rd.getValue("SNO") + " and UserID = " + rd.getValue("ID");
+							
+						if (callObjectInfo.MainObject.callSQLUpdate(sql))
+						{
+							rd.setValue("Result","执行成功");
+							dsList.postRecord();
+							callObjectInfo.Dataset.parameters().clear();
+							window.returnValue = true;
+						}
+						else
+						{
+							rd.setValue("Result","执行失败");
+							dsList.postRecord();
+						}
+						
+						rd = rd.getNextRecord();
+					}
+				}
+				
+				//获取传递过来的多行数据
+				function getIDParams()
+				{
+					if (callObjectInfo.Dataset.getField("BranID"))
+						isBran = true;
+					else if (callObjectInfo.Dataset.getField("GroupID"))
+						isGroup = true
+					else
+						isUser = true;
+					
+					result = "";
+					var records = callObjectInfo.Dataset.getSelectRecords();
+					//多条
+					if (records.size()>0)
+					{
+						var itr = records.iterator();
+						while(itr.hasNext())
+						{
+							var record=itr.next();
+							if (isBran)
+								result += record.getValue("BranID")+",";
+							else if (isGroup)
+								result += record.getValue("GroupID")+",";
+							else
+								result += record.getValue("UserID")+",";
+						}
+						//删除最后的逗号
+						result = result.substr(0,result.length - 1);
+					}
+					//单条
+					else
+					{
+						if (isBran)
+							result = callObjectInfo.Dataset.getValue("BranID");
+						else if (isGroup)
+							result = callObjectInfo.Dataset.getValue("GroupID");
+						else
+							result = callObjectInfo.Dataset.getValue("UserID");
+					}
+					
+					return result;
+				}
+				
+				//获取传递过来的多行数据
+				function getSNOParams()
+				{
+					result = "";
+					var records = callObjectInfo.Dataset.getSelectRecords();
+					//多条
+					if (records.size()>0)
+					{
+						var itr = records.iterator();
+						while(itr.hasNext())
+						{
+							var record=itr.next();
+							result += record.getValue("SNO")+",";
+						}
+						//删除最后的逗号
+						result = result.substr(0,result.length - 1);
+					}
+					//单条
+					else
+					{
+						result = callObjectInfo.Dataset.getValue("SNO");
+					}
+					
+					return result;
+				}
+				
+				//初始化数据
+				function LoadData()
+				{
+					dsList.parameters().setValue("ID", getIDParams());
+					dsList.parameters().setValue("SNO", getSNOParams());
+					if (isBran)
+						dsList.parameters().setValue("IsBran", "1")
+					else if (isGroup)
+						dsList.parameters().setValue("IsGroup", "1")
+					else
+						dsList.parameters().setValue("IsUser", "1")
+					dsList.flushData();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			LoadData();
+		</Event>
+	</Events>
+</View>
+

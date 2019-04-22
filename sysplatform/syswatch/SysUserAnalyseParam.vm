@@ -1,0 +1,50 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>参数选择</title>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+<div class="searchCondition">
+<div class="module">
+	<h2>起始日期:</h2>
+	<div>
+		<div>#fktexteditor("id=BDate")-#fktexteditor("id=EDate")</div>
+	</div>
+	<div>
+	<p>统计返回结果范围</p>
+	<div>#fktexteditor("id=TopNum")</div>
+</div>
+</div>
+<div class="module">
+<h2>用户条件:</h2>
+<div>
+	<p>用户编码</p>
+	<div>#fktexteditor("id=UserCode")</div>
+</div>
+<div>
+	<p>用户名称</p>
+	<div>#fktexteditor("id=UserName")</div>
+</div>
+</div>
+<div class="module">
+<h2>机构条件:</h2>
+<div>
+	<p>机构编码</p>
+	<div>#fktexteditor("id=BranCode")</div>
+</div>
+<div>
+	<p>机构名称</p>
+	<div>#fktexteditor("id=BranName")</div>
+</div>
+</div>
+</div>
+<div class="searchButton">
+<div class="refresh" onclick="window.location.reload();">刷新</div><div class="search" onclick="paramSearch();">查询</div>
+</div>
+	
+	</body>
+#end
+
+</html>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 模块数据集 -->
+		<Dataset id="dsModule" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Module">
+			<Data type="statement">
+				select
+					MODULEID,MODULECODE,MODULENAME,MODULECOMMENT,MODULEGROUP,
+					VISIBLED,VALIDED,CHECKED,CONTEXT,BMP
+				from Sys_Module 
+				where ModuleID=#ModuleID#
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="模块序号" dataType="int" key="true" valueOnEmpty="max"/>
+				<Field name="ModuleCode" label="模块编码" dataType="string" />
+				<Field name="ModuleName" label="模块名称" dataType="string" />
+				<Field name="ModuleComment" label="模块说明"
+					dataType="string" />
+				<Field name="ModuleGroup" label="模块组" dataType="string"
+					dropDown="ddModuleGroup" />
+				<Field name="Visibled" label="显示" dataType="string" defaultValue="1"
+					align="center" />
+				<Field name="Valided" label="有效" dataType="string" defaultValue="1"
+					align="center"/>
+				<Field name="Checked" label="权限" dataType="string" defaultValue="1"
+					align="center" />
+				<Field name="Context" label="上下文" dataType="string" />
+				<Field name="BMP" label="图释" dataType="string" dropDown="ddIconList"/>
+			</Fields>
+		</Dataset>
+
+		<!-- 下拉数据 -->
+		<Dataset id="dsModuleGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select ModuleGroup 
+				from Sys_Module 
+				group by ModuleGroup
+			</Data>
+			<Fields>
+				<Field name="ModuleGroup" label="模块组" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsQuery_CodeDupEdit" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Module where ModuleID &lt;&gt; #ModuleID# and ModuleCode=#ModuleCode#" />
+		<Dataset id="dsQuery_CodeDupNew" type="SimpleQuery"
+			sql="select count(1) as CNT from Sys_Module where ModuleCode=#ModuleCode#" />
+	</Datasets>
+	<Controls>
+		<Control id="ddModuleGroup" type="DatasetDropDown"
+			dataset="dsModuleGroup" fixed="false" mapValue="false"
+			readFields="ModuleGroup" showColumnHeader="false"
+			visibleFields="ModuleGroup" writeFields="ModuleGroup"
+			valueField="ModuleGroup" labelField="ModuleGroup" height="120"
+			width="368" />
+		
+		<Control id="ModuleCode" type="TextEditor" width="100%"
+			dataset="dsModule" field="ModuleCode">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) ModuleName.focus();
+				</Event>
+			</Events>
+		</Control>
+		<Control id="ModuleName" type="TextEditor" width="100%"
+			dataset="dsModule" field="ModuleName" />
+		<Control id="ModuleGroup" type="TextEditor" width="100%"
+			dataset="dsModule" field="ModuleGroup" />
+		
+		<Control id="Context" type="TextEditor" width="100%"
+			dataset="dsModule" field="Context" />
+		<Control id="Visibled" type="CheckBox" width="50"
+			dataset="dsModule" field="Visibled" />
+		<Control id="Valided" type="CheckBox" width="50"
+			dataset="dsModule" field="Valided" />
+		<Control id="Checked" type="CheckBox" width="50"
+			dataset="dsModule" field="Checked" />
+		<Control id="ModuleComment" type="TextEditor"
+			editorType="textarea" width="100%" dataset="dsModule"
+			field="ModuleComment" height="100" />
+		<Control id="BMP" type="TextEditor" width="100%"
+			dataset="dsModule" field="BMP" />
+			
+		<Control id="ddIconList" type="CustomDropDown" path="sysplatform.do?fileName=/sysplatform/sysmodule/SysIconList.vm" warmUpDelay="0"
+			readFields="ICON" writeFields="BMP" cachable="true" fixed="true" width="368" height="120"
+			labelField="BMP">
+		</Control>
+
+		<Control id="btnSave" type="Button" value="保存">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					  parent.andPageClose(window.frameElement.src);
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				//初始化
+				function iniData()
+				{
+					if (actionCode == 'AC_NEW')
+					{
+						//btnSave.value = '增加';
+						newData();
+					}
+					else
+					{
+						var moduleID = actionDataset.getValue('ModuleID');
+						editData(moduleID);
+					}
+				}
+				
+				//编辑
+				function editData(moduleID)
+				{
+					dsModule.parameters().setValue("ModuleID", moduleID,"int");
+					dsModule.flushData();
+					ModuleCode.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsModule.clearData();
+					dsModule.parameters().setValue("ModuleID", 0,"int");
+					dsModule.appendRecord();
+ 			  		dsModule.setValue("Visibled",'1');
+ 			  		dsModule.setValue("Checked",'1');
+ 			  		dsModule.setValue("Valided",'1');
+ 			  		ModuleCode.focus();
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(ModuleCode.value.length == 0){
+						smoke.alert("请输入模块编码！");
+						ModuleCode.focus();
+						return false;
+					}
+					if(ModuleName.value.length == 0){
+						smoke.alert("请输入模块名称！");
+						ModuleName.focus();
+						return false;
+					}
+					if(ModuleGroup.value.length == 0){
+						smoke.alert("请输入模块分组！");
+						ModuleGroup.focus();
+						return false;
+					}
+					
+					return true;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+						
+					if (dsModule.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							parent.refreshTable(window.frameElement.src);
+							if (actionCode == 'AC_NEW')
+								newData();
+							else
+								parent.andPageClose(window.frameElement.src);
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("ModuleCode", ModuleCode.value, "string");
+				    	ds.parameters().setValue("ModuleID", dsModule.getValue('ModuleID'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("ModuleCode", ModuleCode.value, "string");
+				    }
+				    ds.flushData();	
+				    
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("编码已经存在，请修改！");
+						ModuleCode.focus();
+						return true;
+					}
+					return false;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			dsModuleGroup.flushData();
+			iniData(); 
+		</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统日志信息删除 
+	乔武军设计      
+	2007.07.22  
+	Width=320 Height=220
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsUpdate" type="SimpleUpdate"
+			sql="delete from Sys_Log_Detail where LogID in (select LogID from Sys_Log_Master where OperTime between #BDate# and #EDate#);delete from Sys_Log_Master where OperTime between #BDate# and #EDate#"/>
+	</Datasets>
+	<Controls>
+		<Control id="DateDropObject" type="DateDropDown" />
+		<Control id="BDate" type="TextEditor" width="180"
+			dropDown="DateDropObject" />
+		<Control id="EDate" type="TextEditor" width="180"
+			dropDown="DateDropObject" />
+		<Control id="btnOK" type="Button" value="执行" width="75">
+			<Events>
+				<Event name="onClick">Exec();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var ActionCode = callObjectInfo.ActionCode;
+				var ActionName = callObjectInfo.ActionName;
+				
+				//检查数据
+				function checkData()
+				{
+					if(BDate.value.length == 0)
+					{
+						smoke.alert("请输入开始日期！");
+						BDate.focus();
+						return false;
+					}
+					
+					if(EDate.value.length == 0)
+					{
+						smoke.alert("请输入结束日期！");
+						EDate.focus();
+						return false;
+					}
+					
+					if (strToDate(BDate.value) > strToDate(EDate.value))
+					{
+						smoke.alert("开始日期不能超过结束日期！");
+						BDate.focus();
+						return false;
+					}
+					
+					if (strToDate(EDate.value) >= strToDate(formatDate(new Date(), "yyyy-MM-dd")))
+					{
+						smoke.alert("结束日期不能超过当前系统日期！");
+						EDate.focus();
+						return false;
+					}
+					else
+						return true;
+						
+				}
+				
+				//执行
+				function Exec()
+				{
+					if (!(checkData()))
+						return;
+					btnOK.setEnabled(false);
+					
+					var lBDate = BDate.value.split('-');
+					var lEDate = EDate.value.split('-');
+					lBDate = new Date(lBDate[0], lBDate[1], lBDate[2]);
+					lEDate = new Date(lEDate[0], lEDate[1], lEDate[2], 23, 59, 59);
+					
+					dsUpdate.parameters().setValue("BDate", lBDate, "datetime");
+					dsUpdate.parameters().setValue("EDate", lEDate, "datetime");
+ 					
+					if (dsUpdate.saveDB())
+					{
+						window.returnValue = true;
+						FloatSubWindowClose(true);
+					}
+				}
+				
+				function addDayToDate(date,day)
+				{
+					 var ms=date.getTime();
+					 ms+=day*24*60*60*1000;
+					 return new Date(ms);
+				}
+				
+				function strToDate(str, isLast)
+				{
+					var dtArr = str.split("-");
+					return new Date(dtArr[0], dtArr[1], dtArr[2]);
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				BDate.value=formatDate(new Date(), "yyyy-MM-01");
+			  	EDate.value=formatDate(addDayToDate(new Date(),-1), "yyyy-MM-dd");
+			  	BDate.focus();
+			]]>
+		</Event>
+	</Events>
+</View>
+

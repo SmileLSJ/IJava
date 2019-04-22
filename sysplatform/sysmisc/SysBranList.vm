@@ -1,0 +1,16 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+
+	<table border="0" align="center" width="100%" cellspacing="0"
+		cellpadding="4" height="100%">
+		<tr>
+			<td height="100%">#fktree("id=TreeInfo")</td>
+		</tr>
+
+	</table>
+	</body>
+#end
+</html>

@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统动作信息管理
+	乔武军设计      
+	2007.07.11 
+	Width=480 Height=400
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 动作数据集 -->
+		<Dataset id="dsAction" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Module_Action">
+			<Data type="statement">
+				select
+					MODULEID,ACTIONID,ACTIONCODE,ACTIONNAME,IsWindow,VISIBLED,VALIDED,CHECKED,ISDIV,
+					NEEDPARAM,PARAMNAME,BMP,Url1,Url2,Url3,SNO,CallType,
+					AlignPosition,AlignLeft,AlignTop,AlignRight,AlignBottom,WindowWidth,
+					WindowHeight,CanResize,ShowStatus,ShowScroll,IsModal,SubAction, ActionNo, UpdateBy, UpdateDate
+				from Sys_Module_Action 
+				where ModuleID=#ModuleID# and ActionID = #ActionID#
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="模块序号" dataType="int" key="true"
+					defaultValue="0" />
+				<Field name="ActionID" label="动作序号" dataType="int" key="true"
+					defaultValue="0" />
+				<Field name="ActionCode" label="动作编码" dataType="string"
+					dropDown="ddActionCode" />
+				<Field name="ActionName" label="动作名称" dataType="string" />
+				<Field name="IsWindow" label="对话框" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="Visibled" label="显示" dataType="string"
+					align="center" defaultValue="1" />
+				<Field name="Valided" label="有效" dataType="string"
+					align="center" defaultValue="1" />
+				<Field name="Checked" label="权限" dataType="string"
+					align="center" defaultValue="1" />
+				<Field name="IsDIV" label="分割条" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="NeedParam" label="参数" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="ParamName" label="参数名称" dataType="string" />
+				<Field name="BMP" label="图释" dataType="string" dropDown="ddIconList"/>
+				<Field name="Url1" label="地址1" dataType="string" />
+				<Field name="Url2" label="地址2" dataType="string" />
+				<Field name="Url3" label="地址3" dataType="string" />
+				<Field name="SNO" label="序号" dataType="int"
+					defaultValue="1" />
+				<Field name="CallType" label="内部方法" dataType="string"
+					defaultValue="0" />
+				<Field name="AlignPosition" label="位置" dataType="string"
+					dropDown="ddAlign" defaultValue="1" />
+				<Field name="AlignLeft" label="左" dataType="int"
+					defaultValue="0" />
+				<Field name="AlignTop" label="上" dataType="int"
+					defaultValue="0" />
+				<Field name="AlignRight" label="右" dataType="int"
+					defaultValue="0" />
+				<Field name="AlignBottom" label="下" dataType="int"
+					defaultValue="0" />
+				<Field name="WindowWidth" label="宽" dataType="int"
+					defaultValue="450" />
+				<Field name="WindowHeight" label="高" dataType="int"
+					defaultValue="300" />
+
+				<Field name="CanResize" label="尺寸" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="ShowStatus" label="状态" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="ShowScroll" label="滚动" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="IsModal" label="模态" dataType="string"
+					align="center" defaultValue="1" />
+				
+				<Field name="SubAction" label="" dataType="string"
+					align="center" defaultValue="0" />
+				<Field name="ActionNo" label="" dataType="string"/>
+				<Field name="UpdateBy" label="" dataType="string" valueOnEmpty="username"/>
+				<Field name="UpdateDate" label="" dataType="datetime" valueOnEmpty="now"/>
+			</Fields>
+			<Events>
+				<Event name="afterChange">
+					changeControlState(dataset,field);
+				</Event>
+			</Events>
+		</Dataset>
+		
+		<!-- 子动作数据集 -->
+		<Dataset id="dsSubAction" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Module_SubAction">
+			<Data type="statement">
+				select ModuleID, ActionID, SubActionID, SubActionCode, SubActionName, SubActionValue, Valided, SNO, UpdateBy, UpdateDate
+				from Sys_Module_SubAction 
+				where ModuleID=#ModuleID# and ActionID = #ActionID#
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="模块序号" dataType="int" key="true"
+					defaultValue="0" />
+				<Field name="ActionID" label="动作序号" dataType="int" key="true"
+					defaultValue="0" />
+				<Field name="SubActionID" label="动作序号" dataType="int" key="true"
+					defaultValue="0" />
+					
+				<Field name="SubActionCode" label="子编码" dataType="string"/>
+				<Field name="SubActionName" label="子名称" dataType="string" />
+				<Field name="SubActionValue" label="值" dataType="string" />
+				<Field name="Valided" label="有效" dataType="string"
+					align="center" defaultValue="1" />
+				<Field name="SNO" label="序号" dataType="int"
+					defaultValue="1" />
+				<Field name="UpdateBy" label="" dataType="string" valueOnEmpty="username"/>
+				<Field name="UpdateDate" label="" dataType="datetime" valueOnEmpty="now"/>
+			</Fields>
+		</Dataset>
+
+		<!-- 下拉数据 -->
+		<Dataset id="dsActionGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select ActionCode,min(ActionName) as ActionName 
+				from Sys_Module_Action
+				group by ActionCode
+				order by ActionName
+			</Data>
+			<Fields>
+				<Field name="ActionCode" label="编码" dataType="string" />
+				<Field name="ActionName" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsMaxAction" type="SimpleQuery"
+			sql="select nvl(max(ACTIONID),0)+1 as ActionID, nvl(max(SNO),0)+1 as SNO from Sys_Module_Action where ModuleID = #ModuleID#"/>
+						
+	</Datasets>
+	<Controls>
+		<Control id="ddAlign" type="ListDropDown" mapValue="true"
+			fixed="true" width="90">
+			<DropDownItem value="1" label="窗口居中" />
+			<DropDownItem value="2" label="窗口左上" />
+			<DropDownItem value="3" label="窗口右下" />
+			<DropDownItem value="4" label="窗口左下" />
+			<DropDownItem value="5" label="窗口右上" />
+		</Control>
+
+		<Control id="ddActionCode" type="DatasetDropDown"
+			dataset="dsActionGroup" fixed="false" mapValue="false"
+			readFields="ActionCode" showColumnHeader="false"
+			visibleFields="ActionCode,ActionName" writeFields="ActionCode"
+			height="150" width="200" valueField="ActionCode"
+			labelField="ActionCode">
+			<Events>
+				<Event name="onSelect">
+					<![CDATA[
+					var a = selectedObject.getValue("ActionName");
+					if (!dsAction.getValue("ActionName"))
+					{
+						dsAction.setValue("ActionName",a);
+						Link1.focus();
+					}
+					return true;
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="ActionCode" type="TextEditor" width="95%"
+			dataset="dsAction" field="ActionCode">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) ActionName.focus();
+				</Event>
+			</Events>
+		</Control>
+		<Control id="ActionName" type="TextEditor" width="95%"
+			dataset="dsAction" field="ActionName">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) Link1.focus();
+				</Event>
+			</Events>
+		</Control>
+		<Control id="Link1" type="TextEditor" width="95%"
+			dataset="dsAction" field="Url1">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) Link2.focus();
+				</Event>
+			</Events>
+		</Control>
+		
+		<Control id="Link2" type="TextEditor" width="95%"
+			dataset="dsAction" field="Url2" />
+		<Control id="ParamName" type="TextEditor" width="95%"
+			dataset="dsAction" field="ParamName" />
+		<Control id="BMP" type="TextEditor" width="95%"
+			dataset="dsAction" field="BMP" />
+
+		<Control id="Visibled" type="CheckBox" width="50"
+			dataset="dsAction" field="Visibled" />
+		<Control id="Valided" type="CheckBox" width="50"
+			dataset="dsAction" field="Valided" />
+		<Control id="Checked" type="CheckBox" width="50"
+			dataset="dsAction" field="Checked" />
+		<Control id="IsDIV" type="CheckBox" width="50"
+			dataset="dsAction" field="IsDIV" />
+			
+		<Control id="CallType" type="CheckBox" width="50"
+			dataset="dsAction" field="CallType" />
+			
+		<Control id="NeedParam" type="CheckBox" width="50"
+			dataset="dsAction" field="NeedParam" />
+		<Control id="IsWindow" type="CheckBox" width="50"
+			dataset="dsAction" field="IsWindow" />
+
+		<Control id="ActionNo" type="TextEditor" width="95%"
+			dataset="dsAction" field="ActionNo">
+		</Control>
+		<Control id="SubAction" type="CheckBox" width="50"
+			dataset="dsAction" field="SubAction" />
+		
+		<Control id="WWidth" type="TextEditor" width="80"
+			dataset="dsAction" field="WindowWidth" />
+		<Control id="WHeight" type="TextEditor" width="80"
+			dataset="dsAction" field="WindowHeight" />
+		<Control id="WAlign" type="TextEditor" width="80"
+			dataset="dsAction" field="AlignPosition" />
+
+		<Control id="WTop" type="TextEditor" width="80"
+			dataset="dsAction" field="AlignTop" />
+		<Control id="WLeft" type="TextEditor" width="80"
+			dataset="dsAction" field="AlignLeft" />
+		<Control id="Scroll" type="CheckBox" width="50"
+			dataset="dsAction" field="ShowScroll" />
+		<Control id="IsModal" type="CheckBox" width="50"
+			dataset="dsAction" field="IsModal" />
+
+		<Control id="WBottom" type="TextEditor" width="80"
+			dataset="dsAction" field="AlignBottom" />
+		<Control id="WRight" type="TextEditor" width="80"
+			dataset="dsAction" field="AlignRight" />
+		<Control id="Status" type="CheckBox" width="50"
+			dataset="dsAction" field="ShowStatus" />
+		<Control id="Resize" type="CheckBox" width="50"
+			dataset="dsAction" field="CanResize" />
+			
+		<Control id="ddIconList" type="CustomDropDown" path="sysplatform.do?fileName=/sysplatform/sysmodule/SysIconList.vm" warmUpDelay="0"
+			readFields="ICON" writeFields="BMP" cachable="true" fixed="true" width="264" height="180"
+			labelField="BMP">
+		</Control>
+
+		<Control id="tbSubAction" type="DataTable" dataset="dsSubAction"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="SubActionCode" field="SubActionCode" width="70"/>
+			<Column name="SubActionName" field="SubActionName" width="90"/>
+			<Column name="SubActionValue" field="SubActionValue" width="40"/>
+			<Events>
+				<Event name="onAbortAppendRecord">
+					return true;
+				</Event>
+			</Events>
+		</Control>
+		
+		<Control id="btnAddSubAction" type="Button" value="" width="20"
+			toolTip="新增子动作信息" decorate="%{applicationRoot}/exhibit/sysimgs/add.gif">
+			<Events>
+				<Event name="onClick">addSubAction()</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnDelSubAction" type="Button" value="" width="20"
+			toolTip="删除子动作信息"
+			decorate="%{applicationRoot}/exhibit/sysimgs/del0.gif">
+			<Events>
+				<Event name="onClick">delSubAction()</Event>
+			</Events>
+		</Control>
+		
+		<Control id="btnSave" type="Button" value="保存" width="75">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					  parent.andPageClose(window.frameElement.src);
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var moduleID = 0;
+				var actionID = 0;
+				
+				var dsIsNew = false;
+
+				checkParamExist();
+				
+				//检查参数是否存在
+				function checkParamExist()
+				{
+					var id = 0;
+					if (actionDataset.getMasterLink() && actionDataset.getMasterLink().getMasterDataset())
+					{
+						var masterDataset = actionDataset.getMasterLink().getMasterDataset();
+						
+						if ((masterDataset.getVisibleCount()>0) && (masterDataset.getValue('ModuleID')))
+							id = masterDataset.getValue('ModuleID');
+					}
+					
+					if (id <= 0)
+					{
+						smoke.alert('无法找到模块信息，不能添加动作！', function(e){
+							FloatSubWindowClose();
+						});
+						return;
+					}	
+				}
+				
+				//初始化
+				function iniData()
+				{
+				 	lbl_PageAddress.innerText = "页面地址  ";
+					if (actionCode == 'AC_NEW')
+					{
+						if (actionDataset.getMasterLink() && actionDataset.getMasterLink().getMasterDataset())
+						{
+							var masterDataset = actionDataset.getMasterLink().getMasterDataset();
+							
+							if ((masterDataset.getVisibleCount()>0) && (masterDataset.getValue('ModuleID')))
+								moduleID = masterDataset.getValue('ModuleID');
+						}
+						if (moduleID <= 0)
+						{
+							//smoke.alert('调用参数不正确！');
+							FloatSubWindowClose();
+							return;
+						}	
+						//btnSave.value = '增加';
+						newData();
+					}
+					else
+					{
+						moduleID = actionDataset.getValue('ModuleID');
+						actionID = actionDataset.getValue('ActionID');
+						editData();
+					}
+					
+					SubAction.disabled = true;
+					SubAction.setReadOnly(true);
+					btnAddSubAction.setEnabled(false);
+					btnDelSubAction.setEnabled(false);
+				}
+				
+				//编辑
+				function editData()
+				{
+					dsAction.parameters().setValue("ModuleID", moduleID,"int");
+					dsAction.parameters().setValue("ActionID", actionID,"int");
+					dsAction.flushData();
+					dsSubAction.parameters().setValue("ModuleID", moduleID,"int");
+					dsSubAction.parameters().setValue("ActionID", actionID,"int");
+					dsSubAction.flushData();
+				    setParamDisabled(!dsAction.getValue("IsModal"));
+				    ParamName.setReadOnly(!dsAction.getValue("NeedParam"));
+				 	ParamName.disabled = !dsAction.getValue("NeedParam");
+					ActionCode.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsIsNew = true;
+					dsAction.clearData();
+					dsAction.parameters().setValue("ModuleID", moduleID,"int");
+					dsAction.parameters().setValue("ActionID", 0,"int");
+					dsAction.appendRecord();
+					
+					dsSubAction.clearData();
+					dsSubAction.parameters().setValue("ModuleID", moduleID,"int");
+					dsSubAction.parameters().setValue("ActionID", 0,"int");
+					
+ 			  		ActionCode.focus();
+ 			  		dsIsNew = false;
+ 			  		setParamDisabled(!dsAction.getValue("IsModal"));
+ 			  		ParamName.setReadOnly(!dsAction.getValue("NeedParam"));
+				 	ParamName.disabled = !dsAction.getValue("NeedParam");
+				 	
+ 			  		lbl_PageAddress.innerText = "页面地址  ";
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(ActionCode.value.length == 0){
+						smoke.alert("请输入动作编码！");
+						ActionCode.focus();
+						return false;
+					}
+					
+					if(ActionName.value.length == 0){
+						smoke.alert("请输入动作名称！");
+						ActionName.focus();
+						return false;
+					}
+					else 
+						return checkSubActionData();
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					preData();
+					
+					if (dsAction.saveDB('dsSubAction'))
+					{
+						smoke.alert("数据保存成功！");
+						window.returnValue = true;
+						parent.refreshTable(window.frameElement.src);
+						if (actionCode == 'AC_NEW')
+							newData();
+						else
+							parent.andPageClose(window.frameElement.src);
+					}
+				}
+				
+				function addSubAction()
+				{
+					if (checkSubActionData())
+						dsSubAction.appendRecord();
+				}
+				
+				function delSubAction()
+				{
+					if (dsSubAction.getVisibleCount() > 0)
+						dsSubAction.deleteRecord();
+				}
+				
+				function checkSubActionData()
+				{
+					var record = dsSubAction.getFirstRecord();
+					if (record)
+					{
+						while(record)
+						{
+							if (!record.getValue("SubActionCode") || (record.getValue("SubActionCode").length <= 0))
+							{
+								smoke.alert("请输入子动作编码！");
+								return false;
+							}
+							else if (!record.getValue("SubActionName") || (record.getValue("SubActionName").length <= 0))
+							{
+								smoke.alert("请输入子动作名称！");
+								return false;
+							}
+							else if (!record.getValue("SubActionValue") || (record.getValue("SubActionValue").length <= 0))
+							{
+								smoke.alert("请输入子动作值！");
+								return false;
+							}
+							
+							record = record.getNextRecord();
+						}
+						return true;
+					}
+					else
+						return true;
+				}
+				
+				//改变控件状态
+				function changeControlState(dataset,field)
+				{
+					if (dsIsNew) 
+						return;
+					var st = false;
+					switch (field.getName())
+					{
+				      case "IsWindow":
+				      	 st = dataset.getValue("IsWindow");
+				      	 setParamDisabled(!st);
+				      	 break;
+				      case "NeedParam":
+				   		 ParamName.setReadOnly(!dataset.getValue("NeedParam"));
+				 		 ParamName.disabled = !dataset.getValue("NeedParam");
+				         break;
+				      case "CallType":
+				      	 st = dataset.getValue("CallType");
+				      	 if (st)
+				      	 {
+				      	 	lbl_PageAddress.innerText = "调用方法  ";
+				      	 	
+				      	 }
+				      	 else
+				      	 {
+				      	 	lbl_PageAddress.innerText = "页面地址  ";
+				      	 }
+				      	 break;
+				    }
+				    dataset.refreshControls();
+				    return;
+				}
+				
+				//屏蔽输入框
+				function setParamDisabled(disabled)
+				{
+					WTop.disabled = disabled;
+					WWidth.disabled = disabled;
+					WLeft.disabled = disabled;
+					WRight.disabled = disabled;
+					WBottom.disabled = disabled;
+					WHeight.disabled = disabled;
+					
+					WAlign.disabled = disabled;
+					WAlign.setReadOnly(disabled);
+					Scroll.setReadOnly(disabled);
+					Status.setReadOnly(disabled);
+					IsModal.setReadOnly(disabled);
+					Resize.setReadOnly(disabled);
+				}
+				
+				function preData(){
+					var actionID = 0;
+					if (actionCode == 'AC_NEW'){
+						dsMaxAction.parameters().setValue("ModuleID", moduleID, "int");
+						dsMaxAction.flushData();
+						dsAction.setValue("ActionID", dsMaxAction.getValue("ActionID"));
+						dsAction.setValue("SNO", dsMaxAction.getValue("SNO"));
+						dsAction.setValue("ModuleID", moduleID);
+						dsAction.postRecord();
+						actionID = dsMaxAction.getValue("ActionID");
+					} else
+						actionID = dsAction.getValue("ActionID");
+					
+					var	record = dsSubAction.getFirstRecord();
+					var i = 0;
+					while (record)
+					{
+						i++;
+						record.setValue("ModuleID", moduleID);
+						record.setValue("ActionID", actionID);
+						record.setValue("SubActionID", i);
+						record.setValue("SNO", i);
+						record = record.getNextRecord();
+					}
+					if (dsSubAction.getVisibleCount()>0)
+						dsSubAction.postRecord();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			dsActionGroup.flushData();
+			iniData(); 
+		</Event>
+	</Events>
+</View>
+

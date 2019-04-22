@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统用户查询参数页 
+	乔武军设计      
+	2007.07.2  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsCfgGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="true" showLoadingTip="false">
+			<Data type="statement">select CfgGroup from Sys_Config where MCID = %{#session.CheckIn.MCID} group by CfgGroup order by CfgGroup</Data>
+			<Fields>
+				<Field name="CfgGroup" label="配置类型" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="CfgGroup" dataType="string" dropDown="ddCfgGroup" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddCfgGroup" type="DatasetDropDown"
+			dataset="dsCfgGroup" fixed="false" mapValue="true" readFields="CfgGroup"
+			showColumnHeader="false" visibleFields="CfgGroup" writeFields="CfgGroup"
+			height="80" valueField="CfgGroup" labelField="CfgGroup" />
+		
+		<Control id="CfgGroup" type="TextEditor" dataset="dsObject"
+			field="CfgGroup" width="97%" />
+		<Control id="CfgCode" type="TextEditor" width="97%" />
+		<Control id="CfgName" type="TextEditor" width="97%" />
+		<Control id="buttonSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					parent.transfer({CfgGroup:dsObject.getValue("CfgGroup"),CfgCode:CfgCode.value,CfgName:CfgName.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({
+									 CfgGroup:dsObject.getValue("CfgGroup"),
+									 CfgCode:CfgCode.value.trim(),
+									 CfgName:CfgName.value.trim()
+									});
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				paramSearch();
+	 		 	setParamHeight();
+	        ]]>
+		</Event>
+	</Events>
+</View>
+

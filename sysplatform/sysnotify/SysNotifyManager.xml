@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsNotify" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Notify">
+			<Data type="statement">
+				<![CDATA[
+				select NotifyID, Title, Note, InDate, BDate, EDate, Valided
+				from Sys_Notify
+				where NotifyID = #NotifyID#
+				]]>
+			</Data>
+			<Fields>
+				<Field name="NotifyID" label="序号" dataType="string" key="true" valueOnEmpty="guid"/>
+				<Field name="Title" label="标题" dataType="string" />
+				<Field name="Note" label="公告内容" dataType="string" />
+				<Field name="InDate" label="录入日期" dataType="date" />
+				<Field name="BDate" label="开始日期" dataType="date" />
+				<Field name="EDate" label="结束日期" dataType="date" />
+				<Field name="Valided" label="生效" dataType="string" defaultValue="1"/>
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="Note" type="TextEditor" width="460" height="160"
+			editorType="textarea" dataset="dsNotify" field="Note" />
+
+		<Control id="Title" type="TextEditor" width="340"
+			dataset="dsNotify" field="Title" />
+
+
+		<Control id="Valided" type="CheckBox" width="20"
+			dataset="dsNotify" field="Valided" />
+
+		<Control id="BDate" type="TextEditor" width="100"
+			dataset="dsNotify" field="BDate" />
+
+		<Control id="EDate" type="TextEditor" width="100"
+			dataset="dsNotify" field="EDate">
+			<Events>
+				<Event name="onKeyDown">
+					if(event.keyCode==13) Note.focus();
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnSave" type="Button" value="保存"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif" width="75">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var notifyID = '';
+				
+				//初始化
+				function iniData()
+				{
+					if (actionCode == 'AC_NEW')
+					{
+						newData();
+					}
+					else
+					{
+						notifyID = actionDataset.getValue('NotifyID');
+						editData();
+					}
+				}
+				
+				//编辑
+				function editData()
+				{
+					dsNotify.clearData();
+					dsNotify.parameters().setValue("NotifyID", notifyID, "string");
+					dsNotify.flushData();
+
+					Title.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsNotify.clearData();
+					dsNotify.parameters().setValue("NotifyID", '',"string");
+					dsNotify.appendRecord();
+					
+					dsNotify.setValue("Valided", "1");
+					var lastdate = new Date().add(Date.DAY, 3);	
+					dsNotify.setValue("BDate", formatDate(new Date(), "yyyy-MM-dd"));
+					dsNotify.setValue("EDate", formatDate(lastdate, "yyyy-MM-dd"));
+					
+ 			  		Title.focus();
+				}
+				
+				function checkObjNull(obj, errMes)
+				{
+					if(obj.value.length == 0){
+						smoke.alert(errMes);
+						obj.focus();
+						return false;
+					}
+					else
+						return true;
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if (!checkObjNull(Title, "请输入通知标题！"))
+						return false;
+					
+					if (!checkObjNull(Note, "请输入通知内容！"))
+						return false;
+						
+					if (formatDate(dsNotify.getValue("BDate"), "yyyy-MM-dd") < formatDate(new Date(), "yyyy-MM-dd"))
+					{
+						smoke.alert("开始日期不能小于今天！");
+						BDate.focus();
+						return false;
+					}
+					
+					if (dsNotify.getValue("BDate") > dsNotify.getValue("EDate"))
+					{
+						smoke.alert("结束日期不能小于开始日期！");
+						EDate.focus();
+						return false;
+					}
+					
+					var v_Note = (dsNotify.getValue("Note")) ? dsNotify.getValue("Note") : '';
+					
+					if (v_Note.length > 2000)
+					{
+						smoke.alert("通知内容不能超过2000个字符，实际字符数（"+v_Note.length+"）");
+						return false;
+					}
+					
+					return true;
+				}
+				
+				function strToDate(str,isLastTime)
+				{
+					var newDate;
+					var arys= new Array();
+					arys=str.split('-');
+					if (isLastTime == false)
+						newDate=new Date(arys[0],arys[1]-1,arys[2]); 
+					else
+					 	newDate=new Date(arys[0],arys[1]-1,arys[2],23,59,59); 
+					return newDate;
+				} 
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					
+					if (dsNotify.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							if (actionCode == 'AC_NEW')
+								newData();
+							else
+								FloatSubWindowClose(true);
+						});
+					}
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				iniData();
+			]]>
+		</Event>
+	</Events>
+</View>
+

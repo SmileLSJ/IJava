@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "../../../feather-3.0.dtd">
+<View skin="default">
+	<Datasets>
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="false">
+			<Fields>
+				<Field name="STA" dataType="string" dropDown="ddStatus"
+					defaultValue="-1" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control type="TextEditor" id="edtBranCode" width="97%" />
+		<Control type="TextEditor" id="edtBranName" width="97%" />
+
+		<Control id="btnSearch" type="Button" value="查询" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif">
+			<Events>
+				<Event name="onClick">
+					paramSearch();
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({
+									 BranCode:edtBranCode.value,
+									 BranName:edtBranName.value
+									});
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+	 		 	setParamHeight();
+	 		 	setTimeout(function(){paramSearch();},500)
+	        ]]>
+		</Event>
+	</Events>
+</View>

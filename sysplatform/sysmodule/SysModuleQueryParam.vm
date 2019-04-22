@@ -1,0 +1,37 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title></title>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" bgcolor="#F1F4FA">
+<div class="searchCondition">
+<div class="module">
+	<h2>条件选项:</h2>
+	<div>
+		<p>模块组</p>
+		<div>#fktexteditor("id=ModuleGroup")</div>
+	</div>
+	<div>
+		<p>模块编码</p>
+		<div>#fktexteditor("id=ModuleCode")</div>
+	</div>
+	<div>
+		<p>模块名称</p>
+		<div>#fktexteditor("id=ModuleName")</div>
+	</div>
+	<div>
+	<p>模块说明</p>
+	<div>#fktexteditor("id=ModuleComment")</div>
+</div>
+</div>
+</div>
+<div class="searchButton">
+<div class="refresh" onclick="window.location.reload();">刷新</div><div class="search" onclick="paramSearch();">查询</div>
+</div>
+	
+	</body>
+#end
+
+</html>

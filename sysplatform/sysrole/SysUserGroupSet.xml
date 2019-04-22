@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统人员组信息管理
+	乔武军设计      
+	2007.12.12  
+	Width=500 Height=450
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 未分配的组数据集 -->
+		<Dataset id="dsNotDisGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.GroupID, A.GroupCode, A.GroupName 
+				from Sys_Group A left join Sys_Group_User B
+					on A.GroupID = B.GroupID and B.UserID = #UserID# 
+				where B.GroupID is null and A.GroupLevel <= #GroupLevel# and A.MCID = %{#session.CheckIn.MCID}
+				order by A.GroupCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="GroupID" label="" dataType="long" />
+				<Field name="GroupCode" label="角色编码" dataType="string" />
+				<Field name="GroupName" label="未分配角色" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 已分配的组数据集 -->
+		<Dataset id="dsDisGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.GroupID, A.GroupCode, A.GroupName as GroupName 
+				from Sys_Group A, Sys_Group_User B
+				where A.GroupID = B.GroupID and B.UserID = #UserID# and A.GroupLevel <= #GroupLevel#
+				and A.MCID = %{#session.CheckIn.MCID}
+				order by A.GroupCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="GroupID" label="" dataType="long" />
+				<Field name="GroupCode" label="角色编码" dataType="string" />
+				<Field name="GroupName" label="已分配角色" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsFind" type="SimpleQuery"
+			sql="select '(' || UserCode || ') ' || UserName as UserInfo from Sys_User where UserID=#UserID#" />
+		<Dataset id="dsUpdateSA" type="SimpleUpdate"
+			sql="insert into Sys_Group_User(GroupID,UserID) values(#GroupID#,#UserID#)" />
+		<Dataset id="dsUpdateSD" type="SimpleUpdate"
+			sql="delete from Sys_Group_User where GroupID = #GroupID# and UserID = #UserID#" />
+		<Dataset id="dsUpdateAD" type="SimpleUpdate"
+			sql="delete from Sys_Group_User where UserID = #UserID#" />
+		<Dataset id="dsUpdateAA" type="SimpleUpdate"
+			sql="insert into Sys_Group_User(GroupID,UserID) select #UserID#, GroupID from Sys_Group where GroupLevel &lt;= #GroupLevel# and mcid=%{#session.CheckIn.MCID}" />
+	</Datasets>
+	<Controls>
+		<!--未分配的组-->
+		<Control id="tbNotDisGroup" type="DataTable"
+			dataset="dsNotDisGroup" width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="GroupCode" field="GroupCode" width="80" />
+			<Column name="GroupName" field="GroupName" width="150" />
+		</Control>
+
+		<!--已分配的组-->
+		<Control id="tbDisGroup" type="DataTable" dataset="dsDisGroup"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="GroupCode" field="GroupCode" width="80" />
+			<Column name="GroupName" field="GroupName" width="150" />
+		</Control>
+
+		<Control id="btnMoveIn" type="Button" value="" width="23"
+			height="20" decorate = "%{applicationRoot}/exhibit/sysimgs/g12.gif" toolTip="添加一条">
+			<Events>
+				<Event name="onClick">moveDataIn();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveInAll" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g20.gif" toolTip="添加全部">
+			<Events>
+				<Event name="onClick">moveDataInAll();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveOut" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g11.gif" toolTip="删除一条">
+			<Events>
+				<Event name="onClick">moveDataOut();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveOutAll" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g17.gif" toolTip="删除全部">
+			<Events>
+				<Event name="onClick">moveDataOutAll();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionDataset = callObjectInfo.Dataset;
+
+				var userID = 0;
+				
+				//初始化
+				function iniData()
+				{
+					userID = actionDataset.getValue('UserID');
+					
+					dsFind.parameters().setValue("UserID", userID, "int");
+					dsFind.flushData();
+			//		lbl_Title.innerText = "  " +dsFind.getValue("UserInfo");
+					
+					dsNotDisGroup.parameters().setValue("UserID", userID,"long");
+					dsNotDisGroup.parameters().setValue("GroupLevel", __LOGIN_INFO.GroupLevel,"long");
+					dsNotDisGroup.flushData();
+					dsDisGroup.parameters().setValue("UserID", userID,"long");
+					dsDisGroup.parameters().setValue("GroupLevel", __LOGIN_INFO.GroupLevel,"long");
+					dsDisGroup.flushData();
+					
+					changeMoveBtnStatus();
+				}
+				
+					
+	  		    //设置4个按钮的状态
+	  		    function changeMoveBtnStatus()
+	  		    {
+	  		    	var lexists = false;
+	  		    	if (dsNotDisGroup.getVisibleCount() > 0)
+	  		    		lexists = true;
+	  		    		
+	  		    	var rexists = false;
+	  		    	if (dsDisGroup.getVisibleCount() > 0)
+	  		    		rexists = true;
+
+	  		    	btnMoveIn.setEnabled(lexists);
+	  		    	btnMoveInAll.setEnabled(lexists);
+	  		    	/*
+	  		    	if (lexists)
+	  		    	{
+	  		    		btnMoveIn.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow3.gif");
+	  		    		btnMoveInAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow1.gif");
+	  		    	}
+	  		    	else
+	  		    	{
+	  		    		btnMoveIn.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow3b.gif");
+	  		    		btnMoveInAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow1b.gif");
+	  		    	}
+	  		    	*/
+	  		    	btnMoveOut.setEnabled(rexists);
+	  		    	btnMoveOutAll.setEnabled(rexists);
+	  		    	/*
+	  		    	if (rexists)
+	  		    	{
+	  		    		btnMoveOut.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow4.gif");
+	  		    		btnMoveOutAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow2.gif");
+	  		    	}
+	  		    	else
+	  		    	{
+	  		    		btnMoveOut.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow4b.gif");
+	  		    		btnMoveOutAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow2b.gif");
+	  		    	}
+	  		    	*/
+	  		    }
+	  		    
+	  		    //inOutStatus     boolean 移入或者移出状态标志  true=移入
+	  		    //singleAllStatus boolean 单行或者全部数据标志  true=单行
+	  		    //userID          int     如果是单行操作，则userID不能为空
+	  		    function saveData(inOutStatus, singleAllStatus, groupID)
+	  		    {
+	  		    	if (singleAllStatus)
+	  		    	{
+	  		    		if (inOutStatus){
+	  		    			dsUpdateSA.parameters().setValue("GroupID", groupID, "int");
+	  		    			dsUpdateSA.parameters().setValue("UserID", userID, "int");
+	  		    			dsUpdateSA.saveDB();
+	  		    		}
+	  		    		else {
+	  		    			dsUpdateSD.parameters().setValue("GroupID", groupID, "int");
+	  		    			dsUpdateSD.parameters().setValue("UserID", userID, "int");
+	  		    			dsUpdateSD.saveDB();
+	  		    		}
+	  		    	}
+	  		    	//全部处理
+	  		    	else
+	  		    	{
+	  		    		dsUpdateAD.parameters().setValue("UserID", userID, "int");
+  		    			dsUpdateAD.saveDB();
+	  		    		//全部分配
+	  		    		if (inOutStatus) {
+	  		    			dsUpdateAA.parameters().setValue("UserID", userID, "int");
+	  		    			dsUpdateAA.parameters().setValue("GroupLevel", __LOGIN_INFO.GroupLevel, "int");
+	  		    			dsUpdateAA.saveDB();
+	  		    		}
+	  		    	}
+	  		    	
+  		    		window.returnValue = true;
+  		    		FloatSubWindowClose(true);
+	  		    	return true;
+	  		    }
+	  		    
+	  		    function moveDataIn()
+	  		    {
+	  		    	if (dsNotDisGroup.getVisibleCount()<=0)
+	  		    		return;
+	  		    	if (saveData(true, true, dsNotDisGroup.getValue('GroupID')))
+	  		    	{
+		  		    	dsDisGroup.appendRecord();
+		  		    	dsDisGroup.copyRecord(dsNotDisGroup.getCurrent());
+	  			    	dsDisGroup.postRecord();
+	  			    	dsNotDisGroup.deleteRecord();
+	  		    		changeMoveBtnStatus();
+	  		    	}
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataInAll()
+	  		    {
+	  		    	//由于数据量非常大时候，单独循环操作效率比较低，因此采用先保存数据后，从新刷新方法来处理
+	  		    	if (saveData(true, false, 0))
+	  		    	{
+	  		    		dsNotDisGroup.clearData();
+	  		    		dsDisGroup.flushData();
+		  		    	changeMoveBtnStatus();
+		  		    }
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataOut()
+	  		    {
+	  		    	if (dsDisGroup.getVisibleCount()<=0)
+	  		    		return;
+	  		    	if (saveData(false, true, dsDisGroup.getValue('GroupID')))
+	  		    	{
+		  		    	dsNotDisGroup.appendRecord();
+		  		    	dsNotDisGroup.copyRecord(dsDisGroup.getCurrent());
+	  			    	dsNotDisGroup.postRecord();
+	  			    	dsDisGroup.deleteRecord();
+	  		    		changeMoveBtnStatus();	  		    	
+	  		    	}
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataOutAll()
+	  		    {
+	  		    	//由于数据量非常大时候，单独循环操作效率比较低，因此采用先保存数据后，从新刷新方法来处理
+	  		    	if (saveData(false, false, 0))
+	  		    	{
+	  		    		dsNotDisGroup.flushData();
+	  		    		dsDisGroup.clearData();
+		  		    	changeMoveBtnStatus();
+		  		    }
+	  		    	return;
+	  		    }
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

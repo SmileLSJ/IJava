@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false"
+	dropDownBox="custom">
+	<Datasets>
+		<Dataset id="datasetDropDown" type="Custom"
+			insertOnEmpty="true">
+			<Fields>
+				<Field name="BranCode" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsTree" type="Reference" pageSize="0"
+			autoLoadPage="true" clearDataForLoadPage="true">
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="BranCode" label="节点编码" dataType="string" />
+				<Field name="BranName" label="节点名称" dataType="string" />
+				<Field name="SubCount" label="子数量" dataType="long" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="TreeInfo" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					<![CDATA[
+					if (node.children().getLength()>0) return;
+					var dataset = dsTree;
+					var ParentBranID = 0;
+					var BMP = "%{applicationRoot}/exhibit/sysimgs/node1.gif";
+					if (node.getLevel() !== 0)
+					{
+						ParentBranID = node.CurBranID;
+						BMP = "%{applicationRoot}/exhibit/sysimgs/node2.gif";
+					}
+										
+					dataset.setLoadDataAction("/retrieve.do?className=session.sys.LoginManagerDAO&ferry=get&method=getBranInfo");	
+					dataset.parameters().setValue("BranID", ParentBranID, "long");
+					dataset.flushData();
+				    
+				  	while (!dataset.isLast())
+				  	{
+					     var label = dataset.getString("BranName");
+					     var newNode = tree.addNode(node, label);
+					     newNode.setHasChild(dataset.getValue("SubCount") > 0);
+					     newNode.CurBranID = dataset.getValue("BranID");
+					     newNode.setTag(dataset.getString("BranCode"));
+				     	 newNode.setIcon(BMP);
+				    	 newNode.setExpandedIcon(BMP);
+					     dataset.moveNext();
+				    }
+					]]>
+				</Event>
+				<Event name="onClick">
+					selectValue();
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function selectValue()
+				{
+					var temp; 
+					if (TreeInfo.getCurrentNode()) 
+						temp =	TreeInfo.getCurrentNode().getTag(); 
+					if ((temp==undefined) || (temp == null)) 
+						temp = '';
+					datasetDropDown.setValue("BranCode", temp);
+					DropDown.closeFrame(datasetDropDown.getCurrent());
+				}
+			]]>
+		</Event>
+	</Events>
+</View>

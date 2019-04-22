@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	财务机构信息管理
+	乔武军设计      
+	2013.08.12  
+	Width=650 Height=430
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsNotDisBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.BranID, A.BranCode, A.BranName 
+				from Sys_Bran A left join Sys_FB_Bran B
+					on A.BranID = B.BranID
+				where  B.BranID is null and A.MCID = %{#session.CheckIn.MCID}
+				order by A.BranCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="" dataType="long" />
+				<Field name="BranCode" label="机构编码" dataType="string" />
+				<Field name="BranName" label="未分配机构名称"
+					dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsDisBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.BranID, A.BranCode, A.BranName
+				from Sys_Bran A, Sys_FB_Bran B
+				where A.BranID = B.BranID and B.FBID = #FBID# and A.MCID = %{#session.CheckIn.MCID}
+				order by A.BranCode
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="" dataType="long" />
+				<Field name="BranCode" label="机构编码" dataType="string" />
+				<Field name="BranName" label="已分配机构名称"
+					dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsFind" type="SimpleQuery"
+			sql="select '(' || FBCode || ') ' || FBName as FBInfo from Sys_FB where FBID=#FBID#" />
+		<Dataset id="dsUpdateSA" type="SimpleUpdate"
+			sql="insert into Sys_FB_Bran(FBID,BranID) values(#FBID#,#BranID#)" />
+		<Dataset id="dsUpdateSD" type="SimpleUpdate"
+			sql="delete from Sys_FB_Bran where FBID = #FBID# and BranID = #BranID#" />
+		<Dataset id="dsUpdateAD" type="SimpleUpdate"
+			sql="delete from Sys_FB_Bran where FBID = #FBID#" />
+		<Dataset id="dsUpdateAA" type="SimpleUpdate"
+			sql="insert into Sys_FB_Bran(FBID,BranID) select #FBID#, a.BranID from Sys_Bran a left join Sys_FB_Bran b on a.BranID = b.BranID where b.BranID is null" />
+	</Datasets>
+	<Controls>
+		<Control id="tbNotDisBran" type="DataTable"
+			dataset="dsNotDisBran" width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序" pattern="position" width="20"
+				align="center" />
+			<Column name="BranCode" field="BranCode" width="80" />
+			<Column name="BranName" field="BranName" width="150" />
+		</Control>
+
+		<Control id="tbDisBran" type="DataTable" dataset="dsDisBran"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序" pattern="position" width="20"
+				align="center" />
+			<Column name="BranCode" field="BranCode" width="80" />
+			<Column name="BranName" field="BranName" width="150" />
+		</Control>
+
+		<Control id="btnMoveIn" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g12.gif" toolTip="添加一条">
+			<Events>
+				<Event name="onClick">moveDataIn();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveInAll" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g20.gif" toolTip="添加全部">
+			<Events>
+				<Event name="onClick">moveDataInAll();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveOut" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g11.gif" toolTip="删除一条">
+			<Events>
+				<Event name="onClick">moveDataOut();</Event>
+			</Events>
+		</Control>
+		<Control id="btnMoveOutAll" type="Button" value="" width="23"
+			height="20" decorate="%{applicationRoot}/exhibit/sysimgs/g17.gif" toolTip="删除全部">
+			<Events>
+				<Event name="onClick">moveDataOutAll();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">
+					FloatSubWindowClose();
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				var callObjectInfo = window.dialogArguments;
+				var actionDataset = callObjectInfo.Dataset;
+				var FBID = 0;
+				
+				//初始化
+				function iniData()
+				{
+					FBID = actionDataset.getValue('FBID');
+					dsFind.parameters().setValue("FBID", FBID, "int");
+					dsFind.flushData();
+					lbl_Title.innerText = "  " +dsFind.getValue("FBInfo");
+					loadData();
+					changeMoveBtnStatus();
+				}
+				
+				function loadData()
+				{
+					//dsNotDisBran.parameters().setValue("FBID", FBID,"long");
+					dsNotDisBran.flushData();
+					
+					dsDisBran.parameters().setValue("FBID", FBID,"long");
+					dsDisBran.flushData();
+					
+					changeMoveBtnStatus();
+				}
+					
+	  		    //设置4个按钮的状态
+	  		    function changeMoveBtnStatus()
+	  		    {
+	  		    	var lexists = false;
+	  		    	if (dsNotDisBran.getVisibleCount() > 0)
+	  		    		lexists = true;
+	  		    		
+	  		    	var rexists = false;
+	  		    	if (dsDisBran.getVisibleCount() > 0)
+	  		    		rexists = true;
+
+	  		    	btnMoveIn.setEnabled(lexists);
+	  		    	btnMoveInAll.setEnabled(lexists);
+	  		    	btnMoveOut.setEnabled(rexists);
+	  		    	btnMoveOutAll.setEnabled(rexists);
+	  		    	/*
+	  		    	if (lexists)
+	  		    	{
+	  		    		btnMoveIn.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow3.gif");
+	  		    		btnMoveInAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow1.gif");
+	  		    	}
+	  		    	else
+	  		    	{
+	  		    		btnMoveIn.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow3b.gif");
+	  		    		btnMoveInAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow1b.gif");
+	  		    	}
+	  		    	
+	  		    	if (rexists)
+	  		    	{
+	  		    		btnMoveOut.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow4.gif");
+	  		    		btnMoveOutAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow2.gif");
+	  		    	}
+	  		    	else
+	  		    	{
+	  		    		btnMoveOut.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow4b.gif");
+	  		    		btnMoveOutAll.setDecorate("%{applicationRoot}/exhibit/sysimgs/arrow2b.gif");
+	  		    	}
+	  		    	*/
+	  		    }
+	  		    
+	  		    //inOutStatus     boolean 移入或者移出状态标志  true=移入
+	  		    //singleAllStatus boolean 单行或者全部数据标志  true=单行
+	  		    //BranID          int     如果是单行操作，则BranID不能为空
+	  		    function saveData(inOutStatus, singleAllStatus, BranID)
+	  		    {
+	  		    	var sql = "";
+	  		    	//单行处理
+	  		    	if (singleAllStatus)
+	  		    	{
+	  		    		if (inOutStatus){
+	  		    			dsUpdateSA.parameters().setValue("FBID", FBID, "int");
+	  		    			dsUpdateSA.parameters().setValue("BranID", BranID, "int");
+	  		    			dsUpdateSA.saveDB();
+	  		    		}
+	  		    		else {
+	  		    			dsUpdateSD.parameters().setValue("FBID", FBID, "int");
+	  		    			dsUpdateSD.parameters().setValue("BranID", BranID, "int");
+	  		    			dsUpdateSD.saveDB();
+	  		    		}
+	  		    	}
+	  		    	//全部处理
+	  		    	else
+	  		    	{
+	  		    		dsUpdateAD.parameters().setValue("FBID", FBID, "int");
+  		    			dsUpdateAD.saveDB();
+	  		    		//全部分配
+	  		    		if (inOutStatus) {
+	  		    			dsUpdateAA.parameters().setValue("FBID", FBID, "int");
+	  		    			dsUpdateAA.saveDB();
+	  		    		}
+	  		    	}
+	  		    	
+  		    		window.returnValue = true;
+	  		    	return true;
+	  		    }
+	  		    
+	  		    function moveDataIn()
+	  		    {
+	  		    	if (dsNotDisBran.getVisibleCount()<=0)
+	  		    		return;
+	  		    	if (saveData(true, true, dsNotDisBran.getValue('BranID')))
+	  		    	{
+		  		    	dsDisBran.appendRecord();
+		  		    	dsDisBran.copyRecord(dsNotDisBran.getCurrent());
+	  			    	dsDisBran.postRecord();
+	  			    	dsNotDisBran.deleteRecord();
+	  		    		changeMoveBtnStatus();
+	  		    	}
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataInAll()
+	  		    {
+	  		    	//由于数据量非常大时候，单独循环操作效率比较低，因此采用先保存数据后，从新刷新方法来处理
+	  		    	if (saveData(true, false, 0))
+	  		    	{
+	  		    		dsNotDisBran.clearData();
+	  		    		dsDisBran.flushData();
+		  		    	changeMoveBtnStatus();
+		  		    }
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataOut()
+	  		    {
+	  		    	if (dsDisBran.getVisibleCount()<=0)
+	  		    		return;
+	  		    	if (saveData(false, true, dsDisBran.getValue('BranID')))
+	  		    	{
+		  		    	dsNotDisBran.appendRecord();
+		  		    	dsNotDisBran.copyRecord(dsDisBran.getCurrent());
+	  			    	dsNotDisBran.postRecord();
+	  			    	dsDisBran.deleteRecord();
+	  		    		changeMoveBtnStatus();	  		    	
+	  		    	}
+	  		    	return;
+	  		    }
+	  		    
+	  		    function moveDataOutAll()
+	  		    {
+	  		    	//由于数据量非常大时候，单独循环操作效率比较低，因此采用先保存数据后，从新刷新方法来处理
+	  		    	if (saveData(false, false, 0))
+	  		    	{
+	  		    		dsNotDisBran.flushData();
+	  		    		dsDisBran.clearData();
+		  		    	changeMoveBtnStatus();
+		  		    }
+	  		    	return;
+	  		    }
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">
+			iniData();
+		</Event>
+	</Events>
+</View>
+

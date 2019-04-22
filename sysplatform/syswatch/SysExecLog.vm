@@ -1,0 +1,38 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title></title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<script type="text/javascript" src="${applicationRoot}/exhibit/sysref/SysDynamicMenu.js"></script>
+</head>
+
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+
+	<table border="0" width="100%" id="table1" height="100%"
+		class="autoform">
+		<tr>
+			<td height="22" colspan="2"
+				style="border: 1px #83B6DC solid; background-color: #E4EDF1; font: '宋体'; font-size: 12px;">
+			#fktoolbar("id=toolbarSysDynamic")</td>
+		</tr>
+		<tr>
+			<td colspan="2" height="100%" />#fkdatatable("id=tbMain")</td>
+		</tr>
+		<tr>
+			<td height="22" width="50%">#fkdatapilot("id=dpPublic")</td>
+			<td height="22" width="50%" align="right">第&nbsp;<font
+				color="red"><label id="labelPageIndex"></label></font>&nbsp;页&nbsp;共&nbsp;<font
+				color="red"><label id="labelPageCount"></label></font>&nbsp;页，共&nbsp;<font
+				color="red"><label id="labelRecordCount"></label></font>&nbsp;条&nbsp;每页&nbsp;<font
+				color="red"><label id="labelPageSize"></label></font>&nbsp;条</td>
+		</tr>
+	</table>
+	</body>
+#end
+
+</html>

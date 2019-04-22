@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统简单信息管理
+	乔武军设计      
+	2007.08.2  
+	Width=350 Height=230
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 数据集 -->
+		<Dataset id="dsGeneral" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Dic_Detail">
+			<Data type="statement">
+				select DicID,DicSNO,DicSCode,DicValue,DicDSC 
+				from Sys_Dic_Detail 
+				where DicID=#DicID# and DicSNO = #DicSNO#
+			</Data>
+			<Fields>
+				<Field name="DicID" label="序号" dataType="long" key="true"/>
+				<Field name="DicSNO" label="子序号" dataType="long" key="true"/>
+				<Field name="DicSCode" label="编码" dataType="string" />
+				<Field name="DicValue" label="名称" dataType="string" />
+				<Field name="DicDSC" label="说明" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="DicSCode" type="TextEditor" width="150"
+			dataset="dsGeneral" field="DicSCode">
+		</Control>
+		<Control id="DicValue" type="TextEditor" width="250"
+			dataset="dsGeneral" field="DicValue" />
+		<Control id="DicDSC" type="TextEditor" width="250"
+			dataset="dsGeneral" field="DicDSC" editorType="textarea"
+			height="55" />
+
+		<Control id="btnSave" type="Button" value="保存" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					  FloatSubWindowClose();
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysconfig.SysGeneralDetailPub"/>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var g_ID = 0;
+				
+				checkMasterData();
+				
+				function checkMasterData()
+				{
+					if (actionDataset.getMasterLink() && actionDataset.getMasterLink().getMasterDataset())
+					{
+						var masterDataset = actionDataset.getMasterLink().getMasterDataset();
+						
+						if ((masterDataset.getVisibleCount()>0) && (masterDataset.getValue('DicID')))
+							g_ID = masterDataset.getValue('DicID');
+					}
+					if (g_ID <= 0)
+					{
+						smoke.alert('无法获取主表数据！', function(e){
+							FloatSubWindowClose();
+						});
+					}
+					
+					if (masterDataset.getValue('IsSystem'))
+					{
+						smoke.alert('只读数据，不能修改！', function(e){
+							FloatSubWindowClose();
+						});
+					}	
+				}
+				
+				//初始化
+				function iniData()
+				{
+					if (actionCode == 'AC_NEW')
+					{
+						//btnSave.value = '增加';
+						newData();
+					}
+					else
+					{
+						var ID = actionDataset.getValue('DicID');
+						var DicSNO = actionDataset.getValue('DicSNO');
+						editData(ID,DicSNO);
+					}
+				}
+				
+				//编辑
+				function editData(ID,DicSNO)
+				{
+					g_ID = ID;
+					dsGeneral.parameters().setValue("DicID", ID,"long");
+					dsGeneral.parameters().setValue("DicSNO", DicSNO,"long");
+					dsGeneral.flushData();
+					DicSCode.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsGeneral.clearData();
+					dsGeneral.parameters().setValue("DicID", 0,"long");
+					dsGeneral.parameters().setValue("DicSNO", 0,"long");
+					dsGeneral.appendRecord();
+ 			  		DicSCode.focus();
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(DicSCode.value.length == 0){
+						smoke.alert("请输入编码！");
+						DicSCode.focus();
+						return false;
+					}
+					if(DicValue.value.length == 0){
+						smoke.alert("请输入名称！");
+						DicValue.focus();
+						return false;
+					}
+					else
+					{
+						if (actionCode !== 'AC_EDIT'){
+							dsGeneral.setValue("DicID", g_ID);
+							dsMaxID.parameters().setValue("DicID", g_ID, "int");
+							dsMaxID.flushData();
+							dsGeneral.setValue("DicSNO", dsMaxID.getValue("MaxID"));
+							dsGeneral.postRecord();
+						}
+						return true;
+					}
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+						
+					if (dsGeneral.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							if (actionCode == 'AC_NEW')
+								newData();
+							else
+								window.close();
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("DicSCode", DicSCode.value, "string");
+				    	ds.parameters().setValue("DicID", g_ID, "int");
+				    	ds.parameters().setValue("DicSNO", dsGeneral.getValue('DicSNO'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("DicSCode", DicSCode.value, "string");
+				    	ds.parameters().setValue("DicID", g_ID, "int");
+				    }
+				    ds.flushData();	
+				    
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("编码已经存在，请修改！");
+						DicSCode.focus();
+						return true;
+					}
+					return false;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

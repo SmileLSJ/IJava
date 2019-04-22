@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+	<!--
+		***************************************** 重新登录 乔武军设计 2013.07.13
+		Width=350 Height=240 *****************************************
+	-->
+<View skin="default" showDialogOnLoadingData="false">
+
+	<Datasets>
+		<!--
+			<Dataset id="dsDynamicBranInfo" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="true" showLoadingTip="false"> <Data
+			type="statement"> select A.BranID, A.BranCode, A.BranName from
+			Sys_Bran A order by A.BranCode </Data> <Fields> <Field name="BranID"
+			label="" dataType="long" /> <Field name="BranCode" label="BranCode"
+			dataType="string" /> <Field name="BranName" label="BranName"
+			dataType="string" /> </Fields> </Dataset>
+		
+
+		<Dataset id="dsBran" type="Reference" pageSize="0"
+			showLoadingTip="false" autoLoadPage="true" clearDataForLoadPage="true">
+			<Fields>
+				<Field name="BranID" label="ID" dataType="long" />
+				<Field name="BranCode" label="编码" dataType="string" />
+				<Field name="BranInfo" label="机构信息" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsUI" type="Reference" pageSize="0" loadDataAction="/retrieve.do?className=session.sys.LoginManagerDAO&amp;ferry=get&amp;method=getUIInfo"
+			showLoadingTip="false" autoLoadPage="true" clearDataForLoadPage="true">
+			<Fields>
+				<Field name="TPID" label="ID" dataType="int" />
+				<Field name="TPInfo" label="界面信息" dataType="string" />
+			</Fields>
+		</Dataset>
+		<Dataset id="dsObject" type="Reference" pageSize="0"
+			insertOnEmpty="true" autoLoadPage="true" clearDataForLoadPage="true">
+			<Fields>
+				<Field name="BranCode" label="编码" dataType="string" dropDown="ddBranList" />
+				<Field name="TPID" label="" dataType="int" defaultValue="0" dropDown="ddUIList"/>
+				<Field name="TPInfo" label="" dataType="string" />
+			</Fields>
+		</Dataset>-->
+	</Datasets>
+
+	<Controls>
+		<Control id="cmdLogin" type="RPCCommand" showLoadingTip="false"
+			action="/retrieve.do?className=session.sys.LoginManagerDAO&amp;ferry=set&amp;method=userLogin">
+		</Control>
+		<!--
+			<Control id="cmdGetBranCode" type="RPCCommand" showLoadingTip="false"
+			action="/retrieve.do?className=session.sys.LoginManagerDAO&amp;ferry=set&amp;method=getDefaultBranCode">
+			</Control> <Control id="ddBranInfo" type="CustomDropDown"
+			path="/sysplatform.do?fileName=/sysplatform/sysmisc/SysBranList.vm"
+			fixed="false" width="160" height="120" cachable="false" />
+		-->
+
+		<!--
+			<Control id="ddBranInfo" type="DatasetDropDown"
+			dataset="dsDynamicBranInfo" fixed="false" mapValue="true"
+			readFields="BranCode" showColumnHeader="false"
+			visibleFields="BranCode,BranName" writeFields="BranCode"
+			labelField="BranCode" height="80" valueField="BranCode" /> <Control
+			id="BranCode" type="TextEditor" width="160"/>
+		
+		<Control id="ddBranList" type="DatasetDropDown" dataset="dsBran"
+			mapValue="false" fixed="false" cachable="true" warmUpDelay="1" height="100"
+			width="200" readFields="BranCode" writeFields="BranCode"
+			visibleFields="BranInfo" valueField="BranCode" labelField="BranCode">
+			<Events>
+				<Event name="onBlur"></Event>
+			</Events>
+		</Control>
+		-->
+		
+		<Control id="MCCode" type="TextEditor" width="160">
+			<Events>
+				<Event name="onBlur"></Event>
+			</Events>
+		</Control>
+		
+		<Control id="UserCode" type="TextEditor" width="160">
+			<Events>
+				<Event name="onBlur"></Event>
+			</Events>
+		</Control>
+		<Control id="BranCode" type="TextEditor" width="160"
+			field="BranCode" />
+
+		<Control id="PassWord" type="TextEditor" width="160"
+			editorType="password">
+			<Events>
+				<Event name="onKeyDown">return keyDown(event);</Event>
+			</Events>
+		</Control>
+		<Control id="btnOK" type="Button" value="确定" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/exec.gif">
+			<Events>
+				<Event name="onClick">reLogin();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var mainObject = callObjectInfo.MainObject;
+				
+				function CheckForm()
+				{
+					if(MCCode.value.length == 0){
+						alert("请输入商户！");
+						MCCode.focus();
+						return false;
+					}
+					if(UserCode.value.length == 0){
+						alert("请输入用户！");
+						UserCode.focus();
+						return false;
+					}
+					if(BranCode.value.length == 0)
+					{
+						alert("请选择机构信息！");
+						BranCode.focus();
+						return false;
+					}
+					if(PassWord.value.length == 0)
+					{
+						alert("请输入密码！");
+						PassWord.focus();
+						return false;
+					}
+				   return true;
+				}
+				
+				function refreshBranInfo()
+				{
+					if (UserCode.value == "")
+					{
+						dsBran.clearData();
+						return false;
+					}
+					else if (dsBran.parameters().getValue("UserCode") == UserCode.value)
+						return false;
+					else
+					{
+						dsBran.setLoadDataAction("/retrieve.do?className=session.sys.LoginManagerDAO&ferry=get&method=getBranInfo");	
+						dsBran.parameters().clear();
+						dsBran.parameters().setValue("UserCode", UserCode.value, "string");
+						dsBran.flushData();
+					}
+				}
+
+			    function reLogin()
+                {
+                	if (!CheckForm())
+                	  return true;
+                	cmdLogin.parameters().setValue("MCCode", 140);
+                	cmdLogin.parameters().setValue("UserCode", UserCode.value);
+					cmdLogin.parameters().setValue("PassWord", PassWord.value);
+					cmdLogin.parameters().setValue("CheckCode", "nocheck");
+					cmdLogin.parameters().setValue("BranCode", BranCode.value);
+					//Succeed
+					var CallSucceed = cmdLogin.execute();	
+					if (CallSucceed)
+					{
+						var Succeed = cmdLogin.outParameters().getValue("Succeed");
+						if (Succeed == "1")
+						{
+							setLastLoginData();
+							mainObject.location.href="%{applicationRoot}/Main.jsp";
+							close();
+							return true;
+						}
+						else
+						{
+							alert(cmdLogin.outParameters().getValue("ErrMes"));
+							return false;
+						}
+					}
+					else
+						return false;
+				}
+				
+				function keyDown(event) 
+				{  
+					if(event.keyCode==13) 
+					{ 
+						return reLogin();
+					} 
+				}
+				
+				
+				//写cookies 
+				function setCookie(name,value) 
+				{ 
+				    var Days = 30; 
+				    var exp = new Date(); 
+				    exp.setTime(exp.getTime() + Days*24*60*60*1000); 
+				    document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString(); 
+				} 
+				
+				//读取cookies 
+				function getCookie(name) 
+				{ 
+				    var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+				 
+				    if(arr=document.cookie.match(reg))
+				 
+				        return unescape(arr[2]); 
+				    else 
+				        return null; 
+				} 
+				
+				//删除cookies 
+				function delCookie(name) 
+				{ 
+				    var exp = new Date(); 
+				    exp.setTime(exp.getTime() - 1); 
+				    var cval=getCookie(name); 
+				    if(cval!=null) 
+				        document.cookie= name + "="+cval+";expires="+exp.toGMTString(); 
+				} 
+				
+				function setLastLoginData()
+				{
+					setCookie("UMS_ERP_Login_MCCode", 140);
+					setCookie("UMS_ERP_Login_UserCode", UserCode.value);
+					setCookie("UMS_ERP_Login_BranCode", BranCode.value);
+				}
+				
+				function getLastLoginData()
+				{
+					var s = getCookie("UMS_ERP_Login_MCCode");
+					if (s)
+						MCCode.value = s;
+					s = getCookie("UMS_ERP_Login_UserCode");
+					if (s)
+						UserCode.value = s;
+					s = getCookie("UMS_ERP_Login_BranCode");
+					if (s)
+						BranCode.value = s;
+				 	if (MCCode.value.length==0) 
+				 		MCCode.focus();
+				 	else
+				 		PassWord.focus();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				//MCCode.focus();
+				getLastLoginData();
+			]]>
+		</Event>
+	</Events>
+</View>
+

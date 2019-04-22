@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统简单信息管理
+	乔武军设计      
+	2007.08.2  
+	Width=350 Height=250
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsDicGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select DicGroup 
+				from Sys_Dic_Master
+				group by DicGroup
+			</Data>
+			<Fields>
+				<Field name="DicGroup" label="列表组" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<!-- 数据集 -->
+		<Dataset id="dsGeneral" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false" tableName="Sys_Dic_Master">
+			<Data type="statement">
+				select DicID,DicCode,DicName,DicType,DicDSC,DicGroup, IsSystem from
+				Sys_Dic_Master where DicID=#DicID#
+			</Data>
+			<Fields>
+				<Field name="DicID" label="序号" dataType="long" key="true" valueOnEmpty="max"/>
+				<Field name="DicCode" label="编码" dataType="string" />
+				<Field name="DicName" label="名称" dataType="string" />
+				<Field name="DicType" label="类型" dataType="string"
+					dropDown="ddDicType" defaultValue="1" />
+				<Field name="DicDSC" label="说明" dataType="string" />
+				<Field name="DicGroup" label="组" dataType="string"
+					dropDown="ddDicGroup" />
+				<Field name="IsSystem" label="" dataType="string" defaultValue="0"/>
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddDicGroup" type="DatasetDropDown"
+			dataset="dsDicGroup" fixed="false" mapValue="false"
+			readFields="DicGroup" showColumnHeader="false"
+			visibleFields="DicGroup" writeFields="DicGroup" height="100%"
+			valueField="DicGroup" labelField="DicGroup" />
+			
+		<Control id="ddDicType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="字符型" value="1" />
+			<DropDownItem label="整数型" value="2" />
+			<DropDownItem label="浮点型" value="3" />
+			<DropDownItem label="日期型" value="4" />
+			<DropDownItem label="布尔型" value="5" />
+		</Control>
+
+		<Control id="DicCode" type="TextEditor" width="100%"
+			dataset="dsGeneral" field="DicCode">
+		</Control>
+		<Control id="DicName" type="TextEditor" width="100%"
+			dataset="dsGeneral" field="DicName" />
+		<Control id="DicGroup" type="TextEditor" width="100%"
+			dataset="dsGeneral" field="DicGroup" />
+		<Control id="DicType" type="TextEditor" width="100%"
+			dataset="dsGeneral" field="DicType" />
+		<Control id="DicDSC" type="TextEditor" width="100%"
+			dataset="dsGeneral" field="DicDSC" editorType="textarea"
+			height="50" />
+
+		<Control id="btnSave" type="Button" value="保存">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					  parent.andPageClose(window.frameElement.src);
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysconfig.SysGeneralMasterPub"/>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				//初始化
+				function iniData()
+				{
+					dsDicGroup.flushData();
+					if (actionCode == 'AC_NEW')
+					{
+						//btnSave.value = '增加';
+						newData();
+					}
+					else
+					{
+						var ID = actionDataset.getValue('DicID');
+						editData(ID);
+						if (dsGeneral.getValue("IsSystem")=='1') 
+						{
+						   smoke.alert('只读信息，不允许修改！', function(e){
+							   FloatSubWindowClose();
+						   });
+						}
+					}
+				}
+				
+				//编辑
+				function editData(ID)
+				{
+					dsGeneral.parameters().setValue("DicID", ID,"long");
+					dsGeneral.flushData();
+					DicCode.focus();
+				}
+				
+				//新增
+				function newData()
+				{
+					dsGeneral.clearData();
+					dsGeneral.parameters().setValue("DicID", 0,"long");
+					dsGeneral.appendRecord();
+ 			  		DicCode.focus();
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if(DicCode.value.length == 0){
+						smoke.alert("请输入编码！");
+						DicCode.focus();
+						return false;
+					}
+					if(DicName.value.length == 0){
+						smoke.alert("请输入名称！");
+						DicName.focus();
+						return false;
+					}
+					if(DicGroup.value.length == 0){
+						smoke.alert("请输入列表分组！");
+						DicGroup.focus();
+						return false;
+					}
+					
+					else
+						return true;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					if (checkDupData())
+						return;
+						
+					if (dsGeneral.saveDB())
+					{
+						smoke.alert("数据保存成功！", function(e){
+							window.returnValue = true;
+							parent.refreshTable(window.frameElement.src);
+							if (actionCode == 'AC_NEW')
+								newData();
+							else
+								parent.andPageClose(window.frameElement.src);
+						});
+					}
+				}
+					
+				//检查编码是否重复
+				function checkDupData()
+				{
+					if (actionCode == 'AC_EDIT'){
+				    	ds = dsQuery_CodeDupEdit;
+				    	ds.parameters().setValue("DicCode", DicCode.value, "string");
+				    	ds.parameters().setValue("DicID", dsGeneral.getValue('DicID'), "int");
+				    } else {
+				    	ds = dsQuery_CodeDupNew;
+				    	ds.parameters().setValue("DicCode", DicCode.value, "string");
+				    }
+				    ds.flushData();	
+				    
+				    if (parseInt(ds.getValue("CNT"), 10) > 0) {
+			    		smoke.alert("编码已经存在，请修改！");
+						DicCode.focus();
+						return true;
+					}
+					return false;
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	公告组选择
+	乔武军设计      
+	2007.12.12  
+	Width=500 Height=450
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsGroup" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select '0' as Checked, A.GroupID, A.GroupCode, A.GroupName 
+				from Sys_Group A where A.MCID = %{#session.CheckIn.MCID}
+				order by A.GroupCode
+			</Data>
+			<Fields>
+				<Field name="select" label="" dataType="boolean"
+					align="center" />
+				<Field name="GroupID" label="" dataType="long" />
+				<Field name="GroupCode" label="编码" dataType="string" />
+				<Field name="GroupName" label="名称" dataType="string" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="tbGroup" type="DataTable" dataset="dsGroup"
+			width="100%" readOnly="true" parityRow="3">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="select" field="select" width="30" />
+			<Column name="GroupCode" field="GroupCode" width="100" />
+			<Column name="GroupName" field="GroupName" width="250" />
+		</Control>
+
+		<Control id="btnOK" type="Button" value="确定" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+
+		<Control id="pilotGroup" type="DataPilot" dataset="dsGroup"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				//初始化
+				function iniData()
+				{
+					dsGroup.flushData();
+				}
+				
+				function checkData()
+				{
+					var isFound = false;
+					var	record = dsGroup.getFirstRecord();
+					while (record)
+					{
+						if (record.getValue("select"))
+						{
+							isFound = true;
+							break;
+						}
+						record = record.getNextRecord();
+					}
+					if (!isFound)
+					{
+						smoke.alert("请选择组！");
+						return false;
+					}
+					else
+						return true;
+				}
+				
+				function saveData()
+				{
+					var ret = "";
+					if (!checkData())
+						return;
+					
+					
+					var	record = dsGroup.getFirstRecord();
+					while (record)
+					{
+						if (record.getValue("select"))
+						{
+							ret += record.getValue("GroupID") + ",";
+						}
+						record = record.getNextRecord();
+					}
+					window.returnValue = ret;
+					FloatSubWindowClose();
+				}
+	  		    
+			]]>
+		</Event>
+		<Event name="onLoad">iniData();</Event>
+	</Events>
+</View>
+

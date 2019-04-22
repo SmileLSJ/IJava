@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsUser" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" type="Custom" 
+			loadOnPageOpen="false" showLoadingTip="false">
+			<Fields>
+				<Field name="ID" label="序号" dataType="long" />
+				<Field name="Flag" label="类型" dataType="string" />
+				<Field name="RecvID" label="接收序号" dataType="long" />
+				<Field name="RecvName" label="接收对象" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 公告数据集 -->
+		<Dataset id="dsInfo" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" 
+			type="Custom" loadOnPageOpen="false" showLoadingTip="false">
+			<Fields>
+				<Field name="InfoID" label="序号" dataType="string" />
+				<Field name="BranID" label="发送机构" dataType="long" />
+				<Field name="InfoDate" label="录入日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="Title" label="标题" dataType="string" >
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="Note" label="公告内容" dataType="string" />
+				<Field name="Priority" label="状态" dataType="string"
+					dropDown="ddPriority" />
+				<Field name="IsSend" label="是否发送" dataType="string" />
+				<Field name="SendDate" label="发送日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+			</Fields>
+		</Dataset>
+		
+		<!-- 回复公告用的数据集，主要目的是获取原始信息的人员及内容 -->
+		<Dataset id="dsInfoReply" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.Title, A.SendUserID, '(' || B.UserCode || ')' || B.UserName as UserInfo
+				from Sys_Info_Recv A, Sys_User B
+				where A.InfoID = #InfoID# and A.SendUserID = B.UserID
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Title" label="标题" dataType="string" />
+				<Field name="SendUserID" label="" dataType="long" />
+				<Field name="UserInfo" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsQueryGUID" type="SimpleQuery"
+			sql="select substr(sys_guid(),1,32) as P from dual"/>
+		<Dataset id="dsUpdate1" type="SimpleUpdate"
+			sql="insert into Sys_Info_Send(InfoID,UserID,InfoDate,Title,Note,Priority,IsSend,SendDate, UpdateDate, UpdateBy) 
+			     values(#InfoID#,%{#session.CheckIn.UserID},sysdate,#Title#,#Note#,#Priority#,'0',null,sysdate, %{#session.CheckIn.UserName})"/>
+		<Dataset id="dsUpdate2" type="SimpleUpdate"
+			sql="insert into Sys_Info_Send_User(InfoID, RecvType, ObjID) values(#InfoID#, #RecvType#, #ObjID#)"/>
+		<Dataset id="dsUpdate3" type="SimpleUpdate"
+			sql="update Sys_Info_Send set IsSend = '1', SendDate = sysdate, UpdateDate = sysdate, UpdateBy = %{#session.CheckIn.UserName} where InfoID = #InfoID#;
+			     insert into Sys_Info_Recv(InfoID, SendInfoID, SendUserID, RecvUserID, InfoDate, Title, Note, Priority, IsReaded, ReadDate, UpdateDate, UpdateBy) 
+				 select substr(sys_guid(),1,32), #InfoID#, A.UserID, B.RecvUserID, A.SendDate, A.Title, A.Note, A.Priority, '0', null, sysdate, %{#session.CheckIn.UserName}
+				 from Sys_Info_Send A, (select RecvUserID 
+				                        from ( 
+					                        select ObjID as RecvUserID 
+					                        from Sys_Info_Send_User 
+					                        where InfoID = #InfoID# and RecvType = '1' 
+					                        union all 
+					                        select B.UserID as RecvUserID 
+					                        from Sys_Info_Send_User A, Sys_Group_User B 
+					                        where A.InfoID = #InfoID# and A.RecvType = '2' and A.ObjID = B.GroupID 
+					                        union all 
+					                        select B.UserID as RecvUserID 
+					                        from Sys_Info_Send_User A, Sys_User B 
+					                        where A.InfoID = #InfoID# and A.RecvType = '3' and A.ObjID = B.BranID 
+					                        ) C 
+				                  		group by RecvUserID 
+				                 		) B 
+				 where A.InfoID = #InfoID#"/>
+	</Datasets>
+	<Controls>
+		<Control id="tabset1" type="TabSet" width="100%" height="100%"
+			widthTabName="70" draggableItem="false">
+			<Tab name="tab1" label="基本信息" />
+			<Tab name="tab2" label="接收信息" />
+		</Control>
+
+		<Control id="ddPriority" type="ListDropDown" mapValue="true"
+			fixed="true" width="70">
+			<DropDownItem label="普通" value="1" />
+			<DropDownItem label="重要" value="2" />
+			<DropDownItem label="紧急" value="3" />
+		</Control>
+
+		<Control id="Title" type="TextEditor" width="320"
+			dataset="dsInfo" field="Title">
+			<Events>
+				<Event name="onKeyDown">
+					//if(event.keyCode==13) Note.focus();
+				</Event>
+			</Events>
+		</Control>
+		
+		<Control id="Priority" type="TextEditor" width="70"
+			dataset="dsInfo" field="Priority" />
+
+		<!-- 用户表格 -->
+		<Control id="tbUser" type="DataTable" dataset="dsUser"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Flag" field="Flag" width="40"
+				align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeFlagImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="RecvName" field="RecvName" width="300" />
+		</Control>
+
+		<Control id="btnUser" type="Button" width="55" height="20"
+			value="用户" decorate="%{applicationRoot}/exhibit/sysimgs/groupnormal.gif" toolTip="添加接收用户">
+			<Events>
+				<Event name="onClick">selectUser()</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnGroup" type="Button" width="55" height="20"
+			value="组" decorate="%{applicationRoot}/exhibit/sysimgs/groupnormalex.gif" toolTip="添加接收用户组">
+			<Events>
+				<Event name="onClick">selectGroup()</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnBran" type="Button" width="55" height="20"
+			value="机构" decorate="%{applicationRoot}/exhibit/sysimgs/node1.gif" toolTip="添加接收机构">
+			<Events>
+				<Event name="onClick">selectBran()</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+
+		<Control id="btnSave" type="Button" value="暂存"
+			decorate="%{applicationRoot}/exhibit/sysimgs/save.gif" width="75">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+		
+		<Control id="btnSend" type="Button" value="发送"
+			decorate="%{applicationRoot}/exhibit/sysimgs/send.gif" width="75">
+			<Events>
+				<Event name="onClick">sendData();</Event>
+			</Events>
+		</Control>
+		
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				var InfoID = "";
+				
+				//初始化
+				function iniData()
+				{
+					
+					InfoID = actionDataset.getValue('InfoID');
+					
+					btnUser.disabled = true;
+					btnGroup.disabled = true;
+					btnBran.disabled = true;
+					
+					replyData();
+				}
+				
+				//回复
+				function replyData()
+				{
+					dsUser.clearData();
+					dsInfo.clearData();
+					
+					dsInfoReply.clearData();
+					dsInfoReply.parameters().setValue("InfoID", InfoID, "string");
+					dsInfoReply.flushData();
+					
+					if (dsInfoReply.getVisibleCount() <= 0)
+					{
+						smoke.alert("您要回复的内容已经不存在，可能网络故障或已经被删除！", function(e){
+							FloatSubWindowClose();
+						});
+						return;
+					}
+					
+					dsInfo.appendRecord();
+					dsInfo.setValue("Title", "Re:" + dsInfoReply.getValue("Title"));
+					dsInfo.setValue("Priority", "1");
+					dsUser.appendRecord();
+    				dsUser.setValue("Flag", "1");
+    				dsUser.setValue("RecvID", parseInt(dsInfoReply.getValue("SendUserID")));
+					dsUser.setValue("RecvName", dsInfoReply.getValue("UserInfo"));
+					dsUser.postRecord();
+					tabset1.activeTabByName("tab1");
+					Title.focus();
+				}
+				
+				function checkObjNull(obj, errMes)
+				{
+					if(obj.value.length == 0){
+						smoke.alert(errMes, function(e){
+							tabset1.activeTabByName("tab1");
+							obj.focus();
+						});
+						return false;
+					}
+					else
+						return true;
+				}
+				
+				function getInnerHTML(n) {   
+				    var getDocument = document.getElementById("wysiwyg" + n).contentWindow.document;   
+				    var browserName = navigator.appName;   
+				    var iHTML = "";
+				    if (browserName == "Microsoft Internet Explorer") {   
+				        iHTML = getDocument.body.innerHTML;   
+				    }else {   
+				        iHTML = document.createTextNode(getDocument.body.innerHTML);   
+				    }
+				    return iHTML;
+				}
+				
+				//检查数据
+				function checkData()
+				{
+					if (!checkObjNull(Title, "请输入公告标题！"))
+						return false;
+					
+					if (_tqEditor.content() <= 0) {
+						smoke.alert("请输入公告内容！", function(e){
+							tabset1.activeTabByName("tab1");
+						});
+						return false;
+					}
+					
+					dsInfo.setValue("Note",_tqEditor.content());
+					dsInfo.postRecord();
+					
+					var v_Note = (dsInfo.getValue("Note")) ? dsInfo.getValue("Note") : '';
+					if (v_Note.length > 1500)
+					{
+						smoke.alert("通知内容不能超过1500个字符，实际字符数（"+v_Note.length+"）");
+						return false;
+					}
+					
+					//检查是否是否分配发送用户
+					if (dsUser.getVisibleCount() <= 0)
+					{
+						smoke.alert("请选择接收的对象！");
+						return false;
+					}
+					
+					return true;
+				}
+				
+				function preData(){
+					dsQueryGUID.flushData();
+					var InfoID = dsQueryGUID.getValue("P");
+					dsUpdate1.parameters().setValue("InfoID", InfoID, "string");
+					dsUpdate1.parameters().setValue("Title", dsInfo.getValue("Title"), "string");
+					dsUpdate1.parameters().setValue("Note", dsInfo.getValue("Note"), "string");
+					dsUpdate1.parameters().setValue("Priority", dsInfo.getValue("Priority"), "string");
+					dsUpdate1.saveDB();					
+					
+					var	record = dsUser.getFirstRecord();
+					while (record)
+					{
+						dsUpdate2.parameters().setValue("InfoID", InfoID, "string");
+						dsUpdate2.parameters().setValue("RecvType", record.getValue("Flag"), "string");
+						dsUpdate2.parameters().setValue("ObjID", record.getValue("RecvID"), "int");
+						dsUpdate2.saveDB();	
+						record = record.getNextRecord();
+					}
+					return InfoID;
+				}
+				
+				//保存数据
+				function saveData()
+				{
+					if (!checkData())
+						return;
+					
+					preData();
+					
+					smoke.alert("数据保存成功！", function(e){
+						window.returnValue = true;
+						FloatSubWindowClose(true);
+					});
+				}
+				
+				//发送数据
+				function sendData()
+				{
+					if (!checkData())
+						return;
+					var InfoID = preData();
+					
+					dsUpdate3.parameters().setValue("InfoID", InfoID, "string");
+					if (dsUpdate3.saveDB())
+					{
+						smoke.alert("发送成功", function(e){
+							window.returnValue = true;
+							FloatSubWindowClose(true);
+						});
+					}
+					else
+					{
+						return;
+					}
+				    //3.插入系统消息表
+				    /*
+				    sql += __LOGIN_INFO.SQLSeparator + "insert into Sys_Message(ID, UserID, Title, Note, InDate, IsHint, IsRead, HintDate, LinkURL) " +
+				    	"select substr(sys_guid(),1,32), RecvUserID, '公告通知', Title, sysdate, '0', '0', null, " +
+				        "'showModalDialog(\"sysplatform.do?fileName=/sysplatform/sysInfo/SysInfoView.vm\",' + InfoID + " + 
+	                    "',\"dialogWidth:620px dialogHeight:480px center:yes resizable:no scroll:no status:no\")' as LinkURL " +
+				    	"from Sys_Info_Recv " +
+				    	"where SendInfoID = '" + InfoID + "'";
+				    */
+				}
+					
+				function changeFlagImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Flag")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "单个用户";
+						}	
+						else if (record.getValue("Flag")=="2")
+						{
+							filename = 'groupnormalex.gif';
+							hint = "用户组";
+						}	
+						else if (record.getValue("Flag")=="3")
+						{
+							filename = 'node1.gif';
+							hint = "机构";
+						}	
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				g_UserID = __LOGIN_INFO.UserID; 
+				g_BranID = __LOGIN_INFO.BranID; 
+				iniData();
+			]]>
+		</Event>
+	</Events>
+</View>
+

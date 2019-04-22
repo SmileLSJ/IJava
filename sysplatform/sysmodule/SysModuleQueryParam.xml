@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统模块信息查询参数页 
+	乔武军设计      
+	2007.07.2  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 模块数据集 -->
+		<Dataset id="dsModuleGroup" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select ModuleGroup 
+				from Sys_Module
+				group by ModuleGroup
+			</Data>
+			<Fields>
+				<Field name="ModuleGroup" label="模块组" dataType="string" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="ModuleGroup" dataType="string"
+					dropDown="ddModuleGroup" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddModuleGroup" type="DatasetDropDown"
+			dataset="dsModuleGroup" fixed="false" mapValue="true"
+			readFields="ModuleGroup" showColumnHeader="false"
+			visibleFields="ModuleGroup" writeFields="ModuleGroup" height="150"
+			valueField="ModuleGroup" labelField="ModuleGroup" />
+
+		<Control id="ModuleGroup" type="TextEditor" dataset="dsObject"
+			field="ModuleGroup" width="97%" />
+		<Control id="ModuleCode" type="TextEditor" width="97%" />
+		<Control id="ModuleName" type="TextEditor" width="97%" />
+		<Control id="ModuleComment" type="TextEditor" width="97%" />
+		<Control id="buttonSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					parent.transfer({ModuleCode:ModuleCode.value,ModuleGroup:ModuleGroup.value,ModuleName:ModuleName.value,ModuleComment:ModuleComment.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+	<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({ModuleCode:ModuleCode.value,ModuleGroup:ModuleGroup.value,ModuleName:ModuleName.value,ModuleComment:ModuleComment.value});
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			dsModuleGroup.flushData();
+			paramSearch();
+	 		 	setParamHeight();
+		</Event>
+	</Events>
+</View>
+

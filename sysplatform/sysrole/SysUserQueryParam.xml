@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统用户查询参数页 
+	乔武军设计      
+	2007.07.2  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsMain" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false">
+			<Data type="statement">
+			<![CDATA[
+				select A.BranID, A.BranCode, A.BranCode || '-' ||	A.BranName as Bran, A.Path, count(B.BranID) as SubCount
+				from Sys_Bran A left join Sys_Bran B 
+					on A.BranID = B.PBranID 
+				where A.PBranID = #PBranID# or A.BranID = #BranID#
+				group by A.BranID,A.BranCode, A.BranCode || '-' || A.BranName, A.Path 
+				order by A.BranCode
+			]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="BranCode" label="机构编码" dataType="string" />
+				<Field name="Bran" label="机构名称" dataType="string" />
+				<Field name="Path" label="Path" dataType="string" />
+				<Field name="SubCount" label="子数量" dataType="long" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="UserStatus" dataType="long"
+					dropDown="ddUserStatus" defaultValue="-1"/>
+				<Field name="CascadeDisplay" dataType="string" defaultValue="1"/>
+				<Field name="DisplaySysUser" dataType="string" defaultValue="0"/>
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="ddUserStatus" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="全部" value="-1" />
+			<DropDownItem label="已启用" value="1" />
+			<DropDownItem label="已禁用" value="0" />
+		</Control>
+		
+		<Control id="UserStatus" type="TextEditor" dataset="dsObject"
+			field="UserStatus" width="97%" />
+		
+		<Control id="CascadeDisplay" type="CheckBox" dataset="dsObject"
+			field="CascadeDisplay" width="97%" />
+		<Control id="DisplaySysUser" type="CheckBox" dataset="dsObject"
+			field="DisplaySysUser" width="97%" />
+		<Control id="UserCode" type="TextEditor" width="97%" />
+		<Control id="UserNo" type="TextEditor" width="97%" />
+		<Control id="UserName" type="TextEditor" width="97%" />
+		<Control id="RoleName" type="TextEditor" width="97%" />
+		<Control id="IDNo" type="TextEditor" width="97%" />
+		<Control id="buttonSearch" type="Button" value="查询" 
+			width="75" decorate="%{applicationRoot}/exhibit/sysimgs/search.gif">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+					
+					parent.transfer({
+					  DisplaySysUser:dsObject.getValue("DisplaySysUser"),
+					  UserStatus:dsObject.getValue("UserStatus"),
+					  UserCode:UserCode.value,
+					  UserNo:UserNo.value,
+					  IDNo:IDNo.value,
+					  RoleName:RoleName.value,
+					  UserName:UserName.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+		<Control id="TreeInfo" type="Tree" width="100%">
+			<Events>
+				<Event name="onClick">buttonSearch.click();</Event>
+				<Event name="beforeExpandNode">
+					<![CDATA[
+					if (node.children().getLength()>0) return;
+					var dataset = dsMain;
+					dataset.parameters().clear();
+					var BMP = "%{applicationRoot}/exhibit/sysimgs/node1.gif";
+					if (node.getLevel() !== 0)
+					{
+						BMP = "%{applicationRoot}/exhibit/sysimgs/node2.gif";
+						dataset.parameters().setValue("PBranID", node.CurBranID,"long");
+						dataset.parameters().setValue("BranID", -1, "long");
+					}
+					else
+					{
+						dataset.parameters().setValue("BranID", __LOGIN_INFO.BranID, "long");
+						dataset.parameters().setValue("PBranID", -1, "long");
+					}
+						
+					
+					dataset.flushData();
+				    
+				  	while (!dataset.isLast())
+				  	{
+					     var label = dataset.getString("Bran");
+					     var newNode = tree.addNode(node, label);
+					     newNode.setHasChild(dataset.getValue("SubCount") > 0);
+					     newNode.CurBranID = dataset.getValue("BranID");
+					     newNode.CurBranPath = dataset.getValue("Path");
+					     newNode.setIcon(BMP);
+					     newNode.setExpandedIcon(BMP);
+					     dataset.moveNext();
+					     newNode.setChecked(true);
+				    }
+				]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({
+					  DisplaySysUser:dsObject.getValue("DisplaySysUser"),
+					  UserStatus:dsObject.getValue("UserStatus"),
+					  UserCode:UserCode.value,
+					  UserNo:UserNo.value,
+					  IDNo:IDNo.value,
+					  RoleName:RoleName.value,
+					  UserName:UserName.value});
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+			dsObject.refreshControls();
+			
+//			buttonSearch.setDecorate(__CONTEXT_PATH +"/exhibit/sysimgs/search.gif");
+			paramSearch();
+	 		setParamHeight();
+			]]>
+		</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,247 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>财务机构管理</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<style type="text/css">
+.spe1
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title1.gif")
+}
+
+.spe2
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title2.gif")
+}
+
+.spe3
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/userred.gif")
+}
+
+.spe4
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/share.gif")
+}
+
+</style>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+
+	<table border="0" width="100%" height="100%" class="autoform">
+		<tr>
+			<td height="20" >
+			<table border="0" width="100%" height="100%" class="titleHint">
+				<tr>
+					<td>
+					<p class="titleHintLeft"><b>财务机构管理</b> &nbsp;&nbsp;查看及维护机构相关信息</p>
+					</td>
+					<td>
+					<p class="titleHintRight"><label id="lbl_Status"
+						style="color:#0000CC;" /></p>
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td width="100%" height="100%" >
+				#fktabset("id=tabset1")
+				#fktab("name=tab1")
+				<table border="0" width="100%" height="100%" bgcolor="#F1F4FA">
+					<tr>
+						<td height="20" style="padding-left:2px;">
+						<p class="spe1" style="width: 205; height: 100%">基本信息</p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+						<table border="0" height="100%">
+							<tr>
+								<td height="0" width="65"></td>
+								<td width="120"></td>
+								<td width="65"></td>
+								<td width="120"></td>
+							</tr>
+							<tr>
+								<td height="22" align="right"><font color="red">*</font>机构编码</td>
+								<td>#fktexteditor("id=FBCode")
+								<td align="left" colspan="2"></td>
+							</tr>
+							<tr>
+								<td height="22" align="right"><font color="red">*</font>机构名称</td>
+								<td colspan="3">#fktexteditor("id=FBName")</td>
+							</tr>
+							<tr>
+								<td height="22" align="right">联系地址</td>
+								<td colspan="3">#fktexteditor("id=Address")</td>
+							</tr>
+						</table>
+						</td>
+					</tr>
+					<tr>
+						<td height="20" style="padding-left:2px;">
+						<p class="spe2" style="width: 205; height: 100%">辅助信息</p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+						<table border="0" height="100%">
+							<tr>
+								<td height="0" width="65"></td>
+								<td width="120"></td>
+								<td width="65"></td>
+								<td width="120"></td>
+							</tr>
+							<tr>
+								<td height="22" align="right">国家</td>
+								<td>#fktexteditor("id=Country")</td>
+								<td  align="right">省份</td>
+								<td>#fktexteditor("id=Province")</td>
+							</tr>
+							<tr>
+								<td  height="22" align="right">城市</td>
+								<td>#fktexteditor("id=City")</td>
+								<td align="right">联系人员</td>
+								<td>#fktexteditor("id=LinkMan")</td>
+							</tr>
+							<tr>
+								<td height="22" align="right">移动电话</td>
+								<td>#fktexteditor("id=MTel")</td>
+								<td align="right">联系电话</td>
+								<td>#fktexteditor("id=Tel")</td>
+							</tr>
+							<tr>
+								<td height="22" align="right">网页地址</td>
+								<td colspan="3">#fktexteditor("id=WebSite")</td>
+							</tr>
+						</table>
+						</td>
+					</tr>
+					<tr>
+						<td height="100%"></td>
+					</tr>
+				</table>
+				#end
+				#fktab("name=tab2")
+				<table border="0" width="100%" height="100%" bgcolor="#F1F4FA">
+					<tr>
+						<td height="20" style="padding-left:2px;">
+						<p class="spe3" style="width: 205; height: 100%">扩展属性</p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+						<table border="0" height="100%">
+							<tr>
+								<td height="0" width="65"></td>
+								<td width="120"></td>
+								<td width="65"></td>
+								<td width="120"></td>
+							</tr>
+							
+							<tr>
+								<td height="22" align="right">邮政编码</td>
+								<td>#fktexteditor("id=PostCode")</td>
+								<td align="right">联系传真</td>
+								<td>#fktexteditor("id=Fax")</td>
+							</tr>
+							
+						</table>
+						</td>
+					</tr>
+					<tr>
+						<td height="20" style="padding-left:2px;">
+						<p class="spe4" style="width: 205; height: 100%">扩展信息</p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+						<table border="0" height="100%">
+							<tr>
+								<td height="0" width="65"></td>
+								<td width="120"></td>
+								<td width="65"></td>
+								<td width="120"></td>
+							</tr>
+							<tr>
+								<td height="22" align="right">开户银行</td>
+								<td colspan="3">#fktexteditor("id=Bank")</td>
+							</tr>
+							<tr>
+								<td height="22" align="right">银行账号</td>
+								<td colspan="3">#fktexteditor("id=BankCode")</td>
+							</tr>
+							<tr>
+								<td height="22" align="right">纳税编号</td>
+								<td>#fktexteditor("id=TaxNo")</td>
+								<td align="right">法人代表</td>
+								<td>#fktexteditor("id=LegalPSN")</td>
+							</tr>
+							<tr>
+								<td height="40" align="right">备注说明</td>
+								<td colspan="3">#fktexteditor("id=DSC")</td>
+							</tr>
+						</table>
+						</td>
+					</tr>
+					<tr>
+						<td height="100%"></td>
+					</tr>
+				</table>
+				#end
+			#end
+			</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+		<tr>
+			<td height="22" align="right" style="padding-right:4px;">#fkbutton("id=btnSave")&nbsp; #fkbutton("id=btnClose")</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+	</table>
+
+	</body>
+#end
+
+</html>

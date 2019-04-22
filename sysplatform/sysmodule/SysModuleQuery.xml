@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+
+<View skin="default" showDialogOnLoadingData="false"
+	context="SysModuleManager">
+	<Datasets>
+		<!-- 模块数据集 -->
+		<Dataset id="dsModule" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysModuleManager">
+			<Data type="statement">
+				select
+					ModuleID,MODULECODE,MODULENAME,MODULECOMMENT,MODULEGROUP,
+					VISIBLED,VALIDED,CHECKED,CONTEXT, UpdateBy, UpdateDate, BMP 
+				from SYS_MODULE A
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					1=1
+					<isNotEmpty prepend="and" property="ModuleGroup"
+						open="%" close="%">
+						ModuleGroup like #ModuleGroup#
+					</isNotEmpty>
+					
+					<isNotEmpty prepend="and" property="ModuleCode"
+						open="%" close="%">
+						ModuleCode like #ModuleCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ModuleName"
+						open="%" close="%">
+						ModuleName like #ModuleName#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="ModuleComment"
+						open="%" close="%">
+						ModuleComment like #ModuleComment#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						ModuleGroup asc, ModuleCode asc
+					</isNotParameterPresent>
+
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="ModuleGroup"
+						estimate="orderbys">
+						#ModuleGroup#
+					</isNotNull>
+					
+					<isNotNull prepend="," property="VISIBLED"
+						estimate="orderbys">
+						#VISIBLED#
+					</isNotNull>
+					<isNotNull prepend="," property="VALIDED"
+						estimate="orderbys">
+						#VALIDED#
+					</isNotNull>
+					<isNotNull prepend="," property="CHECKED"
+						estimate="orderbys">
+						#CHECKED#
+					</isNotNull>
+					<isNotNull prepend="," property="CONTEXT"
+						estimate="orderbys">
+						#CONTEXT#
+					</isNotNull>
+					<isNotNull prepend="," property="UpdateBy"
+						estimate="orderbys">
+						#UpdateBy#
+					</isNotNull>
+					<isNotNull prepend="," property="UpdateDate"
+						estimate="orderbys">
+						#UpdateDate#
+					</isNotNull>
+					<isNotNull prepend="," property="BMP"
+						estimate="orderbys">
+						#BMP#
+					</isNotNull>
+					<isNotNull prepend="," property="ModuleCode"
+						estimate="orderbys">
+						#ModuleCode#
+					</isNotNull>
+					<isNotNull prepend="," property="ModuleName"
+						estimate="orderbys">
+						#ModuleName#
+					</isNotNull>
+					<isNotNull prepend="," property="ModuleComment"
+						estimate="orderbys">
+						#ModuleComment#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="ID" dataType="long" />
+				<Field name="ModuleCode" label="编码" dataType="string" />
+				<Field name="ModuleName" label="名称" dataType="string" />
+				<Field name="ModuleComment" label="说明"
+					dataType="string" />
+				<Field name="ModuleGroup" label="分组" dataType="string" />
+				<Field name="Visibled" label="显示" dataType="boolean"
+					align="center" />
+				<Field name="Valided" label="有效" dataType="boolean"
+					align="center" />
+				<Field name="Checked" label="检查权限" dataType="boolean"
+					align="center" />
+				<Field name="Context" label="上下文" dataType="string" />
+				<Field name="UpdateBy" label="更新人员" dataType="string" />
+				<Field name="UpdateDate" label="更新日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="BMP" label="图释" dataType="string" />
+				
+			</Fields>
+		</Dataset>
+
+		<!-- 动作数据集 -->
+		<Dataset id="dsAction" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<MasterLink masterDataset="dsModule"
+				detailKeyFields="ModuleID" masterKeyFields="ModuleID"
+				loadAsNeeded="false" />
+			<Data type="statement">
+				<![CDATA[
+				select	A.MODULEID,A.ACTIONID,A.SNO,A.ACTIONCODE,A.ACTIONNAME,A.ActionNo,A.IsWindow,A.VISIBLED,
+					A.VALIDED,A.CHECKED,A.IsDiv,A.CallType, A.Url1,A.Url2,A.Url3,A.BMP,
+					A.NEEDPARAM, A.PARAMNAME, A.WindowWidth, A.WindowHeight, A.IsModal, A.SubAction,AlignPosition
+				from SYS_MODULE_ACTION A 
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					A.ModuleID = #ModuleID#
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">A.SNO asc</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="MID" dataType="long" />
+				<Field name="ActionID" label="AID" dataType="long" />
+				<Field name="SNO" label="序号" dataType="long" />
+				<Field name="ActionCode" label="动作编号" dataType="string" />
+				<Field name="ActionName" label="动作名称" dataType="string" />
+				<Field name="ActionNo" label="快捷编号" dataType="string" />
+				<Field name="IsWindow" label="是否窗口" dataType="boolean"
+					align="center" />
+				
+				<Field name="Visibled" label="显示" dataType="boolean"
+					align="center" />
+				<Field name="Valided" label="有效" dataType="boolean"
+					align="center" />
+				<Field name="Checked" label="检查权限" dataType="boolean"
+					align="center" />
+				<Field name="IsDiv" label="分隔符" dataType="boolean"
+					align="center" />
+				<Field name="CallType" label="页内调用" dataType="boolean"
+					align="center" />
+				<Field name="Url1" label="链接1" dataType="string" />
+				<Field name="Url2" label="链接2" dataType="string" />
+				<Field name="Url3" label="链接3" dataType="string" />
+				<Field name="BMP" label="图释" dataType="string" />
+				<Field name="NeedParam" label="需要参数" dataType="boolean"
+					align="center" />
+				<Field name="ParamName" label="名称" dataType="string" />
+				<Field name="WindowWidth" label="宽度" dataType="long" />
+				<Field name="WindowHeight" label="高度" dataType="long" />
+				<Field name="IsModal" label="模态" dataType="boolean"
+					align="center" />
+				<Field name="SubAction" label="子动作" dataType="boolean"
+					align="center" />
+				<Field name="AlignPosition" label="窗口位置" dataType="string" dropDown="ddAlign"
+					align="center" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="spPanel1" type="SplitPanel" orientation="vertical"
+			position="55%" showButtons="fasle" />
+		
+		<Control id="ddAlign" type="ListDropDown" mapValue="true"
+			fixed="true" width="90">
+			<DropDownItem value="1" label="居中" />
+			<DropDownItem value="2" label="左上" />
+			<DropDownItem value="3" label="右下" />
+			<DropDownItem value="4" label="左下" />
+			<DropDownItem value="5" label="右上" />
+		</Control>
+		
+		<!-- 模块表格 -->
+		<Control id="tbModule" type="DataTable" dataset="dsModule"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysModuleManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="ModuleGroup" field="ModuleGroup" width="110"
+				headerClickable="true" dataOrder="true" align="center" />
+			<Column name="BMP" width="35" field="BMP" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeModuleImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="ModuleCode" field="ModuleCode" width="150"
+				headerClickable="true" dataOrder="true" />
+			<Column name="ModuleName" field="ModuleName" width="180"
+				headerClickable="true" dataOrder="true" />
+
+			<ColumnGroup name="GroupBoolean" label="是否">
+				<Column name="Visibled" field="Visibled" width="40"
+					headerClickable="true" dataOrder="true" />
+				<Column name="Valided" field="Valided" width="40"
+					headerClickable="true" dataOrder="true" />
+				<Column name="Checked" field="Checked" width="70"
+					headerClickable="true" dataOrder="true" />
+			</ColumnGroup>
+
+			<Column name="Context" field="Context" width="120"
+				headerClickable="true" dataOrder="true" />
+			
+			<Column name="ModuleComment" field="ModuleComment"
+				width="150" headerClickable="true" dataOrder="true" />
+			<Column name="UpdateBy" field="UpdateBy" width="70"
+				headerClickable="true" dataOrder="true" />
+			<Column name="UpdateDate" field="UpdateDate" width="90"
+				headerClickable="true" dataOrder="true" />
+			<Events>
+				<Event name="onDblClick">
+					<![CDATA[
+						
+					]]>
+				</Event>
+			</Events>
+		</Control>
+
+		<!-- 动作表格 -->
+		<Control id="tbAction" type="DataTable" dataset="dsAction"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamicSub"
+			context="SysActionManager" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="BMP" width="35" label="图释" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeModuleImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="ActionCode" field="ActionCode" width="80" />
+			<Column name="ActionName" field="ActionName" width="80" />
+			<Column name="ActionNo" field="ActionNo" width="80" />
+			<ColumnGroup name="GroupBoolean" label="是否">
+				<Column name="IsModal" field="IsModal" width="50" />
+				<Column name="Visibled" field="Visibled" width="40" />
+				<Column name="Valided" field="Valided" width="40" />
+				<Column name="Checked" field="Checked" width="70" />
+				<Column name="IsDiv" field="IsDiv" width="50" />
+				<Column name="SubAction" field="SubAction" width="50" />
+			</ColumnGroup>
+			<Column name="CallType" field="CallType" width="60" />
+			<ColumnGroup name="GroupParam" label="参数">
+				<Column name="NeedParam" field="NeedParam" width="80" />
+				<Column name="ParamName" field="ParamName" width="100" />
+			</ColumnGroup>
+
+			<ColumnGroup name="GroupWindow" label="窗口">
+				<Column name="IsWindow" field="IsWindow" width="70" />
+				<Column name="WindowHeight" field="WindowHeight" width="50" />
+				<Column name="WindowWidth" field="WindowWidth" width="50" />
+				<Column name="AlignPosition" field="AlignPosition" width="80" />
+			</ColumnGroup>
+			<Column name="Url1" field="Url1" width="280" />
+			<Column name="Url2" field="Url2" width="280" />
+
+			<Events>
+				<Event name="onDblClick">
+					<![CDATA[
+						
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function search(objPar)
+				{
+					dsModule.parameters().setValue("ModuleGroup", objPar.ModuleGroup,"string");
+					dsModule.parameters().setValue("ModuleName", objPar.ModuleName,"string");
+					dsModule.parameters().setValue("ModuleCode", objPar.ModuleCode,"string");
+					dsModule.parameters().setValue("ModuleComment", objPar.ModuleComment,"string");					
+					dsModule.flushData();
+				}
+				
+				//修改ModuleCell样式
+				function changeModuleImage(cell, record)
+				{ 
+					var filename = "";
+					if (record!=null)
+					{
+						filename = record.getValue("BMP");
+						if (filename.length > 0) 
+						{
+							filename = __CONTEXT_PATH + '/' + filename;
+							cell.innerHTML = '<img src="'+filename+'" width="16" height="16" border="0">';						
+						}
+						else
+							cell.innerHTML = "";
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    function initToolbar(toolBar){
+					var relating=new HashList();
+					var obj=new Object();
+					obj.Dataset=dsModule;
+					obj.DBGrid=tbModule;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsModule.getContext(), obj);
+					toolBar.Relating=relating;
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				dsAction.parameters().setValue("ModuleID", -1, "long");
+				dsModule.parameters().setValue("ModuleGroup", "none", "string");
+			]]>
+		</Event>
+	</Events>
+</View>
+

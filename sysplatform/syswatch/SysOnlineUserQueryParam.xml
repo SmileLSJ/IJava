@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-2.0.dtd">
+<!--
+	*****************************************
+	系统在线用户查询参数页
+	乔武军设计      
+	2007.07.10  
+	*****************************************
+-->
+<View skin="default">
+	<Datasets>
+		<Dataset id="datasetParam" type="Custom" insertOnEmpty="true">
+			<Fields>
+				<Field name="UserStatus" label="" dataType="string"
+					defaultValue="0" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="UserCode" type="TextEditor" width="98%" />
+		<Control id="UserName" type="TextEditor" width="98%" />
+		<Control id="BranCode" type="TextEditor" width="98%" />
+		<Control id="BranName" type="TextEditor" width="98%" />
+		<Control id="UserStatus" type="Radio" width="210" cols="3"
+			dataset="datasetParam" field="UserStatus">
+			<RadioItem value="0" label="全部" />
+			<RadioItem value="1" label="在线" />
+			<RadioItem value="2" label="置疑" />
+		</Control>
+		<Control id="buttonSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+						var v_UserStatus = datasetParam.getValue("UserStatus");
+						if (v_UserStatus == '0')
+							v_UserStatus = '';
+						parent.transfer({OnlineStatus:v_UserStatus,UserCode:UserCode.value,UserName:UserName.value,BranCode:BranCode.value,BranName:BranName.value});
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					var v_UserStatus = datasetParam.getValue("UserStatus");
+						if (v_UserStatus == '0')
+							v_UserStatus = '';
+						parent.transfer({OnlineStatus:v_UserStatus,UserCode:UserCode.value,UserName:UserName.value,BranCode:BranCode.value,BranName:BranName.value});
+					
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				paramSearch();
+	 		 	setParamHeight();
+			]]>
+		</Event>
+	</Events>
+</View>
+

@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统用户权限查询 
+	乔武军设计      
+	2007.12.13  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<!-- 用户数据集 -->
+		<Dataset id="dsUser" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysUserManager">
+			<Data type="statement">
+				<![CDATA[
+				select A.USERID,A.USERCODE,A.USERNAME, '(' || C.BranCode ||  ')' || C.BranName  as BranInfo, A.Valided
+				from Sys_User A,  Sys_Bran C
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					A.BranID = C.BranID
+					<isNotEmpty prepend="and" property="TreeBranID">
+						A.BranID = #TreeBranID#
+					</isNotEmpty>
+					<isEmpty prepend="and" property="TreeBranID">
+						1 = 0
+					</isEmpty>
+					<isNotEmpty prepend="and" property="UserCode"
+						close="%">
+						A.UserCode like #UserCode#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="UserName"
+						open="%" close="%">
+						A.UserName like #UserName#
+					</isNotEmpty>
+					
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.UserCode
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="UserCode"
+						estimate="orderbys">
+						A.#UserCode#
+					</isNotNull>
+					<isNotNull prepend="," property="UserName"
+						estimate="orderbys">
+						A.#UserName#
+					</isNotNull>
+					<isNotNull prepend="," property="BranInfo"
+						estimate="orderbys">
+						#BranInfo#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="用户序号" dataType="long" />
+				<Field name="UserCode" label="用户编码" dataType="string" />
+				<Field name="UserName" label="用户名称" dataType="string" />
+				<Field name="BranInfo" label="默认机构" dataType="string" />
+				<Field name="Valided" label="状态" dataType="string"
+					align="center" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">
+					changeUserID();refreshLabels();
+				</Event>
+				<Event name="afterScroll">
+					refreshLabels(); changeUserID();
+				</Event>
+			</Events>
+		</Dataset>
+		
+		<!-- 所有可用模块组 -->
+		<Dataset id="dsPerm2" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select case CNT-PermCNT when 0 then 1 when CNT then -1 else 0 end as Status,	ModuleGroup
+				from ( 
+					  select C.ModuleGroup, count(A.ActionID) as CNT, nvl(count(B.ActionID),0) as PermCNT 
+					  from Sys_Module C inner join Sys_Module_Action A
+						on C.ModuleID = A.ModuleID 
+										left join 
+										(select ModuleID, ActionID from Sys_Group_Module where GroupID in (select GroupID from Sys_Group_User where UserID = #UserID#) group by ModuleID, ActionID) B 
+						on A.ModuleID = B.ModuleID and A.ActionID = B.ActionID
+					  where A.IsDiv='0' and A.Checked = '1'
+					  group by C.ModuleGroup 
+					 ) TT
+				order by TT.ModuleGroup
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Status" label="" dataType="long" />
+				<Field name="ModuleGroup" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 所有可用模块 -->
+		<Dataset id="dsPerm3" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select case CNT-PermCNT when 0 then 1 when CNT then -1 else 0 end as Status, ModuleID, ModuleCode,ModuleName 
+				from ( 
+					  select A.ModuleID,A.ModuleCode,A.ModuleName,B.CNT,nvl(C.CNT,0) as PermCNT 
+					  from Sys_Module A inner join ( 
+					  								select ModuleID,count(1) as CNT 
+					  								from Sys_Module_Action 
+					  								where IsDiv='0' and Checked = '1'
+					  								group by ModuleID ) B 
+					  	on A.ModuleID = B.ModuleID
+					  					left join ( 
+					  								select A.ModuleID, count(1) as CNT 
+					  								from Sys_Module_Action A, (select ModuleID, ActionID from Sys_Group_Module where GroupID in (select GroupID from Sys_Group_User where UserID = #UserID#) group by ModuleID, ActionID) B
+					  								where B.ModuleID = A.ModuleID and B.ActionID = A.ActionID and A.IsDiv='0' 
+					  								group by A.ModuleID ) C 
+					  	on A.ModuleID = C.ModuleID
+					  where	A.ModuleGroup=#ModuleGroup# 
+				) TT
+				order by ModuleName
+				]]>
+			</Data>
+			<Fields>
+				<Field name="Status" label="" dataType="long" />
+				<Field name="ModuleID" label="" dataType="long" />
+				<Field name="ModuleCode" label="" dataType="string" />
+				<Field name="ModuleName" label="" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 所有可用动作 -->
+		<Dataset id="dsPerm4" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.ModuleID, A.ActionID, ActionCode, ActionName,	case nvl(B.ActionID,0) when 0 then '-1' else '1' end as Status
+				from Sys_Module_Action A left join (select ModuleID, ActionID from Sys_Group_Module where GroupID in (select GroupID from Sys_Group_User where UserID = #UserID#) group by ModuleID, ActionID) B 
+					on	A.ModuleID = B.ModuleID and A.ActionID = B.ActionID 
+				where A.IsDiv= '0' and A.ModuleID = #ModuleID# and A.Checked = '1'
+				order by A.SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="ModuleID" label="ID" dataType="long" />
+				<Field name="ActionID" label="AID" dataType="long" />
+				<Field name="ActionCode" label="编码" dataType="string" />
+				<Field name="ActionName" label="动作名称" dataType="string" />
+				<Field name="Status" dataType="long" label="" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<!-- 用户表格 -->
+		<Control id="tbUser" type="DataTable" dataset="dsUser"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysUserManager" multiSelect="true"
+			showColumnHeader="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Valided" field="Valided" width="30">
+				<Events>
+					<Event name="onRefresh">
+						return changeUserImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="UserCode" field="UserCode" width="120" />
+			<Column name="UserName" field="UserName" width="150" />
+			<Column name="BranInfo" field="BranInfo" width="200" />
+		</Control>
+
+		<!-- 模块树 -->
+		<Control id="moduleTree" type="Tree" width="100%">
+			<Events>
+				<Event name="beforeExpandNode">
+					expandNode(tree, node);
+				</Event>
+			</Events>
+		</Control>
+
+		<Control id="pilotUser" type="DataPilot" dataset="dsUser"
+			buttonFirstPage="visible" buttonLastPage="visible"
+			buttonAppend="hidden" buttonDelete="hidden" buttonCancel="hidden"
+			buttonMovePrev="hidden" buttonMoveNext="hidden" buttonPost="hidden" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				var v_UserID = 0;
+			
+				//设置树的节点CheckBox类型
+				function setTreeStatus(pnode, node, status)
+				{
+					/*
+					if (pnode)
+					{
+						//alert(pnode.getLabel());
+						//alert(pnode.isHalf());
+						//alert(pnode.isChecked());
+					}
+					*/
+					//如果半选则按照数据库来更新
+					if ((!(pnode)) || (pnode.isHalf()))
+					{
+						if (status == 1)
+							node.setChecked(true);
+						else if (status == 0)
+						{
+							node.setChecked(true);
+							node.setHalfmoon(true);
+						}
+						else
+							node.setChecked(false);
+					}
+					else if (pnode.isChecked())
+					{
+						node.setChecked(true);
+					}
+					else
+						node.setChecked(false);
+					node.setCheckableReadOnly(true);
+				}
+				
+				//展开树
+				function expandNode(tree, node)
+				{
+					if (v_UserID === 0) return;
+
+					if (node.children().getLength()>0) return;
+					var treeLevel = node.getLevel();
+					var status = 0;
+					
+					//二级
+					if (treeLevel === 0)
+					{
+						dsPerm2.parameters().setValue("UserID", v_UserID, "long");
+						dsPerm2.flushData();
+						while (!dsPerm2.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm2.getString("ModuleGroup"));
+						     curNode.ModuleID = -2;
+							 curNode.ActionID = 0;
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node3.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node3.gif");
+							 curNode.setCheckable(true);
+							 setTreeStatus(null, curNode, dsPerm2.getValue("Status"));
+							 dsPerm2.moveNext();
+							 //curNode.setExpanded(true);
+						}
+						if (curNode)
+						{
+							curNode.setExpanded(true);
+						}
+					}
+					//三级
+					else if (treeLevel === 1)
+					{
+						dsPerm3.parameters().setValue("UserID", v_UserID, "long");
+						dsPerm3.parameters().setValue("ModuleGroup", node.getLabel(), "string");
+						dsPerm3.flushData();
+						while (!dsPerm3.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm3.getString("ModuleName"));
+						     curNode.ModuleID = parseInt(dsPerm3.getString("ModuleID"));
+						     curNode.ActionID = 0;
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node4.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node4.gif");
+							 curNode.setCheckable(true);
+							 curNode.setHasChild(true);
+							 setTreeStatus(node, curNode, dsPerm3.getValue("Status"));
+							 dsPerm3.moveNext();
+							 //curNode.setExpanded(true);
+						}
+					}
+					//四级
+					else if (treeLevel === 2)
+					{
+						dsPerm4.parameters().setValue("ModuleID", node.ModuleID, "long");
+						dsPerm4.parameters().setValue("UserID", v_UserID, "long");
+						dsPerm4.flushData();
+						while (!dsPerm4.isLast())
+				  		{
+						     var curNode = tree.addNode(node, dsPerm4.getString("ActionName"));
+						     curNode.ModuleID = node.ModuleID;
+						     curNode.ActionID = parseInt(dsPerm4.getString("ActionID"));
+						     curNode.setIcon("%{applicationRoot}/exhibit/sysimgs/node2.gif");
+							 curNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/node2.gif");
+							 curNode.setCheckable(true);
+							 curNode.setHasChild(false);
+							 setTreeStatus(node, curNode, dsPerm4.getValue("Status"));
+							 dsPerm4.moveNext();
+						}
+					}
+				}
+				
+				//修改Cell样式
+				function changeUserImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Valided")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "";
+						}	
+						else
+						{
+							filename = 'groupabort.gif';
+							hint = "此用户已经被停用";
+						}
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //移动组数据
+	  		    function changeUserID()
+	  		    {
+	  		    	if (dsUser.getVisibleCount() <= 0)
+	  		    	{
+	  		    		v_GroupID = 0;
+	  		    		moduleTree.clearAllNodes();
+	  		    	}
+	  		    	else if ((dsUser.getValue("UserID")) && (dsUser.getValue("UserID") !== v_UserID))
+	  		    	{
+	  		    		v_UserID = dsUser.getValue("UserID");
+	  		    		moduleTree.clearAllNodes();
+	  		    	}
+	  		    }
+	  		    
+				function search(objPar)
+				{
+					if (objPar.TreeBranID != 0)
+						dsUser.parameters().setValue("TreeBranID", objPar.TreeBranID,"long");
+					else
+						dsUser.parameters().setValue("TreeBranID", 0,"long");
+						
+					dsUser.parameters().setValue("UserCode", objPar.UserCode,"string");
+					dsUser.parameters().setValue("UserName", objPar.UserName,"string");
+					dsUser.flushData();
+				}
+				
+				//刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsUser;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			//moduleTree.setCheckableReadOnly(true); 
+			refreshLabels();
+		</Event>
+	</Events>
+</View>
+

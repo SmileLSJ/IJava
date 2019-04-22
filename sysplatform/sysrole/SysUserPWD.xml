@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	修改口令
+	乔武军设计      
+	2007.07.13  
+	Width=350 Height=240
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsUser" pageSize="0" autoLoadPage="true"
+			readOnly="false" wrappedType="Sql" type="Wrapper" loadOnPageOpen="false"
+			tableName="Sys_User" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+					select UserID, UserName, UserCode, Password from Sys_User where UserID = #UserID#
+				]]>
+			</Data>
+			<Fields>
+				<Field name="UserID" label="" dataType="long" key="true"
+					valueOnEmpty="max" />
+				<Field name="UserName" label="" dataType="string" noProcess="true">
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="UserCode" label="" dataType="string" noProcess="true">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="Password" label="" dataType="string">
+				</Field>
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control id="UserCode" type="TextEditor" width="220" />
+		<Control id="UserName" type="TextEditor" width="220"/>
+		
+		<Control id="btnOK" type="Button" value="确定" width="75">
+			<Events>
+				<Event name="onClick">initPWD();</Event>
+			</Events>
+		</Control>
+		<Control id="btnClose" type="Button" value="关闭" width="75">
+			<Events>
+				<Event name="onClick">FloatSubWindowClose();</Event>
+			</Events>
+		</Control>
+		<Control id="cmdMD5" type="RPCCommand" showLoadingTip="false"
+			action="/retrieve.do?className=session.sys.SysManagerDAO&amp;ferry=set&amp;method=getMD5Str">
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				if (parent._ExchangeParams){
+		        	var callObjectInfo = parent._ExchangeParams;
+		        }else{
+		        	var callObjectInfo = window.dialogArguments;
+		        }
+				var actionCode = callObjectInfo.ActionCode;
+				var actionName = callObjectInfo.ActionName;
+				var mainObject = callObjectInfo.MainObject;
+				var actionDataset = callObjectInfo.Dataset;
+				
+				function getMD5(SourceStr)
+                {
+                	var MD5Str = "";
+					//Succeed
+					cmdMD5.parameters().setValue("SourceStr", SourceStr);
+					var CallSucceed = cmdMD5.execute();	
+					if (CallSucceed)
+					{
+						var Succeed = cmdMD5.outParameters().getValue("Succeed");
+						if (Succeed == "1")
+						{
+							MD5Str = cmdMD5.outParameters().getValue("MD5Str");
+							return MD5Str;
+						}
+						else
+						{
+							smoke.alert("密码加密失败！");
+							return false;
+						}
+					}
+					else
+					{
+						smoke.alert("密码加密失败！");
+						return false;
+					}
+				}
+				
+				function initPWD()
+                {
+                	dsUser.setValue("Password", getMD5("000000"));
+                	dsUser.postRecord();
+                	if (dsUser.saveDB())
+                	{
+                		smoke.alert("密码初始化完毕！", function(e){
+	                		FloatSubWindowClose();
+                		});
+                	}
+				}
+				
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				UserCode.disabled = true;
+				UserName.disabled = true;
+				dsUser.parameters().setValue("UserID", actionDataset.getValue('UserID'), "int")
+				dsUser.flushData();
+				if (dsUser.getVisibleCount()>0){
+					UserCode.value = dsUser.getValue("UserCode");
+					UserName.value = dsUser.getValue("UserName");
+				} else
+				   btnOK.disabled = true;
+			]]>
+		</Event>
+	</Events>
+</View>
+

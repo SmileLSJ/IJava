@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统机构信息查询
+	乔武军设计      
+	2010.01.02  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false"
+	context="SysBranManager">
+	<Datasets>
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false"
+			context="SysBranManager">
+			<Data type="statement">
+				<Dynamic prepend="select">
+				A.BranID, A.BranCode, A.BranName, A.DSC, A.BranKind, A.BranType, A.LinkMan, A.Tel, A.Fax, 
+					A.MTel, A.PostCode, A.Address, A.Bank, A.BankCode, A.TaxNo, A.LegalPSN , 
+					case when A.BranType = '2' then A.StoreType else null end as StoreType,  A.Status, A.BranBMType, 
+					count(B.BranID) as SubCount
+				from (select distinct * from Sys_Bran start with 1=1
+					<isNotEmpty property="BranCode" joinSQL="true">
+						 and BranCode like '#BranCode#%'
+					</isNotEmpty>
+					<isNotEmpty property="BranName" joinSQL="true">
+						 and BranName like '%#BranName#%'
+					</isNotEmpty>
+						connect by NOCYCLE prior PBranID = BranID 
+						) A left join Sys_Bran B 
+					on A.BranID = B.PBranID
+				<!-- 条件定义 -->
+				where A.MCID = %{#session.CheckIn.MCID}
+					<isNotEmpty property="PBranID" >
+						and A.PBranID = #PBranID#
+					</isNotEmpty>
+					<isEmpty property="PBranID">and A.PBranID = 0</isEmpty>
+				group by A.BranID, A.BranCode, A.BranName, A.DSC, A.BranKind, A.BranType, A.LinkMan, A.Tel, A.Fax, 
+					A.MTel, A.PostCode, A.Address, A.Bank, A.BankCode, A.TaxNo, A.LegalPSN,
+					case when A.BranType = '2' then A.StoreType else null end, A.Status,A.BranBMType
+				order by A.BranCode
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="BranCode" label="机构编码" dataType="string"
+					align="left" />
+				<Field name="BranName" label="机构名称" dataType="string" />
+				<Field name="DSC" label="备注说明" dataType="string" />
+				<Field name="BranKind" label="经营性质" dataType="string" dropDown="ddBranKind" defaultValue="1">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="BranType" label="机构类型" dataType="string" dropDown="ddBranType" defaultValue="5">
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="LinkMan" label="联系人" dataType="string" >
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				<Field name="Tel" label="联系电话" dataType="string" >
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="Fax" label="联系传真" dataType="string" >
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="MTel" label="移动电话" dataType="string" >
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="PostCode" label="邮政编码" dataType="string" >
+					<Validator type="Length" maxLength="6" />
+				</Field>
+				<Field name="Address" label="联系地址" dataType="string" >
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="Bank" label="开户银行" dataType="string" >
+					<Validator type="Length" maxLength="100" />
+				</Field>
+				<Field name="BankCode" label="银行账号" dataType="string" >
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="TaxNo" label="纳税编号" dataType="string" >
+					<Validator type="Length" maxLength="50" />
+				</Field>
+				<Field name="LegalPSN" label="法人" dataType="string" >
+					<Validator type="Length" maxLength="10" />
+				</Field>
+				
+				<Field name="StoreType" label="门店类型" dataType="string" dropDown="ddStoreType">
+					<Validator type="Length" maxLength="20" />
+				</Field>
+				<Field name="Status" label="门店状态" dataType="string" dropDown="ddStatus">
+					<Validator type="Length" maxLength="1" />
+				</Field>
+				<Field name="BranBMType" label="业态类型" dataType="string" dropDown="ddBranBMType">
+				</Field>
+				<Field name="SubCount" label="子机构" dataType="long" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control type="TreeGrid" id="tgBran" dataset="dsBran"
+			readOnly="true" parityRow="3" fixedColumn="1" menu="menuSysDynamic"
+			context="SysBranManager" multiSelect="true"
+			recursiveKeyParameters="PBranID" recursiveKeyFields="BranID"
+			treeColumn="BranCode" expandLevel="0" hasChildField="SubCount">
+			<Column name="BranCode" field="BranCode" width="130" />
+			<Column name="BranName" field="BranName" width="150" />
+			<Column name="BranKind" field="BranKind" width="80" align="center"/>
+			<Column name="BranType" field="BranType" width="80" align="center"/>
+			<Column name="StoreType" field="StoreType" width="80" align="center"/>
+			<Column name="BranBMType" field="BranBMType" width="80" align="center"/>
+			<Column name="LinkMan" field="LinkMan" width="80" />
+			<Column name="Tel" field="Tel" width="100" />
+			<Column name="Fax" field="Fax" width="100" />
+			<Column name="MTel" field="MTel" width="100" />
+			<Column name="PostCode" field="PostCode" width="80" />
+			<Column name="Address" field="Address" width="200" />
+			<Column name="Bank" field="Bank" width="100" />
+			<Column name="BankCode" field="BankCode" width="100" />
+			<Column name="TaxNo" field="TaxNo" width="100" />
+			<Column name="LegalPSN" field="LegalPSN" width="100" />
+			<Column name="DSC" field="DSC" width="200" />
+		</Control>
+		
+		<Control id="ddBranType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-总部" value="1" />
+			<DropDownItem label="2-门店" value="2" />
+			<DropDownItem label="3-物流中心" value="3" />
+			<DropDownItem label="4-管理部门" value="4" />
+			<DropDownItem label="5-加工中心" value="5" />
+			<DropDownItem label="6-区域中心" value="5" />
+		</Control>
+		<Control id="ddBranBMType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-超市" value="1" />
+			<DropDownItem label="2-百货" value="2" />
+			<DropDownItem label="3-餐饮" value="3" />
+			<DropDownItem label="4-专卖店" value="4" />
+			<DropDownItem label="9-其它" value="9" />
+		</Control>
+		<Control id="ddBranKind" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-直营连锁" value="1" />
+			<DropDownItem label="2-特许加盟" value="2" />
+		</Control>
+
+		<Control id="ddStoreType" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="1-标准店" value="1" />
+			<DropDownItem label="2-折扣店" value="2" />
+			<DropDownItem label="3-店中店" value="3" />
+			<DropDownItem label="4-旗舰店" value="4" />
+			<DropDownItem label="5-便利店" value="5" />
+			<DropDownItem label="6-平价店" value="6" />
+			<DropDownItem label="9-训练店" value="9" />
+		</Control>
+		
+		<Control id="ddStatus" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="0-未开店" value="0" />
+			<DropDownItem label="1-预开中" value="1" />
+			<DropDownItem label="2-已开店" value="2" />
+			<DropDownItem label="3-已关闭" value="3" />
+		</Control>
+		
+   </Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					var obj=new Object();
+					obj.Dataset=dsBran;
+					obj.DBGrid=tgBran;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsBran.getContext(), obj);
+					toolBar.Relating=relating;
+				}
+				
+				function search(objPar) {
+				    var dataset = dsBran;
+				    dataset.parameters().clear();
+				    dataset.parameters().setValue("PBranID", 0, "long");
+				    if (objPar.BranCode.length > 0) dataset.parameters().setValue("BranCode", objPar.BranCode, "string");
+				    if (objPar.BranName.length > 0) dataset.parameters().setValue("BranName", objPar.BranName, "string");
+				    dataset.flushData();
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				<!-- setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>机构信息查询</b> &nbsp;&nbsp;查看及维护机构网点相关信息</p>'); -->			
+			]]>
+		</Event>
+	</Events>
+</View>
+

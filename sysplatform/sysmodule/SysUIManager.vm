@@ -1,0 +1,119 @@
+<html>
+
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>界面管理</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<style type="text/css">
+#btnNew, #btnSave, #btnCancel, #btnDel, #btnNew, #btnSave1{
+    background-color: #6c8be1;
+    border: 1px solid #6c8be1;
+    color: #fff;
+    font-size: 12px;
+    height: 30px;
+    line-height: 30px;
+    margin: 0 4px;
+}
+#btnExport,#btnCopy,#btnUp,#btnDown{
+	border: 0;
+	background-color:#fff;
+	overflow: hidden;
+	width:32px;
+	height: 26px;
+}
+#btnExport img,#btnCopy img,#btnUp img,#btnDown img{
+    margin-top: 5px;
+}
+#btnSave.Button{font-size: 12px;margin: 0 4px;}
+#btnCancel img{width: 10px;height: 10px;}
+</style>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+		<div class="subwindowCondition">
+			<table border="0" width="100%" height="100%">
+				<tr>
+					<td height="100%" width="250">#fktree("id=moduleTree")</td>
+					<td >
+					<table border="0" height="100%">
+						<tr>
+							<td height="30" width="80" align="right"><font color="red">*</font>节点编码&nbsp;</td>
+							<td>#fktexteditor("id=NodeCode")</td>
+						</tr>
+						<tr>
+							<td height="30" align="right"><font color="red">*</font>节点名称&nbsp;</td>
+							<td>#fktexteditor("id=NodeName")</td>
+						</tr>
+						<tr>
+							<td height="30" align="right">关联模块&nbsp;</td>
+							<td>#fktexteditor("id=NodeModule")</td>
+						</tr>
+						<tr>
+							<td height="30" align="right">关联动作&nbsp;</td>
+							<td>#fktexteditor("id=NodeAction")</td>
+						</tr>
+						<tr>
+							<td height="30" align="right">节点图释&nbsp;</td>
+							<td>#fktexteditor("id=NodeBMP")</td>
+						</tr>
+						<tr>
+							<td height="32" align="right">节点大图&nbsp;</td>
+							<td>#fktexteditor("id=NodeLBMP")</td>
+						</tr>
+						<tr>
+							<td height="60" align="right">节点说明&nbsp;</td>
+							<td>#fktexteditor("id=NodeComment")</td>
+						</tr>
+						<tr height="2">
+							<td></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td height="25" align="right"></td>
+							<td>
+							<table border="0" height="100%" style="border:1px #83B6DC solid"
+								width="230">
+								<tr>
+									<td height="25" width="80" align="right"><font color="red">*</font>是否目录&nbsp;</td>
+									<td>#fkcheckbox("id=IsDIR")</td>
+									<td width="80" align="right"><font color="red">*</font>是否显示&nbsp;</td>
+									<td>#fkcheckbox("id=IsVisible")</td>
+								</tr>
+							</table>
+							</td>
+						</tr>
+						<tr height="100%">
+							<td></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td height="20" colspan="2" align="right">#fkbutton("id=btnNew")
+								#fkbutton("id=btnSave")#fkbutton("id=btnCancel")#fkbutton("id=btnDel")</td>
+						</tr>
+					</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="subwindowButton">
+			<div class="btnOK">
+				#fkbutton("id=btnClose")
+			</div>
+			<div style="float:left;height: 26px;margin: 11px 0;">
+				<table border="0" cellpadding="0" cellspacing="1">
+						<tr>
+							<td>#fkbutton("id=btnExport")</td>
+							<td>#fkbutton("id=btnCopy")</td>
+							<td>#fkbutton("id=btnUp")</td>
+							<td>#fkbutton("id=btnDown")</td>
+							<td id="tdExport">#fktree("id=moduleTreeExport")</td>
+						</tr>
+					</table>
+			</div>
+		</div>
+	</body>
+#end
+
+</html>

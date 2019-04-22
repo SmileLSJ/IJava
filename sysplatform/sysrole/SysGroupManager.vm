@@ -1,0 +1,104 @@
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>角色管理</title>
+<link rel="stylesheet" type="text/css" href="${applicationRoot}/exhibit/sysref/SystemModule.css"></link>
+<style type="text/css">
+.spe1
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title1.gif")
+}
+
+.spe2
+{
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top:4px;
+	padding-bottom:4px;
+	padding-left:22px;
+	border-color:#83B6DC; 
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image:url("${applicationRoot}/exhibit/sysimgs/title2.gif")
+}
+</style>
+</head>
+
+#fkview("config=${cfgFileName}")
+
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+	<div class="form_module">
+			<div>
+				<p>
+					<span>基本信息</span>
+				</p>
+
+				<div>
+					<div class="l">
+						<font color="red">*</font>角色编码
+					</div>
+					<div class="r">
+						#fktexteditor("id=GroupCode")
+					</div>
+				</div>
+				<div>
+					<div class="l">
+						<font color="red">*</font>角色名称
+					</div>
+					<div class="r">
+						#fktexteditor("id=GroupName")
+					</div>
+				</div>
+				<div>
+					<div class="l">
+						<font color="red">*</font>角色类型
+					</div>
+					<div class="r">
+						#fktexteditor("id=GroupType")
+					</div>
+				</div>
+				<div>
+					<div class="l">
+						<font color="red">*</font>角色等级
+					</div>
+					<div class="r">
+						#fktexteditor("id=GroupLevel")
+					</div>
+				</div>
+				<p class="tip"><font color="red">等级越大,权限越高</font></p>
+				<div>
+					<div class="r">
+						#fkcheckbox("id=Valided")是否有效
+					</div>
+				</div>
+			</div>
+			<div>
+				<p>
+					<span>说明信息</span>
+				</p>
+				<div class="h100">
+					<div class="l">角色说明</div>
+					<div class="r">
+						#fktexteditor("id=DSC")
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form_button">
+			#fkbutton("id=btnClose")
+			#fkbutton("id=btnSave")
+		</div>
+	</body>
+#end
+
+</html>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统机构信息查询
+	乔武军设计      
+	2008.01.02  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false"
+	context="SysBranManager">
+	<Datasets>
+		<Dataset id="dsBran" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="true" showLoadingTip="false"
+			context="SysBranManager">
+			<Data type="statement">
+				select A.BranID, A.BranCode, A.BranName, A.DSC, A.Path,
+				count(B.BranID) as SubCount from Sys_Bran A left join
+				Sys_Bran B on A.BranID = B.PBranID
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<isNotEmpty property="PBranID">
+						A.PBranID = #PBranID#
+					</isNotEmpty>
+					<isEmpty property="PBranID">A.PBranID = 0</isEmpty>
+				</Dynamic>
+				group by A.BranID, A.BranCode, A.BranName, A.DSC, A.Path
+				order by A.BranCode
+			</Data>
+			<Fields>
+				<Field name="BranID" label="序号" dataType="long" />
+				<Field name="BranCode" label="机构编码" dataType="string"
+					align="left" />
+				<Field name="BranName" label="机构名称" dataType="string" />
+				<Field name="DSC" label="备注说明" dataType="string" />
+				<Field name="Path" label="目录路径" dataType="string" />
+				<Field name="SubCount" label="子机构" dataType="long" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">
+					//searchDT();
+				</Event>
+				<Event name="afterScroll">
+					//searchDT();
+				</Event>
+			</Events>
+		</Dataset>
+		
+		<!-- IP数据集 -->
+		<Dataset id="dsIPAllow" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<MasterLink masterDataset="dsBran"
+				detailKeyFields="BranID" masterKeyFields="BranID"
+				loadAsNeeded="false" />
+			<Data type="statement">
+				<![CDATA[
+				select BranID, IP, DSC, SNO, AllowType 
+				from Sys_Bran_IPAllow
+				where BranID = #BranID# and AllowType = '0'
+				order by SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="BranID" dataType="long"
+					readOnly="true" />
+				<Field name="IP" label="允许访问的IP地址" dataType="string"
+					readOnly="false" />
+				<Field name="DSC" label="备注描述" dataType="string"
+					readOnly="false" />
+				<Field name="SNO" label="序号" dataType="long"
+					readOnly="false" />
+				<Field name="AllowType" label="类型" dataType="string"
+					readOnly="false" />
+			</Fields>
+		</Dataset>
+		
+		<!-- 禁止IP数据集 -->
+		<Dataset id="dsIPDisable" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="false" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<MasterLink masterDataset="dsBran"
+				detailKeyFields="BranID" masterKeyFields="BranID"
+				loadAsNeeded="false" />
+			<Data type="statement">
+				<![CDATA[
+				select BranID, IP, DSC, SNO, AllowType 
+				from Sys_Bran_IPAllow
+				where BranID = #BranID# and AllowType = '1'
+				order by SNO
+				]]>
+			</Data>
+			<Fields>
+				<Field name="BranID" label="BranID" dataType="long"
+					readOnly="true" />
+				<Field name="IP" label="禁止访问的IP地址" dataType="string"
+					readOnly="false" />
+				<Field name="DSC" label="备注描述" dataType="string"
+					readOnly="false" />
+				<Field name="SNO" label="序号" dataType="long"
+					readOnly="false" />
+				<Field name="AllowType" label="类型" dataType="string"
+					readOnly="false" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<Control type="TreeGrid" id="tgBran" dataset="dsBran"
+			readOnly="true" parityRow="3" fixedColumn="1" menu="menuSysDynamic"
+			context="SysBranManager" multiSelect="true"
+			recursiveKeyParameters="PBranID" recursiveKeyFields="BranID"
+			treeColumn="BranCode" expandLevel="1" hasChildField="SubCount">
+			<Column name="BranCode" field="BranCode" width="150" />
+			<Column name="BranName" field="BranName" width="200" />
+			<Column name="DSC" field="DSC" width="200" />
+			<!-- 
+				<Column name="Path" field="Path" width="100" />
+				<Column name="SubCount" field="SubCount" width="60" />
+			-->
+		</Control>
+		
+		<!-- IP访问表格 -->
+		<Control id="tbAllowIP" type="DataTable" dataset="dsIPAllow"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysBranIPManager">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="IP" field="IP" width="150" />
+			<Column name="DSC" field="DSC" width="150" />
+		</Control>
+		
+		<!-- 禁止IP访问表格 -->
+		<Control id="tbDisableIP" type="DataTable" dataset="dsIPDisable"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="SysBranIPManager">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="IP" field="IP" width="150" />
+			<Column name="DSC" field="DSC" width="150" />
+		</Control>
+		
+		<Control id="spPanel1" type="SplitPanel" orientation="vertical"
+			position="60%" showButtons="fasle" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function initToolbar(toolBar){
+					var relating=new HashList();
+					var obj=new Object();
+					obj.Dataset=dsBran;
+					obj.DBGrid=tgBran;
+					relating.put("SysGlobeManager", obj);
+					relating.put(dsBran.getContext(), obj);
+					toolBar.Relating=relating;
+				}
+				
+				/*
+				function searchDT()
+				{
+					var curBranID;
+				 	if (dsBran.getVisibleCount()>0)
+				 	{
+				 		curBranID = dsBran.getValue("BranID");
+				 		dsIPAllow.parameters().setValue("BranID", curBranID, "long");
+				 		dsIPAllow.flushData();
+				 		dsIPDisable.parameters().setValue("BranID", curBranID, "long");
+				 		dsIPDisable.flushData();
+				 	}
+				 	else
+				 	{
+				 		dsIPAllow.clearData();
+				 		dsIPDisable.clearData();
+				 	}
+				}
+				*/
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				setToolbarTitle(toolbarSysDynamic,'<p class="titleHintLeft"><b>机构IP限制查询</b> &nbsp;&nbsp;查看及维护机构IP限制相关信息</p>');			
+			]]>
+		</Event>
+	</Events>
+</View>
+

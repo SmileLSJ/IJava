@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.keemchina.com/kingfisher/feather-3.0.dtd">
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsUITP" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select a.TPID, a.TPName, count(b.NodeID) as SubCount
+				from Sys_UITP a left join Sys_UI b on a.TPID = b.UITP
+				group by a.TPID, a.TPName 
+				order by a.TPID
+			</Data>
+			<Fields>
+				<Field name="TPID" label="" dataType="long" />
+				<Field name="TPName" label="" dataType="string" />
+				<Field name="SubCount" label="" dataType="long" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="IncludeSubNode" dataType="boolean" defaultValue="true" />
+			</Fields>
+		</Dataset>
+		
+		<Dataset id="dsUITree" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				select T2.NodeID, T2.NodeName, T2.IsDIR, T2.NodeBMP, T2.NodeLBMP, T1.SubCount, T2.NodeCode, nvl(T3.ModuleID, 0) as ModuleID,
+			           T3.ModuleCode, T3.ModuleName, nvl(T3.ActionID, 0) as ActionID, T3.ActionCode, T3.ActionName, T2.Visibled,
+			           T2.NodeComment, T2.SNO, T2.Path, T2.UITP
+			    from (
+			          select A.NodeID, count(B.NodeID) as SubCount
+			          from Sys_UI A left join Sys_UI B
+			                on A.NodeID = B.PNodeID
+			          where A.PNodeID = #NodeID# and A.UITP = #TPID#
+			          group by A.NodeID
+			          ) T1 inner join Sys_UI T2 on T1.NodeID = T2.NodeID
+			               left join (
+			                          select A.ModuleID, A.ModuleCode, A.ModuleName, B.ActionID, B.ActionCode, B.ActionName
+			                          from Sys_Module A, Sys_Module_Action B
+			                          where A.ModuleID = B.ModuleID
+			                          ) T3 on T2.ModuleID = T3.ModuleID and T2.ActionID = T3.ActionID
+			    order by T2.SNO
+			</Data>
+				
+			<!-- 界面树数据集 -->
+			<Fields>
+				<Field name="NodeID" label="节点序号" dataType="long" />
+				<Field name="NodeName" label="节点名称" dataType="string" />
+				<Field name="IsDIR" label="节点类型" dataType="string" />
+				<Field name="NodeBMP" label="节点图标" dataType="string" />
+				<Field name="NodeLBMP" label="节点图标" dataType="string" />
+				<Field name="SubCount" label="子数量" dataType="long" />
+				<Field name="NodeCode" label="节点编码" dataType="string" />
+				<Field name="ModuleID" label="模块序号" dataType="long" />
+				<Field name="ModuleCode" label="模块编码" dataType="string" />
+				<Field name="ModuleName" label="模块名称" dataType="string" />
+				<Field name="ActionID" label="动作序号" dataType="long" />
+				<Field name="ActionCode" label="动作编码" dataType="string" />
+				<Field name="ActionName" label="动作名称" dataType="string" />
+				<Field name="Visibled" label="显示" dataType="string" />
+				<Field name="NodeComment" label="节点说明" dataType="string" />
+				<Field name="SNO" label="序号" dataType="long" />
+				<Field name="Path" label="Path"	dataType="string" />
+				<Field name="UITP" label="类型" dataType="long" />
+			</Fields>
+		</Dataset>
+
+		<Dataset id="dsUpdate1" type="SimpleUpdate"
+			sql="insert into Sys_UI(NODEID,NODECODE,NODENAME,NODECOMMENT,NODELEVEL,ISDIR,PNODEID,NODEBMP,NODELBMP,MODULEID,ACTIONID,VISIBLED,SNO,UPDATEBy,UPDATEDate, Path, UITP) 
+				 select #NewNodeID#, NodeCode, NodeName, NodeComment, #Level#, IsDir, #PNodeID#, NodeBMP, NODELBMP, ModuleID, ActionID, Visibled, SNO, %{#session.CheckIn.UserName}, sysdate, #Path#, #UITP#
+				 from Sys_UI 
+				 where NodeID = #NodeID#"/>
+		<Dataset id="dsQuery1" type="SimpleQuery"
+			sql="select nvl(max(NodeID),0)+1 as NodeID from Sys_UI"/>
+		<Dataset id="dsQuery2" type="SimpleQuery"
+			sql="select nvl(max(SNO),0)+1 as SNO from Sys_UI where PNodeID = #PNodeID# and UITP = #UITP#"/>
+	</Datasets>
+	<Controls>
+		<!-- 模块树 -->
+		<Control id="moduleTree" type="Tree" width="100%"
+			draggable="false">
+			<Events>
+				<Event name="beforeExpandNode">
+					expandNode(dsUITree, tree, node);
+				</Event>
+			</Events>
+		</Control>
+		
+		<Control id="includeSubNode" type="CheckBox" width="25" dataset="dsObject" field="IncludeSubNode"/>
+		<Control id="btnOK" type="Button" value="执行" width="75"
+			decorate="%{applicationRoot}/exhibit/sysimgs/exec.gif">
+			<Events>
+				<Event name="onClick">saveData();</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				var callNode = window.dialogArguments;
+				var maxID = 0;
+				var Sql = "";
+				
+				//展开节点
+				function expandNode(dataset, tree, node)
+				{
+					if (node.children().getLength()>0) return;
+					var ParentNodeID;
+					var ParentUITP;
+					
+					if (node.getLevel() == 0) 
+					{
+						dsUITP.flushData();
+						var rd = dsUITP.getFirstRecord();
+						while (rd)
+						{
+							var newNode = tree.addNode(node, rd.getValue("TPName"));
+							newNode.setHasChild(rd.getValue("SubCount") > 0);
+							newNode.NodeID = 0;
+							newNode.NodeBMP = "%{applicationRoot}/exhibit/sysimgs/fav-alt4.png";
+							newNode.setIcon("%{applicationRoot}/exhibit/sysimgs/fav-alt4.png");
+							newNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/fav-alt4.png");
+							newNode.UITP = parseInt(rd.getValue("TPID"));
+							rd = rd.getNextRecord();
+						}
+						//if (newNode)
+				    	//	newNode.setExpanded(true);
+						return;
+					}
+					else 
+					{
+				  		ParentNodeID = node.NodeID;
+				  		ParentUITP = node.UITP;
+				  	}
+				  		
+					dataset.parameters().setValue("NodeID", ParentNodeID, "long");
+					dataset.parameters().setValue("TPID", ParentUITP, "long");
+					dataset.flushData();
+				    
+				  	while (!dataset.isLast())
+				  	{
+					     var label = dataset.getString("NodeName");
+					     var newNode = tree.addNode(node, label);
+					     newNode.setHasChild(dataset.getValue("SubCount") > 0);
+					     newNode.NodeID = dataset.getValue("NodeID");
+					     newNode.Path = dataset.getValue("Path");
+
+					     //DIR
+					     if (dataset.getValue("IsDIR")=='1')
+					     {
+						     newNode.setIcon("%{applicationRoot}/exhibit/sysimgs/fileclose3.gif");
+						     newNode.setExpandedIcon("%{applicationRoot}/exhibit/sysimgs/fileopen3.gif");
+					     }
+					     //Node
+					     else
+					     {
+					     	 newNode.setIcon(__CONTEXT_PATH+"/"+dataset.getValue("NodeBMP"));
+						     newNode.setExpandedIcon(__CONTEXT_PATH+"/"+dataset.getValue("NodeBMP"));
+					     }
+					     
+					     newNode.ModuleID = parseInt(dataset.getValue("ModuleID"));
+					     newNode.ActionID = parseInt(dataset.getValue("ActionID"));
+					     newNode.ModuleCode = dataset.getValue("ModuleCode");
+					     newNode.ActionCode = dataset.getValue("ActionCode");
+					     newNode.ModuleName = dataset.getValue("ModuleName");
+					     newNode.ActionName = dataset.getValue("ActionName");
+				      	 newNode.NodeCode = dataset.getValue("NodeCode");
+				      	 newNode.Visibled = dataset.getValue("Visibled");
+				      	 newNode.NodeComment = dataset.getValue("NodeComment");
+				      	 newNode.NodeName = dataset.getValue("NodeName");
+				      	 newNode.NodeBMP = dataset.getValue("NodeBMP");
+				      	 newNode.NodeLBMP = dataset.getValue("NodeLBMP");
+				      	 newNode.IsDIR = dataset.getValue("IsDIR");
+				      	 newNode.SNO = parseInt(dataset.getValue("SNO"));
+				      	 newNode.UITP = parseInt(dataset.getValue("UITP"));
+					     dataset.moveNext();
+				    }
+				}
+				
+				function expandNodeFull(node)
+				{
+					//if (node.children().getLength()>0) 
+					//	return;
+					node.setExpanded(true);
+					var subnodes=node.children();
+					var itr=subnodes.iterator();
+					while(itr.hasNext())
+					{
+						maxID++;
+						var subnode=itr.next();
+						subnode.NewPID = node.NewID;
+						subnode.NewID = maxID;
+						subnode.NewLevel = node.NewLevel + 1;
+						subnode.NewPath = node.NewPath + '.' + maxID;
+						expandNodeFull(subnode);
+					}
+				}
+				
+				function fillNodeFull(node)
+				{
+					if (node.children().getLength()<=0) return;
+					var subnodes=node.children();
+					var itr=subnodes.iterator();
+					while(itr.hasNext())
+					{
+						var subnode=itr.next();
+						
+						dsUpdate1.parematers().setValue("NewNodeID", subnode.NewID, "int");
+						dsUpdate1.parematers().setValue("Level", subnode.NewLevel, "int");
+						dsUpdate1.parematers().setValue("PNodeID", subnode.NewPID, "int");
+						dsUpdate1.parematers().setValue("Path", subnode.NewPath, "string");
+						dsUpdate1.parematers().setValue("UITP", moduleTree.getCurrentNode().UITP, "string");
+						dsUpdate1.parematers().setValue("NodeID", subnode.NodeID, "int");
+						dsUpdate1.saveDB();
+												
+						fillNodeFull(subnode);
+					}
+				}
+								
+				function saveData()
+				{
+					if (!(moduleTree.getCurrentNode()))
+					{
+						smoke.alert("请选择目的节点！");
+						return;
+					}
+					
+					dsQuery1.flushData();
+					var maxID = parseInt(dsQuery1.getValue("NodeID"));
+					dsQuery2.parameters().setValue("PNodeID", moduleTree.getCurrentNode().NodeID, "int");
+					dsQuery2.parameters().setValue("UITP", moduleTree.getCurrentNode().UITP, "string");
+					dsQuery2.flushData();
+					var SNO = parseInt(dsQuery2.getValue("SNO"));
+					
+					callNode.NewPID = moduleTree.getCurrentNode().NodeID;
+					callNode.NewID = maxID;
+					callNode.NewLevel = moduleTree.getCurrentNode().getLevel(); 
+					if (callNode.NewLevel == 1)
+						callNode.NewPath = maxID;
+					else
+						callNode.NewPath = moduleTree.getCurrentNode().Path + '.' + maxID;
+					
+					dsUpdate1.parematers().setValue("NewNodeID", maxID, "int");
+					dsUpdate1.parematers().setValue("Level", callNode.NewLevel, "int");
+					dsUpdate1.parematers().setValue("PNodeID", callNode.NewPID, "int");
+					dsUpdate1.parematers().setValue("Path", callNode.NewPath, "string");
+					dsUpdate1.parematers().setValue("UITP", moduleTree.getCurrentNode().UITP, "string");
+					dsUpdate1.parematers().setValue("NodeID", callNode.NodeID, "int");
+					dsUpdate1.saveDB();
+						
+					if (dsObject.getValue("IncludeSubNode"))
+					{
+						expandNodeFull(callNode);
+						fillNodeFull(callNode);
+					}
+					if (sysSQLUpdate(Sql))
+					{
+						smoke.alert("复制成功！");
+						window.returnValue = true;
+					}
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				lbl_Hint.innerText = '源节点：' + callNode.NodeName;
+			]]>
+		</Event>
+	</Events>
+</View>
+

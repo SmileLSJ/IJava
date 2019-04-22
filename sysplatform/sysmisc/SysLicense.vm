@@ -1,0 +1,160 @@
+<%@ page contentType="text/html; charset=GBK"%>
+<%@ taglib uri="kingfisher" prefix="fk"%>
+<html>
+<head>
+<META http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>许可信息</title>
+<style type="text/css">
+.titleHint {
+	border: 1px #83B6DC solid;
+	background-color: #E4EDF1;
+	font: "宋体";
+	font-size: 12px;
+}
+
+.titleHintLeft {
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top: 2px;
+	padding-bottom: 1px;
+	padding-left: 24px;
+	padding-right: 0px;
+	text-align: left;
+	background-image: url("${applicationRoot}/exhibit/sysimgs/key2.gif")
+}
+
+.spe1 {
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 22px;
+	border-color: #83B6DC;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image: url("${applicationRoot}/exhibit/sysimgs/male.gif")
+}
+
+.spe2 {
+	background-repeat: no-repeat;
+	background-position: 3px center;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 22px;
+	border-color: #83B6DC;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-image: url("${applicationRoot}/exhibit/sysimgs/change.gif")
+}
+</style>
+</head>
+#fkview("config=${cfgFileName}")
+	<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+		bgcolor="#F1F4FA">
+
+	<table border="0" width="100%" height="100%" class="autoform">
+		<tr>
+			<td height="20">
+			<table border="0" width="100%" height="100%" class="titleHint">
+				<tr>
+					<td>
+					<p class="titleHintLeft">系统许可信息</p>
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td width="100%" height="100%">
+			<table border="0" width="100%" height="100%" bgcolor="#F1F4FA"
+				style="border: 1px #83B6DC solid">
+				<tr>
+					<td height="20" style="padding-left: 2px;">
+					<p class="spe1" style="width: 210; height: 100%">许可信息</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					<table border="0" height="100%">
+						<tr>
+							<td height="0" width="80"></td>
+							<td width="120"></td>
+							<td width="80"></td>
+							<td width="120"></td>
+						</tr>
+						<tr>
+							<td height="22" align="right">门店数量：</td>
+							<td><label id="lbl_BranCount" style="color: #0000CC;"></label></td>
+							<td align="right">单门店用户：</td>
+							<td><label id="lbl_BranUserCount" style="color: #0000CC;"></label></td>
+						</tr>
+						<tr>
+							<td height="22" align="right">总部用户数：</td>
+							<td><label id="lbl_HQUserCount" style="color: #0000CC;"></label></td>
+							<td align="right">合计用户数：</td>
+							<td><label id="lbl_TotalUserCount" style="color: #0000CC;"></label></td>
+						</tr>
+						<tr>
+							<td height="22" align="right">许可有效期：</td>
+							<td><label id="lbl_ValidDate" style="color: #0000CC;"></label></td>
+							<td align="right">授权商户：</td>
+							<td><label id="lbl_MCName" style="color: #0000CC;"></label></td>
+						</tr>
+
+					</table>
+					</td>
+				</tr>
+				<tr>
+					<td height="20" style="padding-left: 2px;">
+					<p class="spe2" style="width: 210; height: 100%">系统信息</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					<table border="0" height="100%">
+						<tr>
+							<td height="0" width="80"></td>
+							<td width="120"></td>
+							<td width="80"></td>
+							<td width="120"></td>
+						</tr>
+						<tr>
+							<td height="22" align="right">操作系统：</td>
+							<td colspan="3"><label id="lbl_OS"
+								style="color: #0000CC;"></label></td>
+						</tr>
+						<tr>
+							<td height="22" align="right">JDK版本：</td>
+							<td colspan="3"><label id="lbl_JavaVer"
+								style="color: #0000CC;"></label></td>
+						</tr>
+						<tr>
+							<td height="22" align="right">AP内存：</td>
+							<td colspan="3"><label id="lbl_FreeMem"
+								style="color: #0000CC;"></label></td>
+						</tr>
+					</table>
+					</td>
+				</tr>
+				<tr>
+					<td height="100%"></td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+		<tr>
+			<td height="22" align="right" style="padding-right: 4px;">#fkbutton("id=btnClose")</td>
+		</tr>
+		<tr>
+			<td height="2" />
+		</tr>
+	</table>
+
+	</body>
+#end
+
+</html>

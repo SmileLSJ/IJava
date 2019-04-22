@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "http://www.totapps.com/kingfisher/feather-3.0.dtd">
+<!--
+	*****************************************
+	系统发件箱查询
+	乔武军设计      
+	2008.01.09  
+	*****************************************
+-->
+<View skin="default" showDialogOnLoadingData="false">
+	<Datasets>
+		<Dataset id="dsUser" pageSize="0" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.InfoID, A.RecvType as Flag, B.UserID as RecvID, 
+					'(' || B.UserCode || ')' || B.UserName as RecvName
+			 	from Sys_Info_Send_User A , Sys_User B
+				where A.RecvType = '1' and A.InfoID = #InfoID# and A.ObjID = B.UserID 
+				union all 
+				select A.InfoID, A.RecvType as Flag, B.GroupID as RecvID, 
+					'(' || B.GroupCode || ')' || B.GroupName as RecvName 
+				from Sys_Info_Send_User A , Sys_Group B 
+				where A.RecvType = '2' and A.InfoID = #InfoID# and A.ObjID = B.GroupID 
+				union all 
+				select A.InfoID, A.RecvType as Flag, B.BranID as RecvID, 
+					'(' || B.BranCode || ')' ||	B.BranName as RecvName 
+				from Sys_Info_Send_User A ,	Sys_Bran B 
+				where A.RecvType = '3' and A.InfoID = #InfoID# and A.ObjID = B.BranID 
+				]]>
+				
+			</Data>
+			<Fields>
+				<Field name="InfoID" label="序号" dataType="string" />
+				<Field name="Flag" label="类型" dataType="string" />
+				<Field name="RecvID" label="接收序号" dataType="long" />
+				<Field name="RecvName" label="接收对象" dataType="string" />
+			</Fields>
+		</Dataset>
+
+		<!-- 公告数据集 -->
+		<Dataset id="dsInfo" pageSize="50" autoLoadPage="true"
+			clearDataForLoadPage="true" readOnly="true" wrappedType="Sql"
+			type="Wrapper" loadOnPageOpen="false" showLoadingTip="false">
+			<Data type="statement">
+				<![CDATA[
+				select A.InfoID, C.BranID, A.InfoDate, A.Title, A.Note, A.Priority, A.IsSend, A.SendDate, 
+					'(' || C.BranCode || ')' || C.BranName as SendBran 
+				from Sys_Info_Send A, Sys_Bran C, Sys_User B
+				]]>
+				<!-- 条件定义 -->
+				<Dynamic prepend="where">
+					<![CDATA[
+					A.IsSend = '1' and A.UserID = #UserID# and B.UserID = A.UserID and B.BranID = C.BranID and (A.InfoDate between #BDate# and #EDate#)
+					]]>
+					<isNotEmpty prepend="and" property="Note" open="%"
+						close="%">
+						A.Note like #Note#
+					</isNotEmpty>
+					<isNotEmpty prepend="and" property="Title" open="%"
+						close="%">
+						A.Title like #Title#
+					</isNotEmpty>
+				</Dynamic>
+				<!-- 排序定义 -->
+				<Dynamic prepend="orderby">
+					<!-- 默认排序条件 -->
+					<isNotParameterPresent estimate="orderbys">
+						A.InfoDate desc
+					</isNotParameterPresent>
+					<!-- 其它排序条件 -->
+					<isNotNull prepend="," property="InfoDate"
+						estimate="orderbys">
+						A.#InfoDate#
+					</isNotNull>
+					<isNotNull prepend="," property="Title"
+						estimate="orderbys">
+						A.#Title#
+					</isNotNull>
+					<isNotNull prepend="," property="Priority"
+						estimate="orderbys">
+						A.#Priority#
+					</isNotNull>
+					
+					<isNotNull prepend="," property="SendBran"
+						estimate="orderbys">
+						#SendBran#
+					</isNotNull>
+					<isNotNull prepend="," property="SendDate"
+						estimate="orderbys">
+						A.#SendDate#
+					</isNotNull>
+				</Dynamic>
+			</Data>
+			<Fields>
+				<Field name="InfoID" label="序号" dataType="string" />
+				
+				<Field name="BranID" label="发送机构" dataType="long" />
+				<Field name="InfoDate" label="录入日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				<Field name="Title" label="标题" dataType="string" />
+				<Field name="Note" label="公告内容" dataType="string" />
+				<Field name="Priority" label="状态" dataType="string" />
+				<Field name="IsSend" label="是否发送" dataType="string" />
+				<Field name="SendDate" label="发送日期" dataType="date"
+					align="center" format="yyyy-MM-dd" />
+				
+				<Field name="SendBran" label="发送机构" dataType="string" />
+			</Fields>
+			<Events>
+				<Event name="afterFlushData">refreshLabels(); searchDT();</Event>
+				<Event name="afterScroll">refreshLabels(); searchDT();</Event>
+			</Events>
+		</Dataset>
+	</Datasets>
+	<Controls>
+		<!-- 公告表格 -->
+		<Control id="tbInfo" type="DataTable" dataset="dsInfo"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Priority" field="Priority" width="30"
+				headerClickable="true" dataOrder="true" align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeInfoImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="Title" field="Title" width="230"
+				headerClickable="true" dataOrder="true" />
+			<Column name="InfoDate" field="InfoDate" width="80"
+				headerClickable="true" dataOrder="true" />
+			<Column name="SendBran" field="SendBran" width="120"
+				headerClickable="true" dataOrder="true" />
+			<Column name="SendDate" field="SendDate" width="80"
+				headerClickable="true" dataOrder="true" />
+		</Control>
+
+		<!-- 用户表格 -->
+		<Control id="tbUser" type="DataTable" dataset="dsUser"
+			width="100%" readOnly="true" parityRow="3" menu="menuSysDynamic"
+			context="" multiSelect="true">
+			<Column name="RNO" label="序号" pattern="position" width="40"
+				align="center" />
+			<Column name="Flag" field="Flag" width="30"
+				align="center">
+				<Events>
+					<Event name="onRefresh">
+						return changeFlagImage(cell, record);
+					</Event>
+				</Events>
+			</Column>
+			<Column name="RecvName" field="RecvName" width="250" />
+		</Control>
+
+		<Control id="Note" type="TextEditor" width="350" height="250"
+			editorType="textarea" dataset="dsInfo" field="Note" />
+			
+		<Control id="pilotInfo" type="DataPilot"
+			dataset="dsInfo" buttonFirstPage="visible"
+			buttonLastPage="visible" buttonAppend="hidden" buttonDelete="hidden"
+			buttonCancel="hidden" buttonMovePrev="hidden" buttonMoveNext="hidden"
+			buttonPost="hidden" />
+	</Controls>
+	<Include file="sysplatform.sysref.SysDynamicMenu" />
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function strToDate(str,isLastTime)
+				{
+					var newDate;
+					var arys= new Array();
+					arys=str.split('-');
+					if (isLastTime == false)
+						newDate=new Date(arys[0],arys[1]-1,arys[2]); 
+					else
+					 	newDate=new Date(arys[0],arys[1]-1,arys[2],23,59,59); 
+					return newDate;
+				} 
+				
+				function search(objPar)
+				{
+					dsInfo.parameters().setValue("BDate", strToDate(objPar.BDate,false),"datetime");
+					dsInfo.parameters().setValue("EDate", strToDate(objPar.EDate,true),"datetime");
+					dsInfo.parameters().setValue("Title", objPar.Title,"string");
+					dsInfo.parameters().setValue("Note", objPar.Note,"string");
+					dsInfo.flushData();
+				}
+				
+				function searchDT()
+				{
+					var gID = "";
+				    
+				    if (dsInfo.getVisibleCount()>0)
+				 	{
+				 		gID = dsInfo.getValue("InfoID");
+				 		_tqEditor.setContent(dsInfo.getValue("Note"));
+				 	}
+					var dataset = dsUser;
+					dataset.parameters().setValue("InfoID", gID,"string");
+					dataset.flushData();
+				}
+				
+				//修改Cell样式
+				function changeInfoImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Priority")=="1")
+						{
+							filename = 'tag10.png';
+							hint = "普通公告";
+						}	
+						else if (record.getValue("Priority")=="2")
+						{
+							filename = 'tag9.png';
+							hint = "重要公告";
+						}	
+						else
+						{
+							filename = 'tag11.png';
+							hint = "紧急公告";
+						}
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    function changeFlagImage(cell, record)
+				{ 
+					var filename = "";
+					var hint = "";
+					if (record!=null)
+					{
+						if (record.getValue("Flag")=="1")
+						{
+							filename = 'groupnormal.gif';
+							hint = "单个用户";
+						}	
+						else if (record.getValue("Flag")=="2")
+						{
+							filename = 'groupnormalex.gif';
+							hint = "用户组";
+						}	
+						else if (record.getValue("Flag")=="3")
+						{
+							filename = 'node1.gif';
+							hint = "机构";
+						}	
+						cell.innerHTML = '<img src="%{applicationRoot}/exhibit/sysimgs/'+filename+'" width="16" height="16" border="0" alt="'+hint+'">';
+					} 
+					return false;
+	  		    }
+	  		    
+	  		    //刷新记录时更改页脚信息
+				function refreshLabels(){ 
+					var dataset = dsInfo;
+					labelPageIndex.innerText = dataset.getPageIndex();
+					labelPageCount.innerText = dataset.getPageCount();
+					labelPageSize.innerText = dataset.getPageSize();
+					labelRecordCount.innerText = dataset.getPossibleRecordCount(); 
+				}
+			]]>
+		</Event>
+		<Event name="onLoad">
+			<![CDATA[
+				dsInfo.parameters().setValue("UserID", __LOGIN_INFO.UserID, "long");
+				//dsInfo.parameters().setValue("BDate", strToDate(formatDate(new Date(), "yyyy-MM-01"),false),"datetime");
+				//dsInfo.parameters().setValue("EDate", strToDate(formatDate(new Date(), "yyyy-MM-dd"),true),"datetime");
+				//dsInfo.flushData();
+				refreshLabels();
+			]]>
+		</Event>
+	</Events>
+</View>
+

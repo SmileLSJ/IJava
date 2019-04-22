@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="gbk"?>
+<!DOCTYPE View PUBLIC "-//Keem Group//Kingfisher Feather 3.0//EN" "../../../feather-3.0.dtd">
+<View skin="default">
+	<Datasets>
+		<Dataset id="dsObject" type="Reference" insertOnEmpty="true">
+			<Fields>
+				<Field name="LOGTP" dataType="string" dropDown="ddLOGTP" defaultValue="-1" />
+				<Field name="LOGKD" dataType="string" dropDown="ddLOGKD" defaultValue="-1" />
+			</Fields>
+		</Dataset>
+	</Datasets>
+
+	<Controls>
+		<Control id="DateDropObject" type="DateDropDown" />
+		
+		<Control id="edtSTDT" type="TextEditor" width="47%" dropDown="DateDropObject" />
+		<Control id="edtEDDT" type="TextEditor" width="47%" dropDown="DateDropObject" />
+		
+		<Control id="ddLOGKD" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="全部" value="-1" />
+			<DropDownItem label="存储过程" value="1" />
+			<DropDownItem label="计划任务" value="2" />
+		</Control>
+		
+		<Control id="ddLOGTP" type="ListDropDown" mapValue="true"
+			fixed="true">
+			<DropDownItem label="全部" value="-1" />
+			<DropDownItem label="信息" value="1" />
+			<DropDownItem label="警告" value="2" />
+			<DropDownItem label="错误" value="3" />
+		</Control>
+	
+		<Control type="TextEditor" id="edtLOGCD" width="97%" />
+		<Control type="TextEditor" id="edtLOGKD" width="97%" dataset="dsObject" field="LOGKD" />
+		<Control type="TextEditor" id="edtLOGTP" width="97%" dataset="dsObject" field="LOGTP" />
+		
+		<Control id="btnSearch" type="Button" value="查询"
+			decorate="%{applicationRoot}/exhibit/sysimgs/search.gif" width="75">
+			<Events>
+				<Event name="onClick">
+					<![CDATA[
+						paramSearch();
+					]]>
+				</Event>
+			</Events>
+		</Control>
+	</Controls>
+	<Events>
+		<Event name="functions">
+			<![CDATA[
+				function paramSearch()
+				{
+					parent.transfer({
+									 STDT:edtSTDT.value,
+									 EDDT:edtEDDT.value,
+									 LOGCD:edtLOGCD.value,
+									 LOGKD:dsObject.getValue("LOGKD"),
+									 LOGTP:dsObject.getValue("LOGTP")
+									});
+				}
+			]]>
+		</Event>
+		
+		<Event name="onLoad">
+			<![CDATA[
+				edtSTDT.value=formatDate(new Date(), "yyyy-MM-01");
+	 		 	edtEDDT.value=formatDate(new Date(), "yyyy-MM-dd");
+	        ]]>
+		</Event>
+	</Events>
+</View>
